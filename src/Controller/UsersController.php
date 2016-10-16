@@ -62,6 +62,12 @@ class UsersController extends AppController
         if ($this->request->is('post')) {
 
             $data = $this->request->data;
+
+            if(($data['password']) != ($data['confirm_password'])){
+                $this->Flash->error('Password Does Not Match');
+                return $this->redirect(['action' => 'add']);
+            }
+
             $data['created_by'] = $userInfo['id'];
             $data['created_date'] = $time;
             $user = $this->Users->patchEntity($user, $data);
@@ -108,6 +114,14 @@ class UsersController extends AppController
             if (empty($data['password'])) {
                 unset($data['password']);
             }
+            if(empty($data['password']) && empty($data['confirm_password'])){
+                unset($data['password']);
+            }
+            else if(($data['password']) != ($data['confirm_password'])){
+                $this->Flash->error('Password Does Not Match');
+                return $this->redirect($this->here);
+            }
+
             $data['updated_by'] = $userInfo['id'];
             $data['updated_date'] = $time;
             $user = $this->Users->patchEntity($user, $data);
