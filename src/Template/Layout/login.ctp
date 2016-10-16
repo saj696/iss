@@ -13,7 +13,7 @@ Website: http://www.softbdltd.com/
 <!-- BEGIN HEAD -->
 <head>
     <meta charset="utf-8"/>
-    <title><?= __('DSS') ?></title>
+    <title><?= __('ISS') ?></title>
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
     <meta http-equiv="Content-type" content="text/html; charset=utf-8">
@@ -48,7 +48,7 @@ Website: http://www.softbdltd.com/
 <!-- END SIDEBAR TOGGLER BUTTON -->
 <!-- BEGIN LOGO -->
 <div class="logo">
-    <h1 style="color: #f1f1e3"><b><?= __('Distributor Sales System') ?></b></h1>
+    <h1 style="color: #f1f1e3"><b><?= __('Inventory & Sales System') ?></b></h1>
 </div>
 <!-- END LOGO -->
 <!-- BEGIN LOGIN -->

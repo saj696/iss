@@ -23,7 +23,7 @@ License: You must have a valid license purchased only from softbd
 <head>
     <meta charset="utf-8"/>
     <title>
-        DSS :
+        ISS :
         <?= $this->fetch('title'); ?>
     </title>
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -96,7 +96,7 @@ License: You must have a valid license purchased only from softbd
                 <a href="#">
 <!--                    <img src="img/logo-light.png" alt="logo" class="logo-default"/>-->
                 </a>
-                <h3 style="color: white; font-weight: bold"><?= __('Distributor Sales System') ?></h3>
+                <h3 style="color: white; font-weight: bold"><?= __('Inventory & Sales System') ?></h3>
     <!--            <div class="menu-toggler sidebar-toggler"></div>-->
             </div>
             <!-- END LOGO -->
