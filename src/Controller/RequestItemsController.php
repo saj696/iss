@@ -71,26 +71,37 @@ class RequestItemsController extends AppController
         $this->loadModel('TransferEvents');
         $this->loadModel('TransferResources');
         $this->loadModel('Users');
+        $this->loadModel('Stores');
+
+        $this->loadModel('Items');
+        $items = $this->Items->find('all', ['conditions' => ['status' => 1]]);
+        $itemArray = [];
+        foreach($items as $item) {
+            $itemArray[$item['id']] = $item['name'].' - '.$item['pack_size'].' '.Configure::read('pack_size_units')[$item['unit']];
+        }
+
+        $stores = $this->Stores->find('list', ['conditions'=>['status !='=>99]])->toArray();
 
         $event = $this->TransferEvents->get($id);
         $resource = $this->TransferResources->get($event['transfer_resource_id'], ['contain'=>['TransferItems']]);
         $items = $resource['transfer_items'];
+
         $requestUserInfo = $this->Users->get($event['created_by']);
-        $ownStore = [];
-        $requestStore = [];
+        $details = [];
+        $store_ids = [$user['store_id'], $requestUserInfo['store_id']];
 
-        $stores = [$user['store_id'], $requestUserInfo['store_id']];
-        echo '<pre>';
-        print_r($items);
-        echo '</pre>';
-        exit;
-        foreach($items as $item)
-        {
+        foreach($items as $item):
+            foreach($store_ids as $store_id):
+                $ownStore = [];
+                $ownStore['store'] = $store_id;
+                $ownStore['item'] = $item['item_id'];
+                $ownStore['quantity'] = $item['quantity'];
+                $details[] = $ownStore;
+            endforeach;
+        endforeach;
 
-        }
-
-//        $this->set('requestItem', $requestItem);
-//        $this->set('_serialize', ['requestItem']);
+        $this->set(compact('details', 'itemArray', 'stores'));
+        $this->set('_serialize', ['itemDetail']);
     }
 
     /**
