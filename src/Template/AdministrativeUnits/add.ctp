@@ -1,6 +1,5 @@
 <?php
 use Cake\Core\Configure;
-
 ?>
 <div class="page-bar">
     <ul class="page-breadcrumb">

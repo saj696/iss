@@ -101,4 +101,20 @@ class SystemHelper extends Helper
             ->hydrate(false)->toArray();
         return $items;
     }
+
+    public function generate_code($prefix, $type, $padding)
+    {
+        if($type=='customer'):
+            $lastCode = TableRegistry::get('customers')->find('all', ['conditions'=>['code like'=>$prefix. '%'], 'order'=>['id'=>'desc'], 'limit'=>1])->first();
+            if(sizeof($lastCode)>0):
+                $arr = explode($prefix, $lastCode['code']);
+                $lastSerial = $arr[1];
+                $newSerial = intval($lastSerial)+1;
+                echo $prefix.str_pad($newSerial, $padding, 0, STR_PAD_LEFT);
+            else:
+                $newSerial = 1;
+                echo $prefix.str_pad($newSerial, $padding, 0, STR_PAD_LEFT);
+            endif;
+        endif;
+    }
 }
