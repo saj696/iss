@@ -70,6 +70,11 @@ class SystemHelper extends Helper
         printf("%d years, %d months, %d days\n", $years, $months, $days);
     }
 
+    public function asked_level_global_id($asked_level, $own_global_id)
+    {
+        return ((pow(2, ($asked_level*5)+1)-1)*(pow(2, (Configure::read('max_level_no')-$asked_level)*5))) & $own_global_id;
+    }
+
     public function get_current_financial_year()
     {
         $year = TableRegistry::get('financial_years')->find('all', ['conditions'=>['status'=>1]])->first();
