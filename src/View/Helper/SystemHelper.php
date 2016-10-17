@@ -1,6 +1,7 @@
 <?php
 namespace App\View\Helper;
 
+use App\Model\Table\AdministrativeUnitsTable;
 use Cake\View\Helper;
 use Cake\View\View;
 use Cake\Core\Configure;
@@ -101,6 +102,7 @@ class SystemHelper extends Helper
             ->hydrate(false)->toArray();
         return $items;
     }
+
 
     public function generate_code($prefix, $type, $padding)
     {
