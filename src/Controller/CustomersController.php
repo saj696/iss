@@ -1,8 +1,10 @@
 <?php
 namespace App\Controller;
 
+
 use App\Controller\AppController;
 use Cake\ORM\TableRegistry;
+use Cake\View\Helper\SystemHelper;
 
 /**
  * Customers Controller
@@ -30,6 +32,7 @@ class CustomersController extends AppController
             'conditions' => ['Customers.status !=' => 99],
             'contain' => ['AdministrativeUnits']
         ]);
+
         $this->set('customers', $this->paginate($customers));
         $this->set('_serialize', ['customers']);
     }
@@ -58,14 +61,22 @@ class CustomersController extends AppController
      */
     public function add()
     {
+
+
         $user = $this->Auth->user();
         $time = time();
         $customer = $this->Customers->newEntity();
         if ($this->request->is('post')) {
 
             $data = $this->request->data;
+//            echo '</pre>'; print_r($data) ;die();
             $data['created_by'] = $user['id'];
             $data['created_date'] = $time;
+            $data['pesticide_issue_date'] = strtotime($data['pesticide_issue_date']);
+            $data['pesticide_end_date'] = strtotime($data['pesticide_end_date']);
+            $data['trade_issue_date'] = strtotime($data['trade_issue_date']);
+            $data['trade_end_date'] = strtotime($data['trade_end_date']);
+            $data['status'] = 0;
             $customer = $this->Customers->patchEntity($customer, $data);
             if ($this->Customers->save($customer)) {
                 $this->Flash->success('The customer has been saved.');

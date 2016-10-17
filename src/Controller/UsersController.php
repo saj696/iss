@@ -121,7 +121,6 @@ class UsersController extends AppController
                 $this->Flash->error('Password Does Not Match');
                 return $this->redirect($this->here);
             }
-
             $data['updated_by'] = $userInfo['id'];
             $data['updated_date'] = $time;
             $user = $this->Users->patchEntity($user, $data);

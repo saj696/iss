@@ -30,7 +30,7 @@ use Cake\Core\Configure;
             </div>
 
             <div class="portlet-body">
-                <?= $this->Form->create($customer, ['class' => 'form-horizontal', 'role' => 'form']) ?>
+                <?= $this->Form->create($customer, ['class' => 'form-horizontal', 'type'=>'file' ,'role' => 'form']) ?>
                 <div class="row">
                     <div class="col-md-6 col-md-offset-3">
                         <?php
@@ -38,19 +38,29 @@ use Cake\Core\Configure;
                         echo $this->Form->input('administrative_unit_id', ['label'=>'Unit', 'empty' => __('Select')]);
                         echo $this->Form->input('code');
                         echo $this->Form->input('name');
+                        echo $this->Form->input('customer_status', ['options'=>Configure::read('customer_status')]);
                         echo $this->Form->input('address', ['rows'=>1]);
                         echo $this->Form->input('proprietor');
                         echo $this->Form->input('contact_person');
-                        echo $this->Form->input('business_type');
+//                        echo $this->Form->input('business_type');
                         echo $this->Form->input('mobile');
                         echo $this->Form->input('telephone');
                         echo $this->Form->input('email');
-                        echo $this->Form->input('credit_limit');
-                        echo $this->Form->input('credit_invoice_days');
-                        echo $this->Form->input('cash_invoice_days');
+//                        echo $this->Form->input('credit_limit');
+//                        echo $this->Form->input('credit_invoice_days');
+//                        echo $this->Form->input('cash_invoice_days');
                         echo $this->Form->input('is_mango', ['type'=>'checkbox', 'value'=>1]);
                         echo $this->Form->input('is_potato', ['type'=>'checkbox', 'value'=>1]);
                         echo $this->Form->input('customer_type', ['options'=>Configure::read('customer_types')]);
+                        echo $this->Form->input('pesticide_no',['label'=> 'Pesticide License No']);
+                        echo $this->Form->input('pesticide_issue_date',['type'=>'text','class'=>'form-control datepicker','label'=>['text'=>__('Pesticide License Issue Date')]]);
+                        echo $this->Form->input('pesticide_end_date',['type'=>'text','class'=>'form-control datepicker','label'=>['text'=>__('Pesticide License End Date')]]);
+                        echo $this->Form->input('trade_no',['label'=> 'Trade License No']);
+                        echo $this->Form->input('trade_issue_date',['type'=>'text','class'=>'form-control datepicker','label'=>['text'=>__('Trade License Issue Date')]]);
+                        echo $this->Form->input('trade_end_date',['type'=>'text','class'=>'form-control datepicker','label'=>['text'=>__('Trade License End Date')]]);
+                        echo $this->Form->input('picture_file', ['type'=>'file', 'label'=>'Photo']);
+                        echo $this->Form->input('nid_file', ['type'=>'file', 'label'=>'Nid']);
+                        echo $this->Form->input('signature_file', ['type'=>'file', 'label'=>'Signature']);
                         ?>
                         <?= $this->Form->button(__('Submit'), ['class' => 'btn blue pull-right', 'style' => 'margin-top:20px']) ?>
                     </div>
@@ -75,6 +85,12 @@ use Cake\Core\Configure;
                     obj.closest('.input').next().find('.col-sm-9').html('');
                     obj.closest('.input').next().find('.col-sm-9').html(data);
                 }
+            });
+        });
+
+        $(document).on("focus",".datepicker", function(){
+            $(this).removeClass('hasDatepicker').datepicker({
+                dateFormat: 'dd-mm-yy'
             });
         });
     });
