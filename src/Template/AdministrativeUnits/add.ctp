@@ -39,6 +39,7 @@ use Cake\Core\Configure;
                         <div class="hierarchy"></div>
                         <?php
                         echo $this->Form->input('unit_name');
+                        echo $this->Form->input('prefix');
                         ?>
                         <?= $this->Form->button(__('Submit'), ['class' => 'btn blue pull-right', 'style' => 'margin-top:20px']) ?>
                     </div>

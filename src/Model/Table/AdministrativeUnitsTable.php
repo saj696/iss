@@ -49,6 +49,9 @@ class AdministrativeUnitsTable extends Table
         $validator
             ->requirePresence('unit_name', 'create')
             ->notEmpty('unit_name');
+
+        $validator
+            ->allowEmpty('prefix');
             
         $validator
             ->add('parent', 'valid', ['rule' => 'numeric'])
@@ -67,6 +70,7 @@ class AdministrativeUnitsTable extends Table
      */
     public function buildRules(RulesChecker $rules)
     {
+        $rules->add($rules->isUnique(['prefix']));
         $rules->add($rules->existsIn(['administrative_level_id'], 'AdministrativeLevels'));
         return $rules;
     }

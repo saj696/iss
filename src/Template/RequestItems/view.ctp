@@ -28,7 +28,14 @@ $status = \Cake\Core\Configure::read('status_options');
                     <?= $this->Html->link(__('Back'), ['action' => 'index'], ['class' => 'btn btn-sm btn-success']); ?>
                 </div>
             </div>
+
             <div class="portlet-body">
+                <div class="row text-center">
+                    <div class="col-md-6 col-md-offset-3">
+                        <?php echo $this->Form->input('warehouse', ['options' => $stores, 'style'=>'max-width: 100%', 'class'=>'form-control warehouse', 'empty' => __('Select'), 'templates'=>['label' => 'Warehouse']]);?>
+                    </div>
+                </div>
+
                 <div class="table-scrollable">
                     <table class="table table-bordered">
                         <tr>
