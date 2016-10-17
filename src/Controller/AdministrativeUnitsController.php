@@ -127,26 +127,28 @@ class AdministrativeUnitsController extends AppController
      */
     public function edit($id = null)
     {
-        $user = $this->Auth->user();
-        $time = time();
-        $administrativeUnit = $this->AdministrativeUnits->get($id, [
-            'contain' => []
-        ]);
-        if ($this->request->is(['patch', 'post', 'put'])) {
-            $data = $this->request->data;
-            $data['updated_by'] = $user['id'];
-            $data['updated_date'] = $time;
-            $administrativeUnit = $this->AdministrativeUnits->patchEntity($administrativeUnit, $data);
-            if ($this->AdministrativeUnits->save($administrativeUnit)) {
-                $this->Flash->success('The administrative unit has been saved.');
-                return $this->redirect(['action' => 'index']);
-            } else {
-                $this->Flash->error('The administrative unit could not be saved. Please, try again.');
-            }
-        }
-        $administrativeLevels = $this->AdministrativeUnits->AdministrativeLevels->find('list', ['conditions' => ['status' => 1]]);
-        $this->set(compact('administrativeUnit', 'administrativeLevels'));
-        $this->set('_serialize', ['administrativeUnit']);
+        $this->Flash->error('The administrative unit could not be saved. Please, try again.');
+        return $this->redirect(['action' => 'index']);
+//        $user = $this->Auth->user();
+//        $time = time();
+//        $administrativeUnit = $this->AdministrativeUnits->get($id, [
+//            'contain' => []
+//        ]);
+//        if ($this->request->is(['patch', 'post', 'put'])) {
+//            $data = $this->request->data;
+//            $data['updated_by'] = $user['id'];
+//            $data['updated_date'] = $time;
+//            $administrativeUnit = $this->AdministrativeUnits->patchEntity($administrativeUnit, $data);
+//            if ($this->AdministrativeUnits->save($administrativeUnit)) {
+//                $this->Flash->success('The administrative unit has been saved.');
+//                return $this->redirect(['action' => 'index']);
+//            } else {
+//                $this->Flash->error('The administrative unit could not be saved. Please, try again.');
+//            }
+//        }
+//        $administrativeLevels = $this->AdministrativeUnits->AdministrativeLevels->find('list', ['conditions' => ['status' => 1]]);
+//        $this->set(compact('administrativeUnit', 'administrativeLevels'));
+//        $this->set('_serialize', ['administrativeUnit']);
     }
 
     /**
@@ -159,19 +161,20 @@ class AdministrativeUnitsController extends AppController
     public function delete($id = null)
     {
 
-        $administrativeUnit = $this->AdministrativeUnits->get($id);
-
-        $user = $this->Auth->user();
-        $data = $this->request->data;
-        $data['updated_by'] = $user['id'];
-        $data['updated_date'] = time();
-        $data['status'] = 99;
-        $administrativeUnit = $this->AdministrativeUnits->patchEntity($administrativeUnit, $data);
-        if ($this->AdministrativeUnits->save($administrativeUnit)) {
-            $this->Flash->success('The administrative unit has been deleted.');
-        } else {
-            $this->Flash->error('The administrative unit could not be deleted. Please, try again.');
-        }
+//        $administrativeUnit = $this->AdministrativeUnits->get($id);
+//
+//        $user = $this->Auth->user();
+//        $data = $this->request->data;
+//        $data['updated_by'] = $user['id'];
+//        $data['updated_date'] = time();
+//        $data['status'] = 99;
+//        $administrativeUnit = $this->AdministrativeUnits->patchEntity($administrativeUnit, $data);
+//        if ($this->AdministrativeUnits->save($administrativeUnit)) {
+//            $this->Flash->success('The administrative unit has been deleted.');
+//        } else {
+//            $this->Flash->error('The administrative unit could not be deleted. Please, try again.');
+//        }
+        $this->Flash->error('The administrative unit could not be deleted. Please, try again.');
         return $this->redirect(['action' => 'index']);
     }
 
