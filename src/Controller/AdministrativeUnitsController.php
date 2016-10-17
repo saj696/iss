@@ -69,7 +69,7 @@ class AdministrativeUnitsController extends AppController
                 $conn = ConnectionManager::get('default');
                 $conn->transactional(function () use ($user, $time, $administrativeUnit, &$saveStatus)
                 {
-                    $data = $this->request->data;
+                    $data = $this->request->data;;
                     $unit_level = $data['administrative_level_id'];
 
                     $parentLevelInfo = TableRegistry::get('administrative_levels')->find('all', ['conditions' => ['level_no' => $unit_level-1]])->first();
