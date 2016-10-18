@@ -83,6 +83,7 @@ class AdministrativeUnitsController extends AppController
                     $data['parent'] = $parent_id;
                     $data['administrative_level_id'] = $ownLevelInfo['id'];
                     $data['level_no'] = $unit_level;
+                    $data['prefix'] = strtoupper($data['prefix']);
                     $data['created_by'] = $user['id'];
                     $data['created_date'] = $time;
 

@@ -50,8 +50,14 @@ class AdministrativeUnitsTable extends Table
             ->requirePresence('unit_name', 'create')
             ->notEmpty('unit_name');
 
-        $validator
-            ->allowEmpty('prefix');
+        $validator->requirePresence('prefix')
+        ->notEmpty('prefix', 'Please fill this field')
+        ->add('prefix', [
+            'length' => [
+                'rule' => ['minLength', 4],
+                'message' => 'Prefix need to be at least 4 characters long',
+            ]
+        ]);
             
         $validator
             ->add('parent', 'valid', ['rule' => 'numeric'])
