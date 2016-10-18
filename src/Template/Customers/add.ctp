@@ -40,7 +40,6 @@ use Cake\Core\Configure;
                         echo $this->Form->input('prefix', ['options'=>$administrativeLevels, 'label'=>'Prefix Level', 'class'=>'form-control prefix', 'empty'=>'Select', 'required'=>'required']);
                         echo $this->Form->input('code', ['class'=>'form-control codeCustomer', 'readonly']);
                         echo $this->Form->input('name');
-                        echo $this->Form->input('customer_status', ['options'=>Configure::read('customer_status')]);
                         echo $this->Form->input('address', ['rows'=>1]);
                         echo $this->Form->input('proprietor');
                         echo $this->Form->input('contact_person');
@@ -61,8 +60,9 @@ use Cake\Core\Configure;
                         echo $this->Form->input('trade_issue_date',['type'=>'text','class'=>'form-control datepicker','label'=>['text'=>__('Trade License Issue Date')]]);
                         echo $this->Form->input('trade_end_date',['type'=>'text','class'=>'form-control datepicker','label'=>['text'=>__('Trade License End Date')]]);
                         echo $this->Form->input('picture_file', ['type'=>'file', 'label'=>'Photo']);
-                        echo $this->Form->input('nid_file', ['type'=>'file', 'label'=>'Nid']);
+                        echo $this->Form->input('nid_file', ['type'=>'file', 'label'=>'NID']);
                         echo $this->Form->input('signature_file', ['type'=>'file', 'label'=>'Signature']);
+                        echo $this->Form->input('customer_status', ['options'=>Configure::read('customer_status')]);
                         ?>
                         <?= $this->Form->button(__('Submit'), ['class' => 'btn blue pull-right', 'style' => 'margin-top:20px']) ?>
                     </div>
