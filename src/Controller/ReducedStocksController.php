@@ -202,7 +202,7 @@ class ReducedStocksController extends AppController
         $store_id = $data['store_id'];
         $item = TableRegistry::get('stocks')->find('all', ['conditions' => ['store_id' => $store_id, 'item_id'=>$item_id]])->first()->toArray();
 
-        $this->response->body(json_encode($item['quantity']));
+        $this->response->body($item['quantity']);
         $this->autoRender = false;
         return $this->response;
     }
