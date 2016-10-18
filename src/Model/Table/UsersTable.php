@@ -76,7 +76,9 @@ class UsersTable extends Table
         $validator
             ->requirePresence('username', 'create')
             ->notEmpty('username');
-            
+
+        $validator->allowEmpty('warehouse_id');
+        $validator->allowEmpty('depot_id');
 //        $validator
 //            ->requirePresence('password', 'create')
 //            ->notEmpty('password');
@@ -102,7 +104,8 @@ class UsersTable extends Table
     {
         $rules->add($rules->isUnique(['username']));
         $rules->add($rules->existsIn(['administrative_unit_id'], 'AdministrativeUnits'));
-        $rules->add($rules->existsIn(['store_id'], 'Stores'));
+//        $rules->add($rules->existsIn(['warehouse_id'], 'Warehouses'));
+//        $rules->add($rules->existsIn(['depot_id'], 'Depots'));
         $rules->add($rules->existsIn(['user_group_id'], 'UserGroups'));
         return $rules;
     }
