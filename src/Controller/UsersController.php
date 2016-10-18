@@ -43,7 +43,7 @@ class UsersController extends AppController
     {
         $user = $this->Auth->user();
         $user = $this->Users->get($id, [
-            'contain' => ['AdministrativeUnits', 'Stores', 'UserGroups']
+            'contain' => ['AdministrativeUnits', 'Warehouses', 'Depots', 'UserGroups']
         ]);
         $this->set('user', $user);
         $this->set('_serialize', ['user']);
@@ -88,9 +88,10 @@ class UsersController extends AppController
             $administrativeLevels[$administrativeLevelsDatum['level_no']] = $administrativeLevelsDatum['level_name'];
         }
 
-        $stores = $this->Users->Stores->find('list', ['conditions' => ['status' => 1]]);
+        $warehouses = $this->Users->Warehouses->find('list', ['conditions' => ['status' => 1]]);
+        $depots = $this->Users->Depots->find('list', ['conditions' => ['status' => 1]]);
         $userGroups = $this->Users->UserGroups->find('list', ['conditions' => ['status' => 1]]);
-        $this->set(compact('user', 'stores', 'userGroups', 'administrativeLevels'));
+        $this->set(compact('user', 'warehouses', 'depots', 'userGroups', 'administrativeLevels'));
         $this->set('_serialize', ['user']);
     }
 
@@ -141,9 +142,10 @@ class UsersController extends AppController
         }
 
         $administrativeUnits = $this->Users->AdministrativeUnits->find('list', ['conditions' => ['status' => 1, 'level_no'=>$user['level_no']]]);
-        $stores = $this->Users->Stores->find('list', ['conditions' => ['status' => 1]]);
+        $warehouses = $this->Users->Warehouses->find('list', ['conditions' => ['status' => 1]]);
+        $depots = $this->Users->Depots->find('list', ['conditions' => ['status' => 1]]);
         $userGroups = $this->Users->UserGroups->find('list', ['conditions' => ['status' => 1]]);
-        $this->set(compact('user', 'administrativeUnits', 'stores', 'userGroups', 'administrativeLevels'));
+        $this->set(compact('user', 'administrativeUnits', 'warehouses', 'depots', 'userGroups', 'administrativeLevels'));
         $this->set('_serialize', ['user']);
     }
 

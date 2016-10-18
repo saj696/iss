@@ -28,8 +28,11 @@ class UsersTable extends Table
             'foreignKey' => 'administrative_unit_id',
             'joinType' => 'INNER'
         ]);
-        $this->belongsTo('Stores', [
-            'foreignKey' => 'store_id'
+        $this->belongsTo('Warehouses', [
+            'foreignKey' => 'warehouse_id'
+        ]);
+        $this->belongsTo('Depots', [
+            'foreignKey' => 'depot_id'
         ]);
         $this->belongsTo('UserGroups', [
             'foreignKey' => 'user_group_id',

@@ -37,13 +37,13 @@ use Cake\Core\Configure;
                         echo $this->Form->input('level_no', ['options' => $administrativeLevels, 'class'=>'form-control level', 'empty' => __('Select'), 'label'=>'Level']);
                         echo $this->Form->input('administrative_unit_id', ['options' => $administrativeUnits, 'empty' => __('Select'), 'label'=>'Unit']);
                         echo $this->Form->input('user_group_id', ['options' => $userGroups, 'empty' => __('Select')]);
-//                        echo $this->Form->input('full_name_bn');
                         echo $this->Form->input('full_name_en',['label' => 'Full Name']);
                         echo $this->Form->input('username');
                         echo $this->Form->input('password', ['type'=>'password']);
                         echo $this->Form->input('confirm_password', ['type'=>'password']);
                         echo $this->Form->input('picture_file', ['type'=>'file', 'label'=>'Photo']);
-                        echo $this->Form->input('store_id', ['options' => $stores, 'empty' => __('Select')]);
+                        echo $this->Form->input('depot_id', ['options' => $depots, 'empty' => __('Select')]);
+                        echo $this->Form->input('warehouse_id', ['options' => $warehouses, 'empty' => __('Select')]);
                         echo $this->Form->input('status', ['options' => Configure::read('status_options')]);
                         ?>
                         <?= $this->Form->button(__('Submit'), ['class' => 'btn blue pull-right', 'style' => 'margin-top:20px']) ?>
