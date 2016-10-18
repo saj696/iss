@@ -117,6 +117,7 @@ class SystemHelper extends Helper
                 $newSerial = 1;
                 echo $prefix.str_pad($newSerial, $padding, 0, STR_PAD_LEFT);
             endif;
+//        return 'hello';
         endif;
     }
 }

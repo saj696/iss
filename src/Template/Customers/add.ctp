@@ -1,6 +1,7 @@
 <?php
 use Cake\Core\Configure;
-
+//echo $this->System->asked_level_global_id(2, 1082401);
+//exit;
 ?>
 <div class="page-bar">
     <ul class="page-breadcrumb">
@@ -35,8 +36,9 @@ use Cake\Core\Configure;
                     <div class="col-md-6 col-md-offset-3">
                         <?php
                         echo $this->Form->input('level_no', ['options'=>$administrativeLevels, 'label'=>'Level', 'class'=>'form-control level', 'empty'=>'Select', 'required'=>'required']);
-                        echo $this->Form->input('administrative_unit_id', ['label'=>'Unit', 'empty' => __('Select')]);
-                        echo $this->Form->input('code');
+                        echo $this->Form->input('administrative_unit_id', ['label'=>'Unit', 'empty' => __('Select'),'class'=> 'form-control unit']);
+                        echo $this->Form->input('prefix', ['options'=>$administrativeLevels, 'label'=>'Prefix Level', 'class'=>'form-control prefix', 'empty'=>'Select', 'required'=>'required']);
+                        echo $this->Form->input('code', ['class'=>'form-control codeCustomer', 'readonly']);
                         echo $this->Form->input('name');
                         echo $this->Form->input('customer_status', ['options'=>Configure::read('customer_status')]);
                         echo $this->Form->input('address', ['rows'=>1]);
@@ -93,5 +95,25 @@ use Cake\Core\Configure;
                 dateFormat: 'dd-mm-yy'
             });
         });
+
+        $(document).on('change', '.prefix', function () {
+            var obj = $(this);
+            $('.codeCustomer').val('');
+            var prefix_level = obj.val();
+            var unit = $('.unit').val();
+            if(prefix_level!= ''){
+                $.ajax({
+                    type: 'POST',
+                    url: '<?= $this->Url->build("/Customers/generateCode")?>',
+                    data: {prefix_level: prefix_level,unit:unit},
+                    success: function (data, status) {
+                        console.log(data);
+                        $('.codeCustomer').val(data);
+                    }
+                });
+            }
+        });
+
+
     });
 </script>

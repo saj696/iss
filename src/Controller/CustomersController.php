@@ -3,8 +3,13 @@ namespace App\Controller;
 
 
 use App\Controller\AppController;
+use App\Model\Table\AdministrativeUnitsTable;
+use App\View\Helper\SystemHelper;
+use Cake\Core\App;
+use Cake\Core\Configure;
 use Cake\ORM\TableRegistry;
-use Cake\View\Helper\SystemHelper;
+use Cake\View\View;
+
 
 /**
  * Customers Controller
@@ -115,6 +120,8 @@ class CustomersController extends AppController
             $data = $this->request->data;
             $data['updated_by'] = $user['id'];
             $data['updated_date'] = $time;
+            unset($data['prefix']);
+            unset($data['code']);
             $customer = $this->Customers->patchEntity($customer, $data);
             if ($this->Customers->save($customer)) {
                 $this->Flash->success('The customer has been saved.');
@@ -176,5 +183,23 @@ class CustomersController extends AppController
 
         $this->viewBuilder()->layout('ajax');
         $this->set(compact('dropArray'));
+    }
+
+    public function generateCode()
+    {
+
+        $customerPadding = Configure::read('id_generation_padding');
+        $data = $this->request->data;
+        $firstGlobal = TableRegistry::get('administrative_units')->find('all', ['conditions' => ['id' => $data['unit']], 'fields'=>['global_id']])->first()->toArray();
+        App::import('Helper', 'SystemHelper');
+        $SystemHelper = new SystemHelper(new View());
+        $askGlobalID =  $SystemHelper->asked_level_global_id($data['prefix_level'], $firstGlobal['global_id']);
+        $customerPrefix = TableRegistry::get('administrative_units')->find('all',['conditions'=>['global_id' => $askGlobalID], 'fields' =>['prefix']])->first();
+
+        $customerCode = $SystemHelper->generate_code($customerPrefix['prefix'], 'customer', $customerPadding);
+
+        $this->response->body($customerCode);
+        return $this->response;
+
     }
 }
