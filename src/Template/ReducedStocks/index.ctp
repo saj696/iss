@@ -30,7 +30,7 @@ $status = \Cake\Core\Configure::read('status_options');
                         <thead>
                         <tr>
                             <th><?= __('Sl. No.') ?></th>
-                            <th><?= __('Store') ?></th>
+                            <th><?= __('Warehouse') ?></th>
                             <th><?= __('Item') ?></th>
                             <th><?= __('Type') ?></th>
                             <th><?= __('Quantity') ?></th>
@@ -41,16 +41,8 @@ $status = \Cake\Core\Configure::read('status_options');
                         <?php foreach ($reducedStocks as $key => $reducedStock) { ?>
                             <tr>
                                 <td><?= $this->Number->format($key + 1) ?></td>
-                                <td><?= $reducedStock->has('store') ?
-                                        $this->Html->link($reducedStock->store
-                                            ->name, ['controller' => 'Stores',
-                                            'action' => 'view', $reducedStock->store
-                                                ->id]) : '' ?></td>
-                                <td><?= $reducedStock->has('item') ?
-                                        $this->Html->link($reducedStock->item
-                                            ->name, ['controller' => 'Items',
-                                            'action' => 'view', $reducedStock->item
-                                                ->id]) : '' ?></td>
+                                <td><?= $reducedStock->warehouse->name ?></td>
+                                <td><?= $reducedStock->item->name ?></td>
                                 <td><?= Cake\Core\Configure::read('reduction_types')[$reducedStock->type] ?></td>
                                 <td><?= $this->Number->format($reducedStock->quantity) ?></td>
 <!--                                <td class="actions">-->

@@ -33,7 +33,7 @@ use Cake\Core\Configure;
                 <?= $this->Form->create($reducedStock, ['class' => 'form-horizontal', 'role' => 'form']) ?>
                 <div class="row">
                     <div class="col-md-6 col-md-offset-3">
-                        <?php echo $this->Form->input('store_id', ['options' => $stores, 'class'=>'form-control store', 'empty' => __('Select')]);?>
+                        <?php echo $this->Form->input('warehouse_id', ['options' => $warehouses, 'class'=>'form-control store', 'empty' => __('Select')]);?>
                     </div>
                 </div>
 
@@ -49,15 +49,22 @@ use Cake\Core\Configure;
     $(document).ready(function() {
         $(document).on('change', '.store', function() {
             var store = $(this).val();
-            $.ajax({
-                type: 'POST',
-                url: '<?= $this->Url->build("/ReducedStocks/ajax")?>',
-                data: {store: store},
-                success: function (data, status) {
-                    $('.loadView').html('');
-                    $('.loadView').html(data);
-                }
-            });
+            if(store>0)
+            {
+                $.ajax({
+                    type: 'POST',
+                    url: '<?= $this->Url->build("/ReducedStocks/ajax")?>',
+                    data: {store: store},
+                    success: function (data, status) {
+                        $('.loadView').html('');
+                        $('.loadView').html(data);
+                    }
+                });
+            }
+            else
+            {
+                $('.loadView').html('');
+            }
         });
 
         $(document).on('change', '.item', function() {

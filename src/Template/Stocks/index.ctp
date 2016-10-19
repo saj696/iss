@@ -30,7 +30,7 @@ $status = \Cake\Core\Configure::read('status_options');
                         <thead>
                         <tr>
                             <th><?= __('Sl. No.') ?></th>
-                            <th><?= __('Store') ?></th>
+                            <th><?= __('Warehouse') ?></th>
                             <th><?= __('Item') ?></th>
                             <th><?= __('Quantity') ?></th>
                             <th><?= __('Approved Quantity') ?></th>
@@ -41,16 +41,8 @@ $status = \Cake\Core\Configure::read('status_options');
                         <?php foreach ($stocks as $key => $stock) { ?>
                             <tr>
                                 <td><?= $this->Number->format($key + 1) ?></td>
-                                <td><?= $stock->has('store') ?
-                                        $this->Html->link($stock->store
-                                            ->name, ['controller' => 'Stores',
-                                            'action' => 'view', $stock->store
-                                                ->id]) : '' ?></td>
-                                <td><?= $stock->has('item') ?
-                                        $this->Html->link($stock->item
-                                            ->name, ['controller' => 'Items',
-                                            'action' => 'view', $stock->item
-                                                ->id]) : '' ?></td>
+                                <td><?= $stock->warehouse->name ?></td>
+                                <td><?= $stock->item->name ?></td>
                                 <td><?= $this->Number->format($stock->quantity) ?></td>
                                 <td><?= $this->Number->format($stock->approved_quantity) ?></td>
                                 <td class="actions">

@@ -30,7 +30,7 @@ class StocksController extends AppController
     {
         $stocks = $this->Stocks->find('all', [
             'conditions' => ['Stocks.status !=' => 99],
-            'contain' => ['Stores', 'Items']
+            'contain' => ['Warehouses', 'Items']
         ]);
         $this->set('stocks', $this->paginate($stocks));
         $this->set('_serialize', ['stocks']);
@@ -47,7 +47,7 @@ class StocksController extends AppController
     {
         $user = $this->Auth->user();
         $stock = $this->Stocks->get($id, [
-            'contain' => ['Stores', 'Items']
+            'contain' => ['Warehouses', 'Items']
         ]);
         $this->set('stock', $stock);
         $this->set('_serialize', ['stock']);
@@ -74,7 +74,7 @@ class StocksController extends AppController
                     $detailArray = $input['details'];
 
                     foreach($detailArray as $detail) {
-                        $existing = TableRegistry::get('stocks')->find('all', ['conditions'=>['store_id'=>$input['store_id'], 'item_id'=>$detail['item_id']]])->first();
+                        $existing = TableRegistry::get('stocks')->find('all', ['conditions'=>['warehouse_id'=>$input['warehouse_id'], 'item_id'=>$detail['item_id']]])->first();
                         if($existing) {
                             $updateData['quantity'] = $existing['quantity']+$detail['quantity'];
                             $updateData['approved_quantity'] = $existing['approved_quantity']+$detail['approved_quantity'];
@@ -82,7 +82,7 @@ class StocksController extends AppController
                             $this->Stocks->save($stock);
                         } else {
                             $stock = $this->Stocks->newEntity();
-                            $data['store_id'] = $input['store_id'];
+                            $data['warehouse_id'] = $input['warehouse_id'];
                             $data['item_id'] = $detail['item_id'];
                             $data['quantity'] = $detail['quantity'];
                             $data['approved_quantity'] = $detail['approved_quantity'];

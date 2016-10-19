@@ -34,7 +34,7 @@ use Cake\Core\Configure;
                 <div class="row">
                     <div class="col-md-6 col-md-offset-3">
                         <?php
-                        echo $this->Form->input('store_id', ['options' => $stores, 'empty' => __('Select')]);
+                        echo $this->Form->input('warehouse_id', ['options' => $warehouses, 'empty' => __('Select')]);
                         echo $this->Form->input('item_id', ['options' => $items, 'empty' => __('Select')]);
                         echo $this->Form->input('quantity');
                         echo $this->Form->input('approved_quantity');

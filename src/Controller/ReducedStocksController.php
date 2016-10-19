@@ -31,7 +31,7 @@ class ReducedStocksController extends AppController
     {
         $reducedStocks = $this->ReducedStocks->find('all', [
             'conditions' => ['ReducedStocks.status !=' => 99],
-            'contain' => ['Stores', 'Items']
+            'contain' => ['Warehouses', 'Items']
         ]);
         $this->set('reducedStocks', $this->paginate($reducedStocks));
         $this->set('_serialize', ['reducedStocks']);
@@ -48,7 +48,7 @@ class ReducedStocksController extends AppController
     {
         $user = $this->Auth->user();
         $reducedStock = $this->ReducedStocks->get($id, [
-            'contain' => ['Stores', 'Items']
+            'contain' => ['Warehouses', 'Items']
         ]);
         $this->set('reducedStock', $reducedStock);
         $this->set('_serialize', ['reducedStock']);
@@ -76,13 +76,13 @@ class ReducedStocksController extends AppController
                     $detailArray = $input['details'];
 
                     foreach($detailArray as $detail) {
-                        $existing = TableRegistry::get('stocks')->find('all', ['conditions'=>['store_id'=>$input['store_id'], 'item_id'=>$detail['item_id']]])->first();
+                        $existing = TableRegistry::get('stocks')->find('all', ['conditions'=>['warehouse_id'=>$input['warehouse_id'], 'item_id'=>$detail['item_id']]])->first();
                         $updateData['quantity'] = $existing['quantity']-$detail['quantity'];
                         $stock = $this->Stocks->patchEntity($existing, $updateData);
                         $this->Stocks->save($stock);
 
                         $reducedStock = $this->ReducedStocks->newEntity();
-                        $data['store_id'] = $input['store_id'];
+                        $data['warehouse_id'] = $input['warehouse_id'];
                         $data['item_id'] = $detail['item_id'];
                         $data['type'] = $detail['type'];
                         $data['quantity'] = $detail['quantity'];
@@ -104,9 +104,9 @@ class ReducedStocksController extends AppController
                 return $this->redirect(['action' => 'index']);
             }
         }
-        $stores = $this->ReducedStocks->Stores->find('list', ['conditions' => ['status' => 1]]);
+        $warehouses = $this->ReducedStocks->Warehouses->find('list', ['conditions' => ['status' => 1]]);
         $items = $this->ReducedStocks->Items->find('list', ['conditions' => ['status' => 1]]);
-        $this->set(compact('reducedStock', 'stores', 'items'));
+        $this->set(compact('reducedStock', 'warehouses', 'items'));
         $this->set('_serialize', ['reducedStock']);
     }
 
@@ -136,9 +136,9 @@ class ReducedStocksController extends AppController
                 $this->Flash->error('The reduced stock could not be saved. Please, try again.');
             }
         }
-        $stores = $this->ReducedStocks->Stores->find('list', ['conditions' => ['status' => 1]]);
+        $warehouses = $this->ReducedStocks->Warehouses->find('list', ['conditions' => ['status' => 1]]);
         $items = $this->ReducedStocks->Items->find('list', ['conditions' => ['status' => 1]]);
-        $this->set(compact('reducedStock', 'stores', 'items'));
+        $this->set(compact('reducedStock', 'warehouses', 'items'));
         $this->set('_serialize', ['reducedStock']);
     }
 
@@ -174,7 +174,7 @@ class ReducedStocksController extends AppController
         $store = $data['store'];
 
         $items = TableRegistry::get('stocks')->find()->hydrate(false)
-            ->where(['stocks.store_id' => $store])
+            ->where(['stocks.warehouse_id' => $store])
             ->select(['stocks.item_id', 'stocks.quantity', 'stocks.approved_quantity'])
             ->select(['items.name', 'items.pack_size', 'items.unit'])
             ->innerJoin('items', 'items.id = stocks.item_id')
@@ -186,12 +186,8 @@ class ReducedStocksController extends AppController
             $dropArray[$item['item_id']] = $item['items']['name'].' - '.$item['items']['pack_size'].' '.Configure::read('pack_size_units')[$item['items']['unit']];
         endforeach;
 
-        if(sizeof($dropArray)) {
-            $this->viewBuilder()->layout('ajax');
-            $this->set(compact('dropArray'));
-        } else {
-            $this->autoRender = false;
-        }
+        $this->viewBuilder()->layout('ajax');
+        $this->set(compact('dropArray'));
     }
 
     public function existing()
@@ -199,8 +195,8 @@ class ReducedStocksController extends AppController
         $data = $this->request->data;
 
         $item_id = $data['item_id'];
-        $store_id = $data['store_id'];
-        $item = TableRegistry::get('stocks')->find('all', ['conditions' => ['store_id' => $store_id, 'item_id'=>$item_id]])->first()->toArray();
+        $warehouse_id = $data['store_id'];
+        $item = TableRegistry::get('stocks')->find('all', ['conditions' => ['warehouse_id' => $warehouse_id, 'item_id'=>$item_id]])->first()->toArray();
 
         $this->response->body($item['quantity']);
         $this->autoRender = false;

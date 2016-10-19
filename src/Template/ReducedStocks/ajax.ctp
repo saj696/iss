@@ -7,6 +7,7 @@
  */
 use Cake\Core\Configure;
 
+if(sizeof($dropArray)>0):
 ?>
 <div class="col-lg-12">
     <div class="list" data-index_no="0">
@@ -36,4 +37,12 @@ use Cake\Core\Configure;
 <div class="row text-center" style="margin-bottom: 20px;">
     <?= $this->Form->button(__('Submit'), ['class' => 'btn blue', 'style' => 'margin-top:20px']) ?>
 </div>
-
+<?php else:?>
+    <div class="col-lg-12">
+        <table class="table table-bordered">
+            <tr>
+                <td class="text-center"><label class="label label-danger">No Items</label></td>
+            </tr>
+        </table>
+    </div>
+<?php endif;?>

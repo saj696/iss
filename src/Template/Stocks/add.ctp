@@ -36,7 +36,7 @@ use Cake\Core\Configure;
                         <table class="table table-bordered">
                             <tr>
                                 <td>
-                                    <?php echo $this->Form->input('store_id', ['options' => $stores, 'style'=>'width:50%', 'class'=>'form-control', 'empty' => __('Select')]);?>
+                                    <?php echo $this->Form->input('warehouse_id', ['options' => $warehouses, 'style'=>'width:50%', 'class'=>'form-control', 'empty' => __('Select')]);?>
                                 </td>
                             </tr>
                         </table>
