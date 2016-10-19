@@ -103,13 +103,13 @@ class StocksController extends AppController
         }
 
         $this->loadModel('Items');
-        $stores = $this->Stocks->Stores->find('list', ['conditions' => ['status' => 1]]);
+        $warehouses = $this->Stocks->Warehouses->find('list', ['conditions' => ['status' => 1]]);
         $items = $this->Items->find('all', ['conditions' => ['status' => 1]]);
         $dropArray = [];
         foreach($items as $item) {
             $dropArray[$item['id']] = $item['name'].' - '.$item['pack_size'].' '.Configure::read('pack_size_units')[$item['unit']];
         }
-        $this->set(compact('stock', 'stores', 'dropArray'));
+        $this->set(compact('stock', 'warehouses', 'dropArray'));
         $this->set('_serialize', ['stock']);
     }
 
@@ -139,9 +139,9 @@ class StocksController extends AppController
                 $this->Flash->error('The stock could not be saved. Please, try again.');
             }
         }
-        $stores = $this->Stocks->Stores->find('list', ['conditions' => ['status' => 1]]);
+        $warehouses = $this->Stocks->Warehouses->find('list', ['conditions' => ['status' => 1]]);
         $items = $this->Stocks->Items->find('list', ['conditions' => ['status' => 1]]);
-        $this->set(compact('stock', 'stores', 'items'));
+        $this->set(compact('stock', 'warehouses', 'items'));
         $this->set('_serialize', ['stock']);
     }
 
@@ -154,7 +154,6 @@ class StocksController extends AppController
      */
     public function delete($id = null)
     {
-
         $stock = $this->Stocks->get($id);
 
         $user = $this->Auth->user();

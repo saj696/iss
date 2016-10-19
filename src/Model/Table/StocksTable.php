@@ -24,8 +24,8 @@ class StocksTable extends Table
         $this->table('stocks');
         $this->displayField('id');
         $this->primaryKey('id');
-        $this->belongsTo('Stores', [
-            'foreignKey' => 'store_id',
+        $this->belongsTo('Warehouses', [
+            'foreignKey' => 'warehouse_id',
             'joinType' => 'INNER'
         ]);
         $this->belongsTo('Items', [
@@ -67,7 +67,7 @@ class StocksTable extends Table
      */
     public function buildRules(RulesChecker $rules)
     {
-        $rules->add($rules->existsIn(['store_id'], 'Stores'));
+        $rules->add($rules->existsIn(['warehouse_id'], 'Warehouses'));
         $rules->add($rules->existsIn(['item_id'], 'Items'));
         return $rules;
     }
