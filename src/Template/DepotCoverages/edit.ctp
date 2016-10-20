@@ -1,7 +1,7 @@
 <?php
 use Cake\Core\Configure;
-?>
 
+?>
 <div class="page-bar">
     <ul class="page-breadcrumb">
         <li>
@@ -10,10 +10,10 @@ use Cake\Core\Configure;
             <i class="fa fa-angle-right"></i>
         </li>
         <li>
-            <?= $this->Html->link(__('Depots'), ['action' => 'index']) ?>
+            <?= $this->Html->link(__('Depot Coverages'), ['action' => 'index']) ?>
             <i class="fa fa-angle-right"></i>
         </li>
-        <li><?= __('New Depot') ?></li>
+        <li><?= __('Edit Depot Coverage') ?></li>
     </ul>
 </div>
 
@@ -22,23 +22,22 @@ use Cake\Core\Configure;
         <div class="portlet box blue-hoki">
             <div class="portlet-title">
                 <div class="caption">
-                    <i class="fa fa-plus-square-o fa-lg"></i><?= __('Add New Depot') ?>
+                    <i class="fa fa-pencil-square-o fa-lg"></i><?= __('Edit Depot Coverage') ?>
                 </div>
                 <div class="tools">
                     <?= $this->Html->link(__('Back'), ['action' => 'index'], ['class' => 'btn btn-sm btn-success']); ?>
                 </div>
-            </div>
 
+            </div>
             <div class="portlet-body">
-                <?= $this->Form->create($depot, ['class' => 'form-horizontal', 'role' => 'form']) ?>
+                <?= $this->Form->create($depotCoverage, ['class' => 'form-horizontal', 'role' => 'form']) ?>
                 <div class="row">
                     <div class="col-md-6 col-md-offset-3">
                         <?php
-                        echo $this->Form->input('name', ['required'=>'required']);
-                        echo $this->Form->input('level_no', ['options'=>$administrativeLevels, 'class'=>'form-control level', 'empty'=>'Select', 'required'=>'required']);
-                        echo $this->Form->input('unit_id', ['empty'=>'Select', 'required'=>'required', 'class'=>'form-control unit']);
-                        echo $this->Form->input('address', ['rows'=>1]);
-                        echo $this->Form->input('warehouses[]', ['options'=>$warehouses, 'class'=>'form-control', 'empty'=>'Select', 'multiple', 'required'=>'required', 'label'=>'Warehouses']);
+                        echo $this->Form->input('depot_id', ['options' => $depots, 'empty' => __('Select')]);
+                        echo $this->Form->input('level_no', ['options'=>$administrativeLevels, 'label'=>'Level', 'class'=>'form-control level', 'empty'=>'Select', 'required'=>'required']);
+                        echo $this->Form->input('administrative_unit_id', ['label'=>'Unit', 'empty' => __('Select'),'class'=> 'form-control unit']);
+                        echo $this->Form->input('status', ['options' => Configure::read('status_options')]);
                         ?>
                         <?= $this->Form->button(__('Submit'), ['class' => 'btn blue pull-right', 'style' => 'margin-top:20px']) ?>
                     </div>
@@ -57,7 +56,7 @@ use Cake\Core\Configure;
             obj.closest('.input').next().find('.unit').html('<option value="">Select</option>');
             $.ajax({
                 type: 'POST',
-                url: '<?= $this->Url->build("/Warehouses/ajax")?>',
+                url: '<?= $this->Url->build("/DepotCoverages/ajax")?>',
                 data: {level: level},
                 success: function (data, status) {
                     obj.closest('.input').next().find('.col-sm-9').html('');

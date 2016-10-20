@@ -60,9 +60,9 @@ class TransferResourcesTable extends Table
             ->allowEmpty('id', 'create');
 
         $validator
-            ->integer('triggering_store')
-            ->requirePresence('triggering_store', 'create')
-            ->notEmpty('triggering_store');
+            ->integer('trigger_id')
+            ->requirePresence('trigger_id', 'create')
+            ->notEmpty('trigger_id');
 
         return $validator;
     }

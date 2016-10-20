@@ -5,13 +5,14 @@ use App\Controller\AppController;
 use Cake\Core\Configure;
 use Cake\Datasource\ConnectionManager;
 use Cake\ORM\TableRegistry;
+use Cake\Collection\Collection;
 
 /**
  * TransferItems Controller
  *
  * @property \App\Model\Table\TransferItemsTable $TransferItems
  */
-class RequestItemsController extends AppController
+class DecideStorageController extends AppController
 {
     public $paginate = [
         'limit' => 15,
@@ -31,11 +32,6 @@ class RequestItemsController extends AppController
         $this->loadModel('TransferResources');
         $this->loadModel('TransferEvents');
 
-        $resources = $this->TransferResources->find('all', [
-            'conditions' => ['TransferResources.status !=' => 99, 'TransferResources.created_by'=>$user['id']],
-            'contain' => ['TransferItems', 'TransferEvents']
-        ]);
-
         $events = $this->TransferEvents->find('all', [
             'conditions' => ['TransferEvents.status !=' => 99, 'TransferEvents.recipient_id'=>$user['id']],
             'contain' => ['TransferResources']
@@ -48,13 +44,17 @@ class RequestItemsController extends AppController
             $itemArray[$item['id']] = $item['name'].' - '.$item['pack_size'].' '.Configure::read('pack_size_units')[$item['unit']];
         }
 
-        $this->loadModel('Users');
-        $users = $this->Users->find('list', ['conditions'=>['level_no'=>0, 'administrative_unit_id'=>1, 'user_group_id !='=>1,'status'=>1]]);
+        $this->loadModel('Warehouses');
+        $warehouses = $this->Warehouses->find('list', ['conditions'=>['status'=>1]])->toArray();
+        $this->loadModel('Depots');
+        $depots = $this->Depots->find('list', ['conditions'=>['status'=>1]])->toArray();
 
-        $resources = $this->paginate($resources);
+        $this->loadModel('Users');
+        $users = $this->Users->find('list', ['conditions'=>['user_group_id !='=>1,'status'=>1]]);
+
         $events = $this->paginate($events);
-        $this->set(compact('resources', 'itemArray', 'users', 'events'));
-        $this->set('_serialize', ['resources']);
+        $this->set(compact('itemArray', 'users', 'events', 'warehouses', 'depots'));
+        $this->set('_serialize', ['events']);
     }
 
     /**
@@ -71,7 +71,8 @@ class RequestItemsController extends AppController
         $this->loadModel('TransferEvents');
         $this->loadModel('TransferResources');
         $this->loadModel('Users');
-        $this->loadModel('Stores');
+        $this->loadModel('Warehouses');
+        $this->loadModel('Depots');
 
         $this->loadModel('Items');
         $items = $this->Items->find('all', ['conditions' => ['status' => 1]]);
@@ -80,14 +81,19 @@ class RequestItemsController extends AppController
             $itemArray[$item['id']] = $item['name'].' - '.$item['pack_size'].' '.Configure::read('pack_size_units')[$item['unit']];
         }
 
-        $stores = $this->Stores->find('list', ['conditions'=>['status !='=>99]])->toArray();
-
         $event = $this->TransferEvents->get($id);
         $resource = $this->TransferResources->get($event['transfer_resource_id'], ['contain'=>['TransferItems']]);
         $items = $resource['transfer_items'];
 
         $requestUserInfo = $this->Users->get($event['created_by']);
         $details = [];
+        $userLevelWarehouses = $this->Warehouses->find('all', ['conditions'=>['status'=>1, 'unit_id'=>$user['administrative_unit_id']], 'fields'=>['id']])->hydrate(false)->toArray();
+
+        $myLevelWarehouses = [];
+        foreach($userLevelWarehouses as $userLevelWarehouse):
+            $myLevelWarehouses[] = $userLevelWarehouse['id'];
+        endforeach;
+
         $store_ids = [$user['store_id'], $requestUserInfo['store_id']];
 
         foreach($items as $item):

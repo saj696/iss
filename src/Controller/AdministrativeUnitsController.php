@@ -78,6 +78,14 @@ class AdministrativeUnitsController extends AppController
                     $parentLevelName = $parentLevelInfo['level_name'];
                     $parent_id = $data[$parentLevelName];
                     $parentInfo = TableRegistry::get('administrative_units')->find('all', ['conditions' => ['id' => $parent_id]])->first()->toArray();
+
+                    // Update: increase parent's total successors
+                    $AdministrativeUnits = $this->AdministrativeUnits->get($parent_id);
+                    $updateData['no_of_direct_successors'] = $parentInfo['no_of_direct_successors']+1;
+                    $updateData['prefix'] = $parentInfo['prefix'];
+                    $AdministrativeUnits = $this->AdministrativeUnits->patchEntity($AdministrativeUnits, $updateData);
+                    $this->AdministrativeUnits->save($AdministrativeUnits);
+
                     $data['local_id'] = $parentInfo['no_of_direct_successors']+1;
                     $data['global_id'] = $data['local_id']*pow(2, 5*(Configure::read('max_level_no')-$unit_level))+$parentInfo['global_id'];
                     $data['parent'] = $parent_id;
@@ -86,13 +94,6 @@ class AdministrativeUnitsController extends AppController
                     $data['prefix'] = strtoupper($data['prefix']);
                     $data['created_by'] = $user['id'];
                     $data['created_date'] = $time;
-
-                    // Update: increase parent's total successors
-                    $AdministrativeUnits = $this->AdministrativeUnits->get($parent_id);
-                    $updateData['no_of_direct_successors'] = $data['local_id'];
-                    $AdministrativeUnits = $this->AdministrativeUnits->patchEntity($AdministrativeUnits, $updateData);
-                    $this->AdministrativeUnits->save($AdministrativeUnits);
-
                     $administrativeUnit = $this->AdministrativeUnits->patchEntity($administrativeUnit, $data);
                     $this->AdministrativeUnits->save($administrativeUnit);
                 });
