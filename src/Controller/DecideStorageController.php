@@ -73,8 +73,9 @@ class DecideStorageController extends AppController
         $this->loadModel('Users');
         $this->loadModel('Warehouses');
         $this->loadModel('Depots');
-
         $this->loadModel('Items');
+
+        $warehouses = $this->Warehouses->find('list', ['conditions' => ['status' => 1]])->toArray();
         $items = $this->Items->find('all', ['conditions' => ['status' => 1]]);
         $itemArray = [];
         foreach($items as $item) {
@@ -86,7 +87,6 @@ class DecideStorageController extends AppController
         $items = $resource['transfer_items'];
 
         $requestUserInfo = $this->Users->get($event['created_by']);
-        $details = [];
         $userLevelWarehouses = $this->Warehouses->find('all', ['conditions'=>['status'=>1, 'unit_id'=>$user['administrative_unit_id']], 'fields'=>['id']])->hydrate(false)->toArray();
 
         $myLevelWarehouses = [];
@@ -94,20 +94,45 @@ class DecideStorageController extends AppController
             $myLevelWarehouses[] = $userLevelWarehouse['id'];
         endforeach;
 
-        $store_ids = [$user['store_id'], $requestUserInfo['store_id']];
+        $requestUserWarehouses = [];
+        if($requestUserInfo['user_group_id']==Configure::read('warehouse_in_charge_ug')):
+            $requestUserWarehouses[] = $requestUserInfo['warehouse_id'];
+        elseif($requestUserInfo['user_group_id']==Configure::read('depot_in_charge_ug')):
+            $requestUserDepotInfo = $this->Depots->get($requestUserInfo['depot_id']);
+            $requestUserWarehouseIds = json_decode($requestUserDepotInfo['warehouses'], true);
+
+            foreach($requestUserWarehouseIds as $requestUserWarehouse):
+                $requestUserWarehouses[] = $requestUserWarehouse;
+            endforeach;
+        endif;
 
         foreach($items as $item):
-            foreach($store_ids as $store_id):
-                $ownStore = [];
-                $ownStore['store'] = $store_id;
-                $ownStore['item'] = $item['item_id'];
-                $ownStore['quantity'] = $item['quantity'];
-                $details[] = $ownStore;
+            foreach($myLevelWarehouses as $warehouseId):
+                $myDetail = [];
+                $myDetail['warehouse_id'] = $warehouseId;
+                $myDetail['item_id'] = $item['item_id'];
+                $myDetail['quantity'] = $item['quantity'];
+                $myWarehouseDetails[] = $myDetail;
             endforeach;
         endforeach;
 
-        $this->set(compact('details', 'itemArray', 'stores'));
-        $this->set('_serialize', ['itemDetail']);
+        foreach($items as $item):
+            foreach($requestUserWarehouses as $warehouseId):
+                $requestDetail = [];
+                $requestDetail['warehouse_id'] = $warehouseId;
+                $requestDetail['item_id'] = $item['item_id'];
+                $requestDetail['quantity'] = $item['quantity'];
+                $requestWarehouseDetails[] = $requestDetail;
+            endforeach;
+        endforeach;
+
+//        echo '<pre>';
+//        print_r($requestWarehouseDetails);
+//        echo '</pre>';
+//        exit;
+
+        $this->set(compact('requestWarehouseDetails', 'myWarehouseDetails', 'itemArray', 'warehouses'));
+        $this->set('_serialize', ['details']);
     }
 
     /**

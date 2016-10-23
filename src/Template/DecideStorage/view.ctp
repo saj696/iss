@@ -30,24 +30,45 @@ $status = \Cake\Core\Configure::read('status_options');
             </div>
 
             <div class="portlet-body">
+                <div class="table-scrollable">
+                    <table class="table table-bordered">
+                        <tr><td class="text-center" colspan="12"><label class="label label-warning">Request Detail</label> </td></tr>
+                        <tr>
+                            <th>Item</th>
+                            <th>Warehouse</th>
+                            <th>Existing</th>
+                            <th>Required</th>
+                        </tr>
+                        <?php foreach($requestWarehouseDetails as $detail):?>
+                            <tr>
+                                <td><?= $itemArray[$detail['item_id']]?></td>
+                                <td><?= $warehouses[$detail['warehouse_id']]?></td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                        <?php endforeach;?>
+                    </table>
+                </div>
+
                 <div class="row text-center">
-                    <div class="col-md-6 col-md-offset-3">
-                        <?php echo $this->Form->input('warehouse', ['options' => $stores, 'style'=>'max-width: 100%', 'class'=>'form-control warehouse', 'empty' => __('Select'), 'templates'=>['label' => 'Warehouse']]);?>
+                    <div class="col-md-5 col-md-offset-4">
+                        <?php echo $this->Form->input('warehouse', ['options' => $warehouses, 'style'=>'max-width: 100%', 'class'=>'form-control warehouse select2me', 'empty' => __('-- Select warehouse --'), 'templates'=>['label' => '']]);?>
                     </div>
                 </div>
 
                 <div class="table-scrollable">
                     <table class="table table-bordered">
+                        <tr><td class="text-center" colspan="12"><label class="label label-success">Item Existence</label> </td></tr>
                         <tr>
                             <th>Item</th>
                             <th>Warehouse</th>
                             <th>Quantity</th>
                             <th>Decided Qty</th>
                         </tr>
-                        <?php foreach($details as $detail):?>
+                        <?php foreach($myWarehouseDetails as $detail):?>
                             <tr>
-                                <td><?= $itemArray[$detail['item']]?></td>
-                                <td><?= $stores[$detail['store']]?></td>
+                                <td><?= $itemArray[$detail['item_id']]?></td>
+                                <td><?= $warehouses[$detail['warehouse_id']]?></td>
                                 <td><?= $detail['quantity']?></td>
                                 <td></td>
                             </tr>
