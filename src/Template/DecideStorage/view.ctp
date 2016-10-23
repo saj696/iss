@@ -42,9 +42,9 @@ $status = \Cake\Core\Configure::read('status_options');
                         <?php foreach($requestWarehouseDetails as $detail):?>
                             <tr>
                                 <td><?= $itemArray[$detail['item_id']]?></td>
-                                <td><?= $warehouses[$detail['warehouse_id']]?></td>
-                                <td></td>
-                                <td></td>
+                                <td><?= $allWarehouses[$detail['warehouse_id']]?></td>
+                                <td><?= $detail['existing']?></td>
+                                <td><?= $detail['required']?></td>
                             </tr>
                         <?php endforeach;?>
                     </table>
@@ -57,26 +57,85 @@ $status = \Cake\Core\Configure::read('status_options');
                 </div>
 
                 <div class="table-scrollable">
-                    <table class="table table-bordered">
-                        <tr><td class="text-center" colspan="12"><label class="label label-success">Item Existence</label> </td></tr>
-                        <tr>
-                            <th>Item</th>
-                            <th>Warehouse</th>
-                            <th>Quantity</th>
-                            <th>Decided Qty</th>
-                        </tr>
-                        <?php foreach($myWarehouseDetails as $detail):?>
-                            <tr>
-                                <td><?= $itemArray[$detail['item_id']]?></td>
-                                <td><?= $warehouses[$detail['warehouse_id']]?></td>
-                                <td><?= $detail['quantity']?></td>
-                                <td></td>
-                            </tr>
-                        <?php endforeach;?>
-                    </table>
+                    <form method="post" class="form-horizontal" role="form" action="<?= $this->Url->build("/DecideStorage/process")?>">
+                        <input type="hidden" name="event_id" class="event_id" value="<?=$id?>" />
+                        <table class="table table-bordered">
+                            <tbody class="appendDiv">
+                                <tr><td class="text-center" colspan="12"><label class="label label-success">Item Existence</label> </td></tr>
+                                <tr>
+                                    <th>Item</th>
+                                    <th>Warehouse</th>
+                                    <th>Quantity</th>
+                                    <th>Decided Qty</th>
+                                </tr>
+                                <?php foreach($myWarehouseDetails as $detail):?>
+                                    <tr>
+                                        <td><?= $itemArray[$detail['item_id']]?></td>
+                                        <td><?= $warehouses[$detail['warehouse_id']]?></td>
+                                        <td><?= $detail['quantity']?></td>
+                                        <td width="20%">
+                                            <input type="hidden" class="warehouse_id" value="<?= $detail['warehouse_id']?>">
+                                            <input type="text" name="decided[<?= $detail['item_id']?>][<?= $detail['warehouse_id']?>]" style="height: 25px;" class="form-control decided_quantity" value="" />
+                                        </td>
+                                    </tr>
+                                <?php endforeach;?>
+                            </tbody>
+                        </table>
+                        <div class="text-center" style="margin-bottom: 20px;">
+                            <?= $this->Form->button(__('Process'), ['class' => 'btn blue']) ?>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
+<script>
+    $(document).ready(function(){
+        $(document).on('change', '.warehouse', function () {
+            var obj = $(this);
+            var warehouse_id = obj.val();
+
+            var myArr = [];
+            $( ".warehouse_id" ).each(function( index ) {
+                myArr.push($(this).val());
+            });
+
+            var uniqueArr = uniqueArray(myArr);
+            uniqueArr.push(warehouse_id);
+            var uniqueArrAfterSelection = uniqueArray(uniqueArr);
+
+            if(uniqueArr.length != uniqueArrAfterSelection.length){
+                alert('Duplicate Warehouse!');
+            } else {
+                var event_id = $('.event_id').val();
+                $.ajax({
+                    type: 'POST',
+                    url: '<?= $this->Url->build("/DecideStorage/ajax")?>',
+                    data: {warehouse_id: warehouse_id, event_id: event_id},
+                    success: function (data, status) {
+                        if (data) {
+                            $('.appendDiv').append(data);
+                        }
+                    }
+                });
+            }
+        });
+    });
+
+    function uniqueArray(arr) {
+        var i,
+            len = arr.length,
+            out = [],
+            obj = { };
+
+        for (i = 0; i < len; i++) {
+            obj[arr[i]] = 0;
+        }
+        for (i in obj) {
+            out.push(i);
+        }
+        return out;
+    }
+</script>

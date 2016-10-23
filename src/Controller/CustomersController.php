@@ -33,6 +33,7 @@ class CustomersController extends AppController
      */
     public function index()
     {
+        $user = $this->Auth->user();
         $customers = $this->Customers->find('all', [
             'conditions' => ['Customers.status !=' => 99],
             'contain' => ['AdministrativeUnits']
