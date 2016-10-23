@@ -4,7 +4,7 @@ namespace App\Model\Entity;
 use Cake\ORM\Entity;
 
 /**
- * Category Entity
+ * Category Entity.
  *
  * @property int $id
  * @property int $level_no
@@ -18,10 +18,6 @@ use Cake\ORM\Entity;
  * @property int $created_date
  * @property int $updated_by
  * @property int $updated_date
- *
- * @property \App\Model\Entity\Local $local
- * @property \App\Model\Entity\Global $global
- * @property \App\Model\Entity\Item[] $items
  */
 class Category extends Entity
 {
@@ -37,6 +33,6 @@ class Category extends Entity
      */
     protected $_accessible = [
         '*' => true,
-        'id' => false
+        'id' => false,
     ];
 }

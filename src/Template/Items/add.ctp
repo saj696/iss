@@ -34,8 +34,9 @@ use Cake\Core\Configure;
                 <div class="row">
                     <div class="col-md-6 col-md-offset-3">
                         <?php
-                        echo $this->Form->input('category_id', ['options' => $categories, 'class'=>'form-control category', 'empty' => __('Select')]);
+                        echo $this->Form->input('category_id', ['options' => $categories, 'class'=>'form-control category', 'empty' => __('Select'),'required'=>'required']);
                         ?>
+                        <div class="productGroups"></div>
                         <div class="subDiv"></div>
                         <?php
                         echo $this->Form->input('name');

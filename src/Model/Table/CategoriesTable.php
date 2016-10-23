@@ -1,6 +1,7 @@
 <?php
 namespace App\Model\Table;
 
+use App\Model\Entity\Category;
 use Cake\ORM\Query;
 use Cake\ORM\RulesChecker;
 use Cake\ORM\Table;
@@ -8,18 +9,6 @@ use Cake\Validation\Validator;
 
 /**
  * Categories Model
- *
- * @property \Cake\ORM\Association\BelongsTo $Locals
- * @property \Cake\ORM\Association\BelongsTo $Globals
- * @property \Cake\ORM\Association\HasMany $Items
- *
- * @method \App\Model\Entity\Category get($primaryKey, $options = [])
- * @method \App\Model\Entity\Category newEntity($data = null, array $options = [])
- * @method \App\Model\Entity\Category[] newEntities(array $data, array $options = [])
- * @method \App\Model\Entity\Category|bool save(\Cake\Datasource\EntityInterface $entity, $options = [])
- * @method \App\Model\Entity\Category patchEntity(\Cake\Datasource\EntityInterface $entity, array $data, array $options = [])
- * @method \App\Model\Entity\Category[] patchEntities($entities, array $data, array $options = [])
- * @method \App\Model\Entity\Category findOrCreate($search, callable $callback = null)
  */
 class CategoriesTable extends Table
 {
@@ -32,12 +21,9 @@ class CategoriesTable extends Table
      */
     public function initialize(array $config)
     {
-        parent::initialize($config);
-
         $this->table('categories');
         $this->displayField('name');
         $this->primaryKey('id');
-
         $this->hasMany('Items', [
             'foreignKey' => 'category_id'
         ]);
@@ -52,22 +38,45 @@ class CategoriesTable extends Table
     public function validationDefault(Validator $validator)
     {
         $validator
-            ->integer('id')
+            ->add('id', 'valid', ['rule' => 'integer'])
             ->allowEmpty('id', 'create');
-
+            
         $validator
-            ->integer('level_no')
             ->requirePresence('level_no', 'create')
             ->notEmpty('level_no');
 
         $validator
             ->requirePresence('name', 'create')
             ->notEmpty('name');
-
+            
         $validator
-            ->integer('parent')
             ->requirePresence('parent', 'create')
             ->notEmpty('parent');
+            
+//        $validator
+//            ->add('number_of_direct_successors', 'valid', ['rule' => 'integer'])
+//            ->requirePresence('number_of_direct_successors', 'create')
+//            ->notEmpty('number_of_direct_successors');
+            
+        $validator
+            ->requirePresence('status', 'create')
+            ->notEmpty('status');
+
+        $validator
+            ->requirePresence('prefix', 'create')
+            ->notEmpty('status');
+            
+        $validator
+            ->allowEmpty('created_by');
+            
+        $validator
+            ->allowEmpty('created_date');
+            
+        $validator
+            ->allowEmpty('updated_by');
+            
+        $validator
+            ->allowEmpty('updated_date');
 
         return $validator;
     }
@@ -79,4 +88,9 @@ class CategoriesTable extends Table
      * @param \Cake\ORM\RulesChecker $rules The rules object to be modified.
      * @return \Cake\ORM\RulesChecker
      */
+    public function buildRules(RulesChecker $rules)
+    {
+
+        return $rules;
+    }
 }
