@@ -51,27 +51,27 @@ class ItemsTable extends Table
             ->notEmpty('code');
             
         $validator
-            ->add('pack_size', 'valid', ['rule' => 'numeric'])
+//            ->add('pack_size', 'valid', ['rule' => 'numeric'])
             ->allowEmpty('pack_size');
             
         $validator
-            ->add('unit', 'valid', ['rule' => 'numeric'])
+//            ->add('unit', 'valid', ['rule' => 'numeric'])
             ->allowEmpty('unit');
             
         $validator
-            ->add('box_size', 'valid', ['rule' => 'numeric'])
+//            ->add('box_size', 'valid', ['rule' => 'numeric'])
             ->allowEmpty('box_size');
             
         $validator
-            ->add('cash_sales_price', 'valid', ['rule' => 'numeric'])
+//            ->add('cash_sales_price', 'valid', ['rule' => 'numeric'])
             ->allowEmpty('cash_sales_price');
             
         $validator
-            ->add('credit_sales_price', 'valid', ['rule' => 'numeric'])
+//            ->add('credit_sales_price', 'valid', ['rule' => 'numeric'])
             ->allowEmpty('credit_sales_price');
             
         $validator
-            ->add('retail_price', 'valid', ['rule' => 'numeric'])
+//            ->add('retail_price', 'valid', ['rule' => 'numeric'])
             ->allowEmpty('retail_price');
 
         return $validator;

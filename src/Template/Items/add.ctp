@@ -36,17 +36,17 @@ use Cake\Core\Configure;
                         <?php
                         echo $this->Form->input('category_id', ['options' => $categories, 'class'=>'form-control category', 'empty' => __('Select'),'required'=>'required']);
                         ?>
-                        <div class="productGroups"></div>
                         <div class="subDiv"></div>
                         <?php
                         echo $this->Form->input('name');
-                        echo $this->Form->input('code');
-                        echo $this->Form->input('pack_size');
+                        echo $this->Form->input('code',['class'=>'form-control codeItem','readonly']);
+                        echo $this->Form->input('pack_size',['type'=>'text']);
                         echo $this->Form->input('unit', ['options'=>Configure::read('pack_size_units'), 'empty'=>'Select', 'required'=>'required']);
-                        echo $this->Form->input('box_size');
-                        echo $this->Form->input('cash_sales_price');
-                        echo $this->Form->input('credit_sales_price');
-                        echo $this->Form->input('retail_price');
+                        echo $this->Form->input('generic_name');
+                        echo $this->Form->input('box_size',['type'=>'text']);
+                        echo $this->Form->input('cash_sales_price',['type'=>'text']);
+                        echo $this->Form->input('credit_sales_price',['type'=>'text']);
+                        echo $this->Form->input('retail_price',['type'=>'text']);
                         ?>
                         <?= $this->Form->button(__('Submit'), ['class' => 'btn blue pull-right', 'style' => 'margin-top:20px']) ?>
                     </div>
@@ -75,6 +75,17 @@ use Cake\Core\Configure;
                     }
                 }
             });
+            $('.codeItem').val('');
+            if(category!= ''){
+            $.ajax({
+                type: 'POST',
+                url: '<?= $this->Url->build("/Items/generateCode")?>',
+                data: {category: category},
+                success: function (data, status) {
+                    $('.codeItem').val(data);
+                }
+            });
+        }
         });
     });
 </script>

@@ -34,10 +34,17 @@ class CustomersController extends AppController
     public function index()
     {
         $user = $this->Auth->user();
-        $customers = $this->Customers->find('all', [
-            'conditions' => ['Customers.status !=' => 99],
-            'contain' => ['AdministrativeUnits']
-        ]);
+        $userAdmin = $user['administrative_unit_id'];
+        $this->loadModel('AdministrativeUnits');
+        $userAdminGlobal = $this->AdministrativeUnits->get($userAdmin);
+        $limitStart = pow(2,(Configure::read('max_level_no')- $user['level_no']-1)*5);
+        $limitEnd = pow(2,(Configure::read('max_level_no')- $user['level_no'])*5);
+
+        $customers =  TableRegistry::get('customers')->query();
+        $customers->contain('AdministrativeUnits');
+        $customers->where('unit_global_id -'. $userAdminGlobal['global_id'] .'>= '.$limitStart);
+        $customers->where('unit_global_id -'. $userAdminGlobal['global_id'] .'< '.$limitEnd);
+        $customers->where('customers.status!= 99');
 
         $this->set('customers', $this->paginate($customers));
         $this->set('_serialize', ['customers']);
@@ -74,8 +81,16 @@ class CustomersController extends AppController
         $customer = $this->Customers->newEntity();
         if ($this->request->is('post')) {
 
+
             $data = $this->request->data;
-//            echo '</pre>'; print_r($data) ;die();
+//             echo '<pre>'; print_r($data);echo '</pre>';die();
+            $this->loadModel('AdministrativeUnits');
+            $unitInfo = $this->AdministrativeUnits->get($data['administrative_unit_id']);
+
+//            echo '</pre>'; print_r($data['administrative_unit_id']) ;die();
+//            TableRegistry::get('administrative_units')->find('all', ['conditions' => ['id' => $data['unit']], 'fields'=>['global_id']])->first()->toArray();
+//            $data['unit_global_id'] = TableRegistry::get('administrative_units')->find('all',['conditions'=>['id'=>$data['administrative_level_id']],'fields'=>['global_id']])->first()->toArray();
+            $data['unit_global_id'] = $unitInfo['global_id'];
             $data['created_by'] = $user['id'];
             $data['created_date'] = $time;
             $data['pesticide_issue_date'] = strtotime($data['pesticide_issue_date']);
@@ -188,15 +203,15 @@ class CustomersController extends AppController
 
     public function generateCode()
     {
-
+        $this->autoRender=false;
         $customerPadding = Configure::read('id_generation_padding');
         $data = $this->request->data;
+
         $firstGlobal = TableRegistry::get('administrative_units')->find('all', ['conditions' => ['id' => $data['unit']], 'fields'=>['global_id']])->first()->toArray();
         App::import('Helper', 'SystemHelper');
         $SystemHelper = new SystemHelper(new View());
         $askGlobalID =  $SystemHelper->asked_level_global_id($data['prefix_level'], $firstGlobal['global_id']);
         $customerPrefix = TableRegistry::get('administrative_units')->find('all',['conditions'=>['global_id' => $askGlobalID], 'fields' =>['prefix']])->first();
-
         $customerCode = $SystemHelper->generate_code($customerPrefix['prefix'], 'customer', $customerPadding);
 
         $this->response->body($customerCode);

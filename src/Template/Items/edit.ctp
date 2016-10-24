@@ -36,13 +36,14 @@ use Cake\Core\Configure;
                         <?php
                         echo $this->Form->input('category_id', ['options' => $categories, 'empty' => __('Select')]);
                         echo $this->Form->input('name');
-                        echo $this->Form->input('code');
-                        echo $this->Form->input('pack_size');
-                        echo $this->Form->input('unit');
-                        echo $this->Form->input('box_size');
-                        echo $this->Form->input('cash_sales_price');
-                        echo $this->Form->input('credit_sales_price');
-                        echo $this->Form->input('retail_price');
+                        echo $this->Form->input('code',['class'=>'form-control readonly']);
+                        echo $this->Form->input('pack_size',['type'=>'text']);
+                        echo $this->Form->input('unit',['options'=>Configure::read('pack_size_units')]);
+                        echo $this->Form->input('generic_name',['type'=>'text']);
+                        echo $this->Form->input('box_size',['type'=>'text']);
+                        echo $this->Form->input('cash_sales_price',['type'=>'text']);
+                        echo $this->Form->input('credit_sales_price',['type'=>'text']);
+                        echo $this->Form->input('retail_price',['type'=>'text']);
                         echo $this->Form->input('status', ['options' => Configure::read('status_options')]);
                         ?>
                         <?= $this->Form->button(__('Submit'), ['class' => 'btn blue pull-right', 'style' => 'margin-top:20px']) ?>

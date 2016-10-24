@@ -36,6 +36,7 @@ $status = \Cake\Core\Configure::read('status_options');
                             <th><?= __('Name') ?></th>
                             <th><?= __('Proprietor') ?></th>
                             <th><?= __('Contact Person') ?></th>
+                            <th><?= __('Status') ?></th>
                             <th><?= __('Actions') ?></th>
                         </tr>
                         </thead>
@@ -52,6 +53,7 @@ $status = \Cake\Core\Configure::read('status_options');
                                 <td><?= h($customer->name) ?></td>
                                 <td><?= h($customer->proprietor) ?></td>
                                 <td><?= h($customer->contact_person) ?></td>
+                                <td><?= ($customer->status)==0?"Not Approved":"Approved" ?></td>
                                 <td class="actions">
                                     <?php
                                     echo $this->Html->link(__('View'), ['action' => 'view', $customer->id], ['class' => 'btn btn-sm btn-info']);

@@ -170,11 +170,22 @@ class RequestItemsController extends AppController
 
                     // Serials Table Insert/ update
                     $this->loadModel('Serials');
+                    $serial_for = array_flip(Configure::read('serial_types'))['transfer_request'];
+                    $year = date('Y');
+                    $month = date('m');
+
                     if($user['user_group_id']==Configure::read('depot_in_charge_ug')):
                         $trigger_type = array_flip(Configure::read('serial_trigger_types'))['depot'];
+                        $trigger_id = $user['depot_id'];
                     elseif($user['user_group_id']==Configure::read('warehouse_in_charge_ug')):
                         $trigger_type = array_flip(Configure::read('serial_trigger_types'))['warehouse'];
+                        $trigger_id = $user['warehouse_id'];
+                    else:
+                        $trigger_type = array_flip(Configure::read('serial_trigger_types'))['others'];
+                        $trigger_id = $user['administrative_unit_id'];
                     endif;
+
+                    $existence = $this->Serials->find('all', ['conditions'=>[]]);
                 });
 
                 $this->Flash->success('The Request has been made. Thank you!');

@@ -2,7 +2,11 @@
 namespace App\Controller;
 
 use App\Controller\AppController;
+use App\View\Helper\SystemHelper;
+use Cake\Core\App;
+use Cake\Core\Configure;
 use Cake\ORM\TableRegistry;
+use Cake\View\View;
 
 /**
  * Items Controller
@@ -74,7 +78,7 @@ class ItemsController extends AppController
                 $this->Flash->error('The item could not be saved. Please, try again.');
             }
         }
-        $categories = $this->Items->Categories->find('list', ['conditions' => ['status' => 1, 'level_no'=>0]]);
+        $categories = $this->Items->Categories->find('list', ['conditions' => ['status' => 1, 'level_no'=>1]]);
         $this->set(compact('item', 'categories'));
         $this->set('_serialize', ['item']);
     }
@@ -140,7 +144,6 @@ class ItemsController extends AppController
     {
         $data = $this->request->data;
         $category = $data['category'];
-
         $subs = TableRegistry::get('categories')->find('all', ['conditions' => ['parent' => $category], 'fields'=>['id', 'name']])->hydrate(false)->toArray();
 
         $dropArray = [];
@@ -155,5 +158,18 @@ class ItemsController extends AppController
             $this->autoRender = false;
         }
 
+    }
+
+    public function generateCode()
+    {
+        $this->autoRender=false;
+        $itemPadding = Configure::read('item_generation_padding');
+        $data = $this->request->data;
+        $itemPrefix = TableRegistry::get('categories')->find('all', ['conditions' => ['id' => $data['category']], 'fields'=>['prefix']])->first()->toArray();
+        App::import('Helper', 'SystemHelper');
+        $SystemHelper = new SystemHelper(new View());
+        $itemCode = $SystemHelper->generate_code($itemPrefix['prefix'], 'item', $itemPadding);
+        $this->response->body($itemCode);
+        return $this->response;
     }
 }

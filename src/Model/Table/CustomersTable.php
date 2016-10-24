@@ -152,7 +152,7 @@ class CustomersTable extends Table
      */
     public function buildRules(RulesChecker $rules)
     {
-        $rules->add($rules->isUnique(['email']));
+//        $rules->add($rules->isUnique(['email']));
         $rules->add($rules->isUnique(['code']));
         $rules->add($rules->existsIn(['administrative_unit_id'], 'AdministrativeUnits'));
         return $rules;

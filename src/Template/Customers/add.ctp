@@ -1,6 +1,6 @@
 <?php
 use Cake\Core\Configure;
-//echo $this->System->asked_level_global_id(2, 1082401);
+//echo $this->System->asked_level_global_id(1, 1048576);
 //exit;
 ?>
 <div class="page-bar">
