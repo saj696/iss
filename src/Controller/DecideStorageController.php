@@ -127,7 +127,7 @@ class DecideStorageController extends AppController
         foreach($items as $item):
             foreach($myLevelWarehouses as $warehouseId):
                 $myDetail = [];
-                $stock = $this->Stocks->find('all', ['conditions' => ['status' => 1, 'warehouse_id'=>$warehouseId, 'item_id'=>$item['item_id']], 'fields'=>['quantity']])->first()->toArray();
+                $stock = $this->Stocks->find('all', ['conditions' => ['status' => 1, 'warehouse_id'=>$warehouseId, 'item_id'=>$item['item_id']], 'fields'=>['quantity']])->first();
                 $myDetail['warehouse_id'] = $warehouseId;
                 $myDetail['item_id'] = $item['item_id'];
                 $myDetail['quantity'] = isset($stock['quantity'])?$stock['quantity']:0;
@@ -138,7 +138,7 @@ class DecideStorageController extends AppController
         foreach($items as $item):
             foreach($requestUserWarehouses as $warehouseId):
                 $requestDetail = [];
-                $stock = $this->Stocks->find('all', ['conditions' => ['status' => 1, 'warehouse_id'=>$warehouseId, 'item_id'=>$item['item_id']], 'fields'=>['quantity']])->first()->toArray();
+                $stock = $this->Stocks->find('all', ['conditions' => ['status' => 1, 'warehouse_id'=>$warehouseId, 'item_id'=>$item['item_id']], 'fields'=>['quantity']])->first();
                 $requestDetail['warehouse_id'] = $warehouseId;
                 $requestDetail['item_id'] = $item['item_id'];
                 $requestDetail['required'] = $item['quantity'];
@@ -338,24 +338,24 @@ class DecideStorageController extends AppController
     public function process()
     {
         $data = $this->request->data;
-        $eventId = $data['event_id'];
-        $decidedArray = $data['decided'];
-        $this->loadModel('Warehouses');
-        $warehouses = $this->Warehouses->find('list', ['conditions'=>['status'=>1]])->toArray();
+        if($data) {
+            $eventId = $data['event_id'];
+            $decidedArray = $data['decided'];
+            $this->loadModel('Warehouses');
+            $warehouses = $this->Warehouses->find('list', ['conditions'=>['status'=>1]])->toArray();
 
-        $this->loadModel('Items');
-        $items = $this->Items->find('all', ['conditions' => ['status' => 1]]);
-        $itemArray = [];
-        foreach($items as $item) {
-            $itemArray[$item['id']] = $item['name'].' - '.$item['pack_size'].' '.Configure::read('pack_size_units')[$item['unit']];
+            $this->loadModel('Items');
+            $items = $this->Items->find('all', ['conditions' => ['status' => 1]]);
+            $itemArray = [];
+            foreach($items as $item) {
+                $itemArray[$item['id']] = $item['name'].' - '.$item['pack_size'].' '.Configure::read('pack_size_units')[$item['unit']];
+            }
+
+            $this->viewBuilder()->layout('default');
+            $this->set(compact('decidedArray', 'warehouses', 'itemArray', 'eventId'));
+        } else {
+            $this->Flash->error('Please, try again sequentially!');
+            return $this->redirect(['action' => 'index']);
         }
-
-        echo '<pre>';
-        print_r($itemArray);
-        echo '</pre>';
-        exit;
-
-        $this->viewBuilder()->layout('ajax');
-        $this->set(compact('decidedArray', 'warehouses', 'itemArray'));
     }
 }

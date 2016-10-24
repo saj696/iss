@@ -25,65 +25,36 @@ $status = \Cake\Core\Configure::read('status_options');
                     <i class="fa fa-picture-o fa-lg"></i><?= __('Process') ?>
                 </div>
                 <div class="tools">
-                    <?= $this->Html->link(__('Back'), ['action' => 'index'], ['class' => 'btn btn-sm btn-success']); ?>
+                    <?= $this->Html->link(__('Back'), ['action' => 'view/'.$eventId], ['class' => 'btn btn-sm btn-success']); ?>
                 </div>
             </div>
 
             <div class="portlet-body">
                 <div class="table-scrollable">
-                    <table class="table table-bordered">
-                        <tr><td class="text-center" colspan="12"><label class="label label-warning">Request Detail</label> </td></tr>
-                        <tr>
-                            <th>Item</th>
-                            <th>Warehouse</th>
-                            <th>Existing</th>
-                            <th>Required</th>
-                        </tr>
-                        <?php foreach($requestWarehouseDetails as $detail):?>
-                            <tr>
-                                <td><?= $itemArray[$detail['item_id']]?></td>
-                                <td><?= $allWarehouses[$detail['warehouse_id']]?></td>
-                                <td><?= $detail['existing']?></td>
-                                <td><?= $detail['required']?></td>
-                            </tr>
+                    <form method="post" class="form-horizontal" role="form" action="<?= $this->Url->build("/DecideStorage/add")?>">
+                        <input type="hidden" name="event_id" class="event_id" value="<?=$eventId?>" />
+                        <?php foreach($decidedArray as $warehouseId=>$itemDetail):?>
+                            <table class="table table-bordered">
+                                <tbody>
+                                    <tr><td colspan="6" class="text-center"><label class="label label-primary"><?= $warehouses[$warehouseId]?></label></td></tr>
+                                    <tr>
+                                        <th>Item</th>
+                                        <th>Quantity</th>
+                                    </tr>
+                                    <?php foreach($itemDetail as $item=>$quantity):?>
+                                        <tr>
+                                            <td><?= $itemArray[$item]?></td>
+                                            <td><?= $quantity?></td>
+                                        </tr>
+                                    <?php endforeach;?>
+                                </tbody>
+                            </table>
+                            <div class="text-center" style="margin-bottom: 20px;">
+                                <?= $this->Form->button(__('Save'), ['class' => 'btn blue', 'style'=>'font-size:13px; padding:4px 8px;']) ?>
+                                <?= $this->Form->button(__('Delivery'), ['class' => 'btn green', 'style'=>'font-size:13px; padding:4px 8px;']) ?>
+                                <?= $this->Form->button(__('Send For Delivery'), ['class' => 'btn red', 'style'=>'font-size:13px; padding:4px 8px;']) ?>
+                            </div>
                         <?php endforeach;?>
-                    </table>
-                </div>
-
-                <div class="row text-center">
-                    <div class="col-md-5 col-md-offset-4">
-                        <?php echo $this->Form->input('warehouse', ['options' => $warehouses, 'style'=>'max-width: 100%', 'class'=>'form-control warehouse select2me', 'empty' => __('-- Select warehouse --'), 'templates'=>['label' => '']]);?>
-                    </div>
-                </div>
-
-                <div class="table-scrollable">
-                    <form method="post" class="form-horizontal" role="form" action="<?= $this->Url->build("/DecideStorage/process")?>">
-                        <input type="hidden" name="event_id" class="event_id" value="<?=$id?>" />
-                        <table class="table table-bordered">
-                            <tbody class="appendDiv">
-                            <tr><td class="text-center" colspan="12"><label class="label label-success">Item Existence</label> </td></tr>
-                            <tr>
-                                <th>Item</th>
-                                <th>Warehouse</th>
-                                <th>Quantity</th>
-                                <th>Decided Qty</th>
-                            </tr>
-                            <?php foreach($myWarehouseDetails as $detail):?>
-                                <tr>
-                                    <td><?= $itemArray[$detail['item_id']]?></td>
-                                    <td><?= $warehouses[$detail['warehouse_id']]?></td>
-                                    <td><?= $detail['quantity']?></td>
-                                    <td width="20%">
-                                        <input type="hidden" class="warehouse_id" value="<?= $detail['warehouse_id']?>">
-                                        <input type="text" name="decided[<?= $detail['item_id']?>][<?= $detail['warehouse_id']?>]" style="height: 25px;" class="form-control decided_quantity" value="" />
-                                    </td>
-                                </tr>
-                            <?php endforeach;?>
-                            </tbody>
-                        </table>
-                        <div class="text-center" style="margin-bottom: 20px;">
-                            <?= $this->Form->button(__('Process'), ['class' => 'btn blue']) ?>
-                        </div>
                     </form>
                 </div>
             </div>

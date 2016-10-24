@@ -75,7 +75,7 @@ $status = \Cake\Core\Configure::read('status_options');
                                         <td><?= $detail['quantity']?></td>
                                         <td width="20%">
                                             <input type="hidden" class="warehouse_id" value="<?= $detail['warehouse_id']?>">
-                                            <input type="text" name="decided[<?= $detail['item_id']?>][<?= $detail['warehouse_id']?>]" style="height: 25px;" class="form-control decided_quantity" value="" />
+                                            <input type="text" name="decided[<?= $detail['warehouse_id']?>][<?= $detail['item_id']?>]" style="height: 25px;" class="form-control decided_quantity" value="" />
                                         </td>
                                     </tr>
                                 <?php endforeach;?>
