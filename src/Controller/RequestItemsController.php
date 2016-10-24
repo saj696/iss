@@ -5,6 +5,7 @@ use App\Controller\AppController;
 use Cake\Core\Configure;
 use Cake\Datasource\ConnectionManager;
 use Cake\ORM\TableRegistry;
+use Exception;
 
 /**
  * TransferItems Controller
@@ -166,11 +167,19 @@ class RequestItemsController extends AppController
                         $transfer = $this->TransferItems->patchEntity($transfer, $itemData);
                         $this->TransferItems->save($transfer);
                     }
+
+                    // Serials Table Insert/ update
+                    $this->loadModel('Serials');
+                    if($user['user_group_id']==Configure::read('depot_in_charge_ug')):
+                        $trigger_type = array_flip(Configure::read('serial_trigger_types'))['depot'];
+                    elseif($user['user_group_id']==Configure::read('warehouse_in_charge_ug')):
+                        $trigger_type = array_flip(Configure::read('serial_trigger_types'))['warehouse'];
+                    endif;
                 });
 
                 $this->Flash->success('The Request has been made. Thank you!');
                 return $this->redirect(['action' => 'index']);
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 echo '<pre>';
                 print_r($e);
                 echo '</pre>';
