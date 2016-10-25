@@ -12,7 +12,7 @@ use Cake\Collection\Collection;
  *
  * @property \App\Model\Table\TransferItemsTable $TransferItems
  */
-class DecideStorageController extends AppController
+class DecidedRequestsController extends AppController
 {
     public $paginate = [
         'limit' => 15,
@@ -31,30 +31,34 @@ class DecideStorageController extends AppController
         $user = $this->Auth->user();
         $this->loadModel('TransferResources');
         $this->loadModel('TransferEvents');
-        $this->loadModel('TransferItems');
+        $this->loadModel('Warehouses');
+        $this->loadModel('Items');
+        $this->loadModel('Depots');
+        $this->loadModel('Users');
 
         $events = $this->TransferEvents->find('all', [
-            'conditions' => ['TransferEvents.status !=' => 99, 'TransferEvents.recipient_id'=>$user['id'], 'recipient_action'=>array_flip(Configure::read('transfer_event_types'))['request']],
+            'conditions' => ['TransferEvents.status !=' => 99, 'TransferEvents.recipient_id'=>$user['id'], 'recipient_action'=>array_flip(Configure::read('transfer_event_types'))['make_challan_forward_send_delivery']],
             'contain' => ['TransferResources'=>['TransferItems']]
         ]);
 
-        $this->loadModel('Items');
         $items = $this->Items->find('all', ['conditions' => ['status' => 1]]);
         $itemArray = [];
         foreach($items as $item) {
             $itemArray[$item['id']] = $item['name'].' - '.$item['pack_size'].' '.Configure::read('pack_size_units')[$item['unit']];
         }
 
-        $this->loadModel('Warehouses');
         $warehouses = $this->Warehouses->find('list', ['conditions'=>['status'=>1]])->toArray();
-        $this->loadModel('Depots');
         $depots = $this->Depots->find('list', ['conditions'=>['status'=>1]])->toArray();
-
-        $this->loadModel('Users');
         $users = $this->Users->find('list', ['conditions'=>['user_group_id !='=>1,'status'=>1]]);
-
         $events = $this->paginate($events);
-        $this->set(compact('itemArray', 'users', 'events', 'warehouses', 'depots'));
+
+        $userLevelWarehouses = $this->Warehouses->find('all', ['conditions'=>['status'=>1, 'unit_id'=>$user['administrative_unit_id']], 'fields'=>['id']])->hydrate(false)->toArray();
+        $myLevelWarehouses = [];
+        foreach($userLevelWarehouses as $userLevelWarehouse):
+            $myLevelWarehouses[] = $userLevelWarehouse['id'];
+        endforeach;
+
+        $this->set(compact('itemArray', 'users', 'events', 'warehouses', 'depots', 'myLevelWarehouses'));
         $this->set('_serialize', ['events']);
     }
 

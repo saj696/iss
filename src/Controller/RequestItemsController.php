@@ -33,7 +33,7 @@ class RequestItemsController extends AppController
         $this->loadModel('TransferEvents');
 
         $resources = $this->TransferResources->find('all', [
-            'conditions' => ['TransferResources.status !=' => 99, 'TransferResources.created_by'=>$user['id']],
+            'conditions' => ['TransferResources.status !=' => 99, 'TransferResources.created_by'=>$user['id'], 'TransferResources.resource_type'=>array_flip(Configure::read('transfer_resource_types'))['request']],
             'contain' => ['TransferItems', 'TransferEvents']
         ]);
 
@@ -138,7 +138,7 @@ class RequestItemsController extends AppController
                         $resourceData['trigger_id'] = $user['warehouse_id'];
                     endif;
 
-                    $resourceData['resource_type'] = array_flip(Configure::read('transfer_resource_types'))['decide_storage'];
+                    $resourceData['resource_type'] = array_flip(Configure::read('transfer_resource_types'))['request'];
                     $resourceData['created_by'] = $user['id'];
                     $resourceData['created_date'] = $time;
                     $resource = $this->TransferResources->patchEntity($resource, $resourceData);
@@ -172,7 +172,6 @@ class RequestItemsController extends AppController
                     $this->loadModel('Serials');
                     $serial_for = array_flip(Configure::read('serial_types'))['transfer_request'];
                     $year = date('Y');
-                    $month = date('m');
 
                     if($user['user_group_id']==Configure::read('depot_in_charge_ug')):
                         $trigger_type = array_flip(Configure::read('serial_trigger_types'))['depot'];
@@ -185,7 +184,32 @@ class RequestItemsController extends AppController
                         $trigger_id = $user['administrative_unit_id'];
                     endif;
 
-                    $existence = $this->Serials->find('all', ['conditions'=>[]]);
+                    $existence = $this->Serials->find('all', ['conditions'=>['serial_for'=>$serial_for, 'year'=>$year, 'trigger_type'=>$trigger_type, 'trigger_id'=>$trigger_id]])->first();
+
+                    if ($existence) {
+                        $serial = TableRegistry::get('serials');
+                        $query = $serial->query();
+                        $query->update()->set(['serial_no' => $existence['serial_no']+1])->where(['id' => $existence['id']])->execute();
+                        // Update resource serial_no
+                        $resource = TableRegistry::get('transfer_resources');
+                        $query = $resource->query();
+                        $query->update()->set(['serial_no' => $existence['serial_no']+1])->where(['id' => $result['id']])->execute();
+                    } else {
+                        $serial = $this->Serials->newEntity();
+                        $serialData['trigger_type'] = $trigger_type;
+                        $serialData['trigger_id'] = $trigger_id;
+                        $serialData['serial_for'] = $serial_for;
+                        $serialData['year'] = $year;
+                        $serialData['serial_no'] = 1;
+                        $serialData['created_by'] = $user['id'];
+                        $serialData['created_date'] = $time;
+                        $serial = $this->Serials->patchEntity($serial, $serialData);
+                        $this->Serials->save($serial);
+                        // Update resource serial_no
+                        $resource = TableRegistry::get('transfer_resources');
+                        $query = $resource->query();
+                        $query->update()->set(['serial_no' => 1])->where(['id' => $result['id']])->execute();
+                    }
                 });
 
                 $this->Flash->success('The Request has been made. Thank you!');

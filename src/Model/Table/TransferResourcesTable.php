@@ -59,11 +59,6 @@ class TransferResourcesTable extends Table
             ->integer('id')
             ->allowEmpty('id', 'create');
 
-        $validator
-            ->integer('trigger_id')
-            ->requirePresence('trigger_id', 'create')
-            ->notEmpty('trigger_id');
-
         return $validator;
     }
 }

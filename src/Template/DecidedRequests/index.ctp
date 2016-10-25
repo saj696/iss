@@ -9,7 +9,7 @@ $status = \Cake\Core\Configure::read('status_options');
             <a href="<?= $this->Url->build(('/Dashboard'), true); ?>"><?= __('Dashboard') ?></a>
             <i class="fa fa-angle-right"></i>
         </li>
-        <li><?= $this->Html->link(__('Requests'), ['action' => 'index']) ?></li>
+        <li><?= $this->Html->link(__('Decided Requests'), ['action' => 'index']) ?></li>
     </ul>
 </div>
 
@@ -18,7 +18,7 @@ $status = \Cake\Core\Configure::read('status_options');
         <div class="portlet box blue-hoki">
             <div class="portlet-title">
                 <div class="caption">
-                    <i class="fa fa-list-alt fa-lg"></i><?= __('Request List') ?>
+                    <i class="fa fa-list-alt fa-lg"></i><?= __('Decided Request List') ?>
                 </div>
             </div>
 
@@ -28,9 +28,9 @@ $status = \Cake\Core\Configure::read('status_options');
                         <thead>
                         <tr>
                             <th><?= __('Sl. No.') ?></th>
-                            <th><?= __('Request From')?></th>
-                            <th><?= __('Forward Date') ?></th>
-                            <th><?= __('Items') ?></th>
+                            <th><?= __('Decision Date') ?></th>
+                            <th><?= __('Warehouse')?></th>
+<!--                            <th>--><?//= __('Items') ?><!--</th>-->
                             <th><?= __('Actions') ?></th>
                         </tr>
                         </thead>
@@ -40,31 +40,31 @@ $status = \Cake\Core\Configure::read('status_options');
                             ?>
                             <tr>
                                 <td><?= $this->Number->format($key + 1) ?></td>
-                                <td><?= $event['transfer_resource']['trigger_type']==array_flip(Cake\Core\Configure::read('trigger_types'))['warehouse']?$warehouses[$event['transfer_resource']['trigger_id']]:$depots[$event['transfer_resource']['trigger_id']] ?></td>
                                 <td><?= date('d-m-Y', $event->created_date) ?></td>
-                                <td>
+                                <td><?= $warehouses[$event['transfer_resource']['transfer_items'][0]['warehouse_id']]?></td>
+<!--                                <td>-->
+<!--                                    --><?php
+//                                    $items = $event['transfer_resource']['transfer_items'];
+//                                    $size = sizeof($items);
+//                                    if(sizeof($size>0)):
+//                                        foreach($items as $key=>$item):
+//                                            if($size==$key+1):
+//                                                echo $itemArray[$item['item_id']]. '('.$item['quantity'].')';
+//                                            else:
+//                                                echo $itemArray[$item['item_id']]. '('.$item['quantity'].') | ';
+//                                            endif;
+//                                        endforeach;
+//                                    endif;
+//                                    ?>
+<!--                                </td>-->
+                                <td class="actions" width="38%">
                                     <?php
-                                    $items = $event['transfer_resource']['transfer_items'];
-                                    $size = sizeof($items);
-                                    if(sizeof($size>0)):
-                                        foreach($items as $key=>$item):
-                                            if($size==$key+1):
-                                                echo $itemArray[$item['item_id']]. '('.$item['quantity'].')';
-                                            else:
-                                                echo $itemArray[$item['item_id']]. '('.$item['quantity'].') | ';
-                                            endif;
-                                        endforeach;
-                                    endif;
-                                    ?>
-                                </td>
-                                <td class="actions">
-                                    <?php
-                                    if($event->is_action_taken==0):
-                                        echo $this->Html->link(__('Decide'), ['action' => 'view', $event->id], ['class' => 'btn btn-sm btn-warning', 'style'=>'width:70px;']);
+                                    if(in_array($event['transfer_resource']['transfer_items'][0]['warehouse_id'], $myLevelWarehouses)):
+                                        echo $this->Html->link(__('Make Chalan'), ['action' => 'view', $event->id], ['class' => 'btn btn-sm btn-warning']);
+                                        echo $this->Html->link(__('Send Delivery'), ['action' => 'view', $event->id], ['class' => 'btn btn-sm btn-primary']);
+                                        echo $this->Html->link(__('Forward'), ['action' => 'view', $event->id], ['class' => 'btn btn-sm btn-success']);
                                     else:
-                                        ?>
-                                        <label class="btn btn-sm btn-success" style="width:70px;">Decided</label>
-                                        <?php
+                                        echo $this->Html->link(__('Forward'), ['action' => 'view', $event->id], ['class' => 'btn btn-sm btn-success']);
                                     endif;
                                     ?>
                                 </td>
