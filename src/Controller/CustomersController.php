@@ -83,13 +83,8 @@ class CustomersController extends AppController
 
 
             $data = $this->request->data;
-//             echo '<pre>'; print_r($data);echo '</pre>';die();
             $this->loadModel('AdministrativeUnits');
             $unitInfo = $this->AdministrativeUnits->get($data['administrative_unit_id']);
-
-//            echo '</pre>'; print_r($data['administrative_unit_id']) ;die();
-//            TableRegistry::get('administrative_units')->find('all', ['conditions' => ['id' => $data['unit']], 'fields'=>['global_id']])->first()->toArray();
-//            $data['unit_global_id'] = TableRegistry::get('administrative_units')->find('all',['conditions'=>['id'=>$data['administrative_level_id']],'fields'=>['global_id']])->first()->toArray();
             $data['unit_global_id'] = $unitInfo['global_id'];
             $data['created_by'] = $user['id'];
             $data['created_date'] = $time;

@@ -88,5 +88,28 @@ use Cake\Core\Configure;
                 }
             });
         });
+        $(document).on("focus",".datepicker", function(){
+            $(this).removeClass('hasDatepicker').datepicker({
+                dateFormat: 'dd-mm-yy'
+            });
+        });
+
+        $(document).on('change', '.prefix', function () {
+            var obj = $(this);
+            $('.codeCustomer').val('');
+            var prefix_level = obj.val();
+            var unit = $('.unit').val();
+            if(prefix_level!= ''){
+                $.ajax({
+                    type: 'POST',
+                    url: '<?= $this->Url->build("/Customers/generateCode")?>',
+                    data: {prefix_level: prefix_level,unit:unit},
+                    success: function (data, status) {
+                        console.log(data);
+                        $('.codeCustomer').val(data);
+                    }
+                });
+            }
+        });
     });
 </script>

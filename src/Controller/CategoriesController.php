@@ -64,7 +64,7 @@ public function index()
         if ($this->request->is('post'))
         {
             $data=$this->request->data;
-            $data['prefix'] = ucfirst($data['prefix']);
+            $data['prefix'] = strtoupper($data['prefix']);
             $lavelInfo = TableRegistry::get('categories')->find('all',['conditions'=>['id'=>$data['parent']],'fields'=>['level_no','number_of_direct_successors','global_id']])->first();
             $successor = TableRegistry::get('categories');
             $query = $successor->query();
