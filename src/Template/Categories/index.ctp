@@ -34,9 +34,6 @@ $status = \Cake\Core\Configure::read('status_options');
                             <th><?= __('level_no') ?></th>
                             <th><?= __('name') ?></th>
                             <th><?= __('parent') ?></th>
-                            <th><?= __('local_id') ?></th>
-                            <th><?= __('global_id') ?></th>
-                            <th><?= __('number_of_direct_successors') ?></th>
                             <th><?= __('Actions') ?></th>
                         </tr>
                         </thead>
@@ -47,23 +44,17 @@ $status = \Cake\Core\Configure::read('status_options');
                                 <td><?= $this->Number->format($category->level_no) ?></td>
                                 <td><?= h($category->name) ?></td>
                                 <td><?= $this->Number->format($category->parent) ?></td>
-                                <td><?= $this->Number->format($category->local_id) ?></td>
-                                <td><?= $this->Number->format($category->global_id) ?></td>
-                                <td><?= $this->Number->format($category->number_of_direct_successors) ?></td>
                                 <td class="actions">
                                     <?php
                                     echo $this->Html->link(__('View'), ['action' => 'view', $category->id],['class'=>'btn btn-sm btn-info']);
-
                                     echo $this->Html->link(__('Edit'), ['action' => 'edit', $category->id],['class'=>'btn btn-sm btn-warning']);
-
                                     echo $this->Form->postLink(__('Delete'), ['action' => 'delete', $category->id],['class'=>'btn btn-sm btn-danger','confirm' => __('Are you sure you want to delete # {0}?', $category->id)]);
-
                                     ?>
-
                                 </td>
                             </tr>
-
-                        <?php } ?>
+                        <?php
+                        }
+                        ?>
                         </tbody>
                     </table>
                 </div>

@@ -60,11 +60,21 @@ $status = \Cake\Core\Configure::read('status_options');
                                 <td class="actions" width="38%">
                                     <?php
                                     if(in_array($event['transfer_resource']['transfer_items'][0]['warehouse_id'], $myLevelWarehouses)):
-                                        echo $this->Html->link(__('Make Chalan'), ['action' => 'view', $event->id], ['class' => 'btn btn-sm btn-warning']);
-                                        echo $this->Html->link(__('Send Delivery'), ['action' => 'view', $event->id], ['class' => 'btn btn-sm btn-primary']);
-                                        echo $this->Html->link(__('Forward'), ['action' => 'view', $event->id], ['class' => 'btn btn-sm btn-success']);
+                                        if($event['is_action_taken']==0):
+                                            echo $this->Html->link(__('Make Chalan'), ['action' => 'makeChalan', $event->id], ['class' => 'btn btn-sm btn-warning']);
+                                            echo $this->Html->link(__('Send Delivery'), ['action' => 'sendDelivery', $event->id], ['class' => 'btn btn-sm btn-primary']);
+                                            echo $this->Html->link(__('Forward'), ['action' => 'forward', $event->id], ['class' => 'btn btn-sm btn-success']);
+                                        else:
+                                            echo $this->Html->link(__('Make Chalan'), ['action' => 'makeChalan', $event->id], ['class' => 'btn btn-sm btn-warning', 'disabled']);
+                                            echo $this->Html->link(__('Send Delivery'), ['action' => 'sendDelivery', $event->id], ['class' => 'btn btn-sm btn-primary', 'disabled']);
+                                            echo $this->Html->link(__('Forward'), ['action' => 'forward', $event->id], ['class' => 'btn btn-sm btn-success', 'disabled']);
+                                        endif;
                                     else:
-                                        echo $this->Html->link(__('Forward'), ['action' => 'view', $event->id], ['class' => 'btn btn-sm btn-success']);
+                                        if($event['is_action_taken']==0):
+                                            echo $this->Html->link(__('Forward'), ['action' => 'forward', $event->id], ['class' => 'btn btn-sm btn-success']);
+                                        else:
+                                            echo $this->Html->link(__('Forward'), ['action' => 'forward', $event->id], ['class' => 'btn btn-sm btn-success', 'disabled']);
+                                        endif;
                                     endif;
                                     ?>
                                 </td>
