@@ -58,7 +58,9 @@ class DecidedRequestsController extends AppController
             $myLevelWarehouses[] = $userLevelWarehouse['id'];
         endforeach;
 
-        $this->set(compact('itemArray', 'users', 'events', 'warehouses', 'depots', 'myLevelWarehouses'));
+        $forwardingUsers = $this->Users->find('list', ['conditions'=>['user_group_id'=>Configure::read('depot_in_charge_ug'), 'status'=>1]])->orWhere(['user_group_id'=>Configure::read('warehouse_in_charge_ug')]);
+
+        $this->set(compact('itemArray', 'users', 'events', 'warehouses', 'depots', 'myLevelWarehouses', 'forwardingUsers'));
         $this->set('_serialize', ['events']);
     }
 
@@ -67,9 +69,55 @@ class DecidedRequestsController extends AppController
         $this->autoRender = false;
     }
 
-    public function forward($id = null)
+    public function forward()
     {
-        $this->autoRender = false;
+        $user = $this->Auth->user();
+        $time = time();
+        $this->loadModel('TransferEvents');
+        if ($this->request->is('post'))
+        {
+            try {
+                $saveStatus = 0;
+                $conn = ConnectionManager::get('default');
+                $conn->transactional(function () use ($user, $time, &$saveStatus)
+                {
+                    $input = $this->request->data;
+                    $event_id = $input['event_id'];
+                    $forward_user = $input['forward_user'];
+                    if($forward_user && $forward_user>0) {
+                        $event = $this->TransferEvents->get($event_id, ['contain' => ['TransferResources']]);
+
+                        // New event
+                        $eventTbl = $this->TransferEvents->newEntity();
+                        $eventData['transfer_resource_id'] = $event['transfer_resource_id'];
+                        $eventData['recipient_id'] = $forward_user;
+                        $eventData['recipient_action'] = array_flip(Configure::read('transfer_event_types'))['deliver'];
+                        $eventData['initiated_by'] = $event['initiated_by'];
+                        $eventData['created_by'] = $user['id'];
+                        $eventData['created_date'] = $time;
+                        $eventTbl = $this->TransferEvents->patchEntity($eventTbl, $eventData);
+                        $this->TransferEvents->save($eventTbl);
+
+                        // Update event
+                        $transfer_events = TableRegistry::get('transfer_events');
+                        $query = $transfer_events->query();
+                        $query->update()->set(['is_action_taken' => 1])->where(['id' => $event_id])->execute();
+
+                        $this->Flash->success('The Forwarding is done. Thank you!');
+                    } else {
+                        $this->Flash->error('Please select a user to forward. Thank you!');
+                    }
+                    return $this->redirect(['action' => 'index']);
+                });
+            } catch (\Exception $e) {
+                echo '<pre>';
+                print_r($e);
+                echo '</pre>';
+                exit;
+                $this->Flash->error('The Forwarding not done. Please try again!');
+            }
+        }
+        return $this->redirect(['action' => 'index']);
     }
 
     public function sendDelivery($id = null)
@@ -130,14 +178,11 @@ class DecidedRequestsController extends AppController
                 $resourceResult = $this->TransferResources->save($resource);
 
                 // Corresponding event entry
-                $currentEventResourceInfo = $this->TransferResources->get($event['transfer_resource_id']);
-                $parentResourceId = $currentEventResourceInfo['reference_resource_id'];
-                $parentResourceInfo = $this->TransferResources->get($parentResourceId);
-
                 $eventTbl = $this->TransferEvents->newEntity();
                 $eventData['transfer_resource_id'] = $resourceResult['id'];
-                $eventData['recipient_id'] = $parentResourceInfo['created_by'];
+                $eventData['recipient_id'] = $event['initiated_by'];
                 $eventData['recipient_action'] = array_flip(Configure::read('transfer_event_types'))['receive'];
+                $eventData['initiated_by'] = $event['initiated_by'];
                 $eventData['created_by'] = $user['id'];
                 $eventData['created_date'] = $time;
                 $eventTbl = $this->TransferEvents->patchEntity($eventTbl, $eventData);

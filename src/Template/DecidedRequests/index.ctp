@@ -30,7 +30,6 @@ $status = \Cake\Core\Configure::read('status_options');
                             <th><?= __('Sl. No.') ?></th>
                             <th><?= __('Decision Date') ?></th>
                             <th><?= __('Warehouse')?></th>
-<!--                            <th>--><?//= __('Items') ?><!--</th>-->
                             <th><?= __('Actions') ?></th>
                         </tr>
                         </thead>
@@ -42,21 +41,6 @@ $status = \Cake\Core\Configure::read('status_options');
                                 <td><?= $this->Number->format($key + 1) ?></td>
                                 <td><?= date('d-m-Y', $event->created_date) ?></td>
                                 <td><?= $warehouses[$event['transfer_resource']['transfer_items'][0]['warehouse_id']]?></td>
-<!--                                <td>-->
-<!--                                    --><?php
-//                                    $items = $event['transfer_resource']['transfer_items'];
-//                                    $size = sizeof($items);
-//                                    if(sizeof($size>0)):
-//                                        foreach($items as $key=>$item):
-//                                            if($size==$key+1):
-//                                                echo $itemArray[$item['item_id']]. '('.$item['quantity'].')';
-//                                            else:
-//                                                echo $itemArray[$item['item_id']]. '('.$item['quantity'].') | ';
-//                                            endif;
-//                                        endforeach;
-//                                    endif;
-//                                    ?>
-<!--                                </td>-->
                                 <td class="actions" width="38%">
                                     <?php
                                     if(in_array($event['transfer_resource']['transfer_items'][0]['warehouse_id'], $myLevelWarehouses)):
@@ -71,7 +55,30 @@ $status = \Cake\Core\Configure::read('status_options');
                                         endif;
                                     else:
                                         if($event['is_action_taken']==0):
-                                            echo $this->Html->link(__('Forward'), ['action' => 'forward', $event->id], ['class' => 'btn btn-sm btn-success']);
+                                            ?>
+                                            <div class="row popContainer" style="display: none;">
+                                                <form method="post" class="form-horizontal" role="form" action="<?= $this->Url->build("/DecidedRequests/forward")?>">
+                                                    <input type="hidden" name="event_id" value="<?= $event->id?>" />
+                                                    <table class="table table-bordered" style="margin-bottom: 0px;">
+                                                        <tr>
+                                                            <td class="text-center"><label class="label label-warning">Forward To</label></td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td><?php echo $this->Form->input('forward_user', ['options' => $forwardingUsers, 'style'=>'width:100%', 'empty' => __('Select'), 'templates'=>['select' => '<div id="container_{{name}}" class="col-sm-12"><select name="{{name}}"{{attrs}} class="form-control">{{content}}</select></div>', 'label'=>'']]);?></td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td colspan="2" class="text-center" style="border: 0px;">
+                                                                <label style="width: 80px;" class="btn btn-sm btn-danger crossSpan"><?= __('Cancel')?></label>
+                                                                <button style="width: 80px;" type="submit" class="btn btn-sm btn-success"><?= __('Ok')?></button>
+                                                            </td>
+                                                        </tr>
+                                                    </table>
+                                                </form>
+                                            </div>
+                                            <?php
+                                            ?>
+                                        <button class="btn btn-sm btn-success forward">Forward</button>
+                                        <?php
                                         else:
                                             echo $this->Html->link(__('Forward'), ['action' => 'forward', $event->id], ['class' => 'btn btn-sm btn-success', 'disabled']);
                                         endif;

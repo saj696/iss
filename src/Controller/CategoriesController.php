@@ -13,26 +13,26 @@ use Cake\ORM\TableRegistry;
 class CategoriesController extends AppController
 {
 
-	public $paginate = [
+    public $paginate = [
         'limit' => 15,
         'order' => [
             'Categories.id' => 'desc'
         ]
     ];
 
-/**
-* Index method
-*
-* @return void
-*/
-public function index()
-{
-			$categories = $this->Categories->find('all', [
-	'conditions' =>['Categories.status !=' => 99]
-	]);
-		$this->set('categories', $this->paginate($categories) );
-	$this->set('_serialize', ['categories']);
-	}
+    /**
+     * Index method
+     *
+     * @return void
+     */
+    public function index()
+    {
+        $categories = $this->Categories->find('all', [
+            'conditions' => ['Categories.status !=' => 99]
+        ]);
+        $this->set('categories', $this->paginate($categories));
+        $this->set('_serialize', ['categories']);
+    }
 
     /**
      * View method
@@ -43,7 +43,7 @@ public function index()
      */
     public function view($id = null)
     {
-        $user=$this->Auth->user();
+        $user = $this->Auth->user();
         $category = $this->Categories->get($id, [
             'contain' => []
         ]);
@@ -58,38 +58,34 @@ public function index()
      */
     public function add()
     {
-        $user=$this->Auth->user();
-        $time=time();
+        $user = $this->Auth->user();
+        $time = time();
         $category = $this->Categories->newEntity();
-        if ($this->request->is('post'))
-        {
-            $data=$this->request->data;
+        if ($this->request->is('post')) {
+            $data = $this->request->data;
             $data['prefix'] = strtoupper($data['prefix']);
-            $lavelInfo = TableRegistry::get('categories')->find('all',['conditions'=>['id'=>$data['parent']],'fields'=>['level_no','number_of_direct_successors','global_id']])->first();
+            $levelInfo = TableRegistry::get('categories')->find('all', ['conditions' => ['id' => $data['parent']], 'fields' => ['level_no', 'number_of_direct_successors', 'global_id']])->first();
             $successor = TableRegistry::get('categories');
             $query = $successor->query();
             $query->update()
-                ->set(['number_of_direct_successors' => $lavelInfo['number_of_direct_successors']+1])
+                ->set(['number_of_direct_successors' => $levelInfo['number_of_direct_successors'] + 1])
                 ->where(['id' => $data['parent']])
                 ->execute();
-            $data['created_by']=$user['id'];
-            $data['created_date']=$time;
-            $data['level_no'] = $lavelInfo['level_no'] + 1;
-            $data['local_id'] = $lavelInfo['number_of_direct_successors'] + 1;
-            $data['global_id'] = $data['local_id']*pow(2, 6*(Configure::read('category_max_level_no')-$data['level_no'])) + $lavelInfo['global_id'];
+            $data['created_by'] = $user['id'];
+            $data['created_date'] = $time;
+            $data['level_no'] = $levelInfo['level_no'] + 1;
+            $data['local_id'] = $levelInfo['number_of_direct_successors'] + 1;
+            $data['global_id'] = $data['local_id'] * pow(2, 6 * (Configure::read('category_max_level_no') - $data['level_no'])) + $levelInfo['global_id'];
             $category = $this->Categories->patchEntity($category, $data);
-            if ($this->Categories->save($category))
-            {
+            if ($this->Categories->save($category)) {
                 $this->Flash->success('The category has been saved.');
                 return $this->redirect(['action' => 'index']);
-            }
-            else
-            {
+            } else {
                 $this->Flash->error('The category could not be saved. Please, try again.');
             }
         }
-        $parentName = $this->Categories->find('list',['conditions'=>['status'=> 1]])->toArray();
-        $this->set(compact('category','parentName'));
+        $parentName = $this->Categories->find('list', ['conditions' => ['status' => 1]])->toArray();
+        $this->set(compact('category', 'parentName'));
         $this->set('_serialize', ['category']);
     }
 
@@ -102,24 +98,20 @@ public function index()
      */
     public function edit($id = null)
     {
-        $user=$this->Auth->user();
-        $time=time();
+        $user = $this->Auth->user();
+        $time = time();
         $category = $this->Categories->get($id, [
             'contain' => []
         ]);
-        if ($this->request->is(['patch', 'post', 'put']))
-        {
-            $data=$this->request->data;
-            $data['update_by']=$user['id'];
-            $data['update_date']=$time;
+        if ($this->request->is(['patch', 'post', 'put'])) {
+            $data = $this->request->data;
+            $data['update_by'] = $user['id'];
+            $data['update_date'] = $time;
             $category = $this->Categories->patchEntity($category, $data);
-            if ($this->Categories->save($category))
-            {
+            if ($this->Categories->save($category)) {
                 $this->Flash->success('The category has been saved.');
                 return $this->redirect(['action' => 'index']);
-            }
-            else
-            {
+            } else {
                 $this->Flash->error('The category could not be saved. Please, try again.');
             }
         }
@@ -139,18 +131,15 @@ public function index()
 
         $category = $this->Categories->get($id);
 
-        $user=$this->Auth->user();
-        $data=$this->request->data;
-        $data['updated_by']=$user['id'];
-        $data['updated_date']=time();
-        $data['status']=99;
+        $user = $this->Auth->user();
+        $data = $this->request->data;
+        $data['updated_by'] = $user['id'];
+        $data['updated_date'] = time();
+        $data['status'] = 99;
         $category = $this->Categories->patchEntity($category, $data);
-        if ($this->Categories->save($category))
-        {
+        if ($this->Categories->save($category)) {
             $this->Flash->success('The category has been deleted.');
-        }
-        else
-        {
+        } else {
             $this->Flash->error('The category could not be deleted. Please, try again.');
         }
         return $this->redirect(['action' => 'index']);

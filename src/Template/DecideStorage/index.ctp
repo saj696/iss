@@ -62,9 +62,7 @@ $status = \Cake\Core\Configure::read('status_options');
                                     if($event->is_action_taken==0):
                                         echo $this->Html->link(__('Decide'), ['action' => 'view', $event->id], ['class' => 'btn btn-sm btn-warning', 'style'=>'width:70px;']);
                                     else:
-                                        ?>
-                                        <label class="btn btn-sm btn-success" style="width:70px;">Decided</label>
-                                        <?php
+                                        echo $this->Html->link(__('Decide'), ['action' => 'view', $event->id], ['class' => 'btn btn-sm btn-warning', 'disabled', 'style'=>'width:70px;']);
                                     endif;
                                     ?>
                                 </td>

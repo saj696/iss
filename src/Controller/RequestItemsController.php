@@ -150,6 +150,7 @@ class RequestItemsController extends AppController
                         $eventData['transfer_resource_id'] = $result['id'];
                         $eventData['recipient_id'] = $input['recipient_id'];
                         $eventData['recipient_action'] = array_flip(Configure::read('transfer_event_types'))['request'];
+                        $eventData['initiated_by'] = $user['id'];
                         $eventData['created_by'] = $user['id'];
                         $eventData['created_date'] = $time;
                         $event = $this->TransferEvents->patchEntity($event, $eventData);
@@ -258,6 +259,7 @@ class RequestItemsController extends AppController
         $eventData['transfer_resource_id'] = $id;
         $eventData['recipient_id'] = $recipient_id;
         $eventData['recipient_action'] = array_flip(Configure::read('transfer_event_types'))['request'];
+        $eventData['initiated_by'] = $user['id'];
         $eventData['created_by'] = $user['id'];
         $eventData['created_date'] = $time;
 

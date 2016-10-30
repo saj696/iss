@@ -186,7 +186,7 @@ class DecideStorageController extends AppController
                     $input = $this->request->data;
                     $event_id = $input['event_id'];
                     $itemDetail = $input['detail'];
-                    $event = $this->TransferItems->get($event_id, ['contain' => ['TransferResources']]);
+                    $event = $this->TransferEvents->get($event_id, ['contain' => ['TransferResources']]);
 
                     foreach($itemDetail as $warehouse_id=>$detail):
                         $resource = $this->TransferResources->newEntity();
@@ -203,6 +203,7 @@ class DecideStorageController extends AppController
                         $eventData['transfer_resource_id'] = $result['id'];
                         $eventData['recipient_id'] = $user['id'];
                         $eventData['recipient_action'] = array_flip(Configure::read('transfer_event_types'))['make_challan_forward_send_delivery'];
+                        $eventData['initiated_by'] = $event['initiated_by'];
                         $eventData['created_by'] = $user['id'];
                         $eventData['created_date'] = $time;
                         $eventTbl = $this->TransferEvents->patchEntity($eventTbl, $eventData);

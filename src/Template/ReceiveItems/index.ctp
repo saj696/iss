@@ -41,7 +41,7 @@ $user = $this->request->Session()->read('Auth')['User'];
                         foreach ($events as $key => $event)
                         {
                             ?>
-                            <tr>
+                            <tr class="main_tr">
                                 <td><?= $this->Number->format($key + 1) ?></td>
                                 <td><?= date('d-m-Y', $event->created_date) ?></td>
                                 <td>
@@ -59,12 +59,28 @@ $user = $this->request->Session()->read('Auth')['User'];
                                     endif;
                                     ?>
                                 </td>
-                                <td class="actions" width="38%">
+                                <td class="actions" width="15%">
                                     <?php
                                     if($user['user_group_id'] == Configure::read('depot_in_charge_ug')):
                                         ?>
-                                        <button class="btn btn-sm btn-success distribute">Distribute</button>
+<!--                                        <div class="row popContainer" style="display: none;">-->
+<!--                                            <table class="table table-bordered" style="margin-bottom: 0px;">-->
+<!--                                                <tr><td colspan="12" class="text-center"><label class="label label-warning">Distribute among warehouses</label></td></tr>-->
+<!--                                                --><?php //foreach($depotWarehouses as $depotWarehouse):?>
+<!--                                                    <tr>-->
+<!--                                                        <td>--><?//= $warehouses[$depotWarehouse]?><!--</td>-->
+<!--                                                        <td><input type="text" name="" class="form-control" value="" /></td>-->
+<!--                                                    </tr>-->
+<!--                                                --><?php //endforeach;?>
+<!--                                                <tr>-->
+<!--                                                    <td colspan="2" class="text-center" style="border: 0px;">-->
+<!--                                                        <label class="btn btn-sm btn-success crossSpan">--><?//= __('Ok')?><!--</label>-->
+<!--                                                    </td>-->
+<!--                                                </tr>-->
+<!--                                            </table>-->
+<!--                                        </div>-->
                                         <?php
+                                        echo $this->Html->link(__('Receive'), ['action' => 'distribute', $event->id], ['class' => 'btn btn-sm btn-success']);
                                     elseif($user['user_group_id'] == Configure::read('warehouse_in_charge_ug')):
                                         echo $this->Html->link(__('Receive'), ['action' => 'receive', $event->id], ['class' => 'btn btn-sm btn-success']);
                                     endif;
@@ -92,7 +108,7 @@ $user = $this->request->Session()->read('Auth')['User'];
 <script>
     $(document).ready(function()
     {
-        $(document).on("click", ".forward", function(event)
+        $(document).on("click", ".distribute", function(event)
         {
             $(".popContainer").hide();
             $(this).closest('td').find('.popContainer').show();
@@ -102,5 +118,12 @@ $user = $this->request->Session()->read('Auth')['User'];
         {
             $(".popContainer").hide();
         });
+
+//        $(document).on("click", ".distribute", function()
+//        {
+//            var obj = $(this);
+//            var event_id = parseInt(obj.closest('.main_tr').find('.item_id').html());
+//            alert(event_id);
+//        });
     });
 </script>
