@@ -13,7 +13,7 @@ $status = \Cake\Core\Configure::read('status_options');
             <?= $this->Html->link(__('Decided Requests'), ['action' => 'index']) ?>
             <i class="fa fa-angle-right"></i>
         </li>
-        <li><?= __('Process') ?></li>
+        <li><?= __('Chalan') ?></li>
     </ul>
 </div>
 
@@ -22,37 +22,45 @@ $status = \Cake\Core\Configure::read('status_options');
         <div class="portlet box blue-hoki">
             <div class="portlet-title">
                 <div class="caption">
-                    <i class="fa fa-picture-o fa-lg"></i><?= __('Process') ?>
+                    <i class="fa fa-picture-o fa-lg"></i><?= __('Make Chalan') ?>
                 </div>
                 <div class="tools">
-                    <?= $this->Html->link(__('Back'), ['action' => 'view/'.$eventId], ['class' => 'btn btn-sm btn-success']); ?>
+                    <button class="btn btn-sm btn-warning">Print</button>
                 </div>
             </div>
 
             <div class="portlet-body">
                 <div class="table-scrollable">
-                    <form method="post" class="form-horizontal" role="form" action="<?= $this->Url->build("/DecideStorage/add")?>">
-                    <input type="hidden" name="event_id" class="event_id" value="<?=$eventId?>" />
-                    <?php foreach($decidedArray as $warehouseId=>$itemDetail):?>
+                    <form method="post" class="form-horizontal" role="form" action="<?= $this->Url->build("/DecidedRequests/chalanForward")?>">
+                        <?php foreach($eventIds as $eventId):?>
+                            <input type="hidden" name="eventIds[]" value="<?= $eventId?>" />
+                        <?php endforeach;?>
+                        <input type="hidden" name="warehouse_id" value="<??>">
+
+                        <table class="table table-bordered">
+                            <tr>
+                                <td class="pull-left">Chalan No: <?= $sl_no?></td>
+                                <td class="pull-right">Date: <?= date('d-m-Y')?></td>
+                            </tr>
+                        </table>
+
                         <table class="table table-bordered">
                             <tbody>
-                                <tr><td colspan="6" class="text-center"><label class="label label-success"><?= $warehouses[$warehouseId]?></label></td></tr>
                                 <tr>
                                     <th>Item</th>
                                     <th>Quantity</th>
                                 </tr>
-                                <?php foreach($itemDetail as $item=>$quantity):?>
-                                    <input type="hidden" name="detail[<?=$warehouseId?>][<?=$item?>]" value="<?= $quantity?>" />
+                                <?php foreach($returnData as $detail):?>
+                                    <input type="hidden" name="detail[<?=$detail['item_id']?>]" value="<?= $detail['quantity']?>" />
                                     <tr>
-                                        <td><?= $itemArray[$item]?></td>
-                                        <td><?= $quantity>0?$quantity:0?></td>
+                                        <td><?= $itemArray[$detail['item_id']]?></td>
+                                        <td><?= $detail['quantity']>0?$detail['quantity']:0?></td>
                                     </tr>
                                 <?php endforeach;?>
                             </tbody>
                         </table>
-                    <?php endforeach;?>
                     <div class="text-center" style="margin-bottom: 20px;">
-                        <?= $this->Form->button(__('Save'), ['class' => 'btn blue submitBtn', 'style'=>'font-size:13px; padding:6px 8px;']) ?>
+                        <?= $this->Form->button(__('Forward'), ['class' => 'btn blue submitBtn', 'style'=>'font-size:13px; padding:6px 8px;']) ?>
                     </div>
                     </form>
                 </div>

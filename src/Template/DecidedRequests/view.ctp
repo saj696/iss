@@ -10,7 +10,7 @@ $status = \Cake\Core\Configure::read('status_options');
             <i class="fa fa-angle-right"></i>
         </li>
         <li>
-            <?= $this->Html->link(__('Decide Storage'), ['action' => 'index']) ?>
+            <?= $this->Html->link(__('Decided Requests'), ['action' => 'index']) ?>
             <i class="fa fa-angle-right"></i>
         </li>
         <li><?= __('Decide') ?></li>
@@ -22,7 +22,7 @@ $status = \Cake\Core\Configure::read('status_options');
         <div class="portlet box blue-hoki">
             <div class="portlet-title">
                 <div class="caption">
-                    <i class="fa fa-picture-o fa-lg"></i><?= __('Decide Storage') ?>
+                    <i class="fa fa-picture-o fa-lg"></i><?= __('Decided Requests') ?>
                 </div>
                 <div class="tools">
                     <?= $this->Html->link(__('Back'), ['action' => 'index'], ['class' => 'btn btn-sm btn-success']); ?>

@@ -40,6 +40,7 @@ class DecideStorageController extends AppController
 
         $this->loadModel('Items');
         $items = $this->Items->find('all', ['conditions' => ['status' => 1]]);
+
         $itemArray = [];
         foreach($items as $item) {
             $itemArray[$item['id']] = $item['name'].' - '.$item['pack_size'].' '.Configure::read('pack_size_units')[$item['unit']];
