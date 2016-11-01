@@ -68,6 +68,8 @@ class DecidedRequestsController extends AppController
     {
         $user = $this->Auth->user();
         $data = $this->request->data;
+        $warehouse_id = $data['warehouse_id'];
+
         if($data) {
             $this->loadModel('TransferEvents');
             $this->loadModel('Serials');
@@ -143,7 +145,7 @@ class DecidedRequestsController extends AppController
                 $sl_no = 1;
             }
 
-            $this->set(compact('returnData', 'itemArray', 'sl_no', 'eventIds'));
+            $this->set(compact('returnData', 'itemArray', 'sl_no', 'eventIds', 'warehouse_id'));
         } else {
             $this->Flash->error('Please come again sequentially. Thank you!');
             return $this->redirect(['action' => 'index']);
@@ -311,17 +313,91 @@ class DecidedRequestsController extends AppController
 
     public function chalanForward()
     {
+        $user = $this->Auth->user();
+        $time = time();
         $this->loadModel('TransferItems');
         $this->loadModel('TransferEvents');
         $this->loadModel('TransferResources');
         $this->loadModel('Users');
-        $data = $this->request->data;
 
-        foreach($data['eventIds'] as $eventId):
-            $event = $this->TransferEvents->get($eventId, ['contains'=>['TransferResources'=>['TransferItems']]]);
-            $warehouseId = $event['transfer_resource']['transfer_items'][0]['warehouse_id'];
-            $warehouseInChargeData = $this->Users->find('all', ['conditions'=>['warehouse_id'=>$warehouseId], 'fields'=>['id']])->first();
-            $warehouseInChargeId = $warehouseInChargeData['id'];
-        endforeach;
+        try {
+            $saveStatus = 0;
+            $conn = ConnectionManager::get('default');
+            $conn->transactional(function () use ($user, $time, &$saveStatus)
+            {
+                $data = $this->request->data;
+                $warehouse_id = $data['warehouse_id'];
+                $warehouseInChargeData = $this->Users->find('all', ['conditions'=>['warehouse_id'=>$warehouse_id, 'status'=>1, 'user_group_id'=>Configure::read('warehouse_in_charge_ug')], 'fields'=>['id']])->first();
+
+                if($warehouseInChargeData) {
+                    if($user['user_group_id']==Configure::read('depot_in_charge_ug')):
+                        $trigger_type = array_flip(Configure::read('serial_trigger_types'))['depot'];
+                        $trigger_id = $user['depot_id'];
+                    elseif($user['user_group_id']==Configure::read('warehouse_in_charge_ug')):
+                        $trigger_type = array_flip(Configure::read('serial_trigger_types'))['warehouse'];
+                        $trigger_id = $user['warehouse_id'];
+                    else:
+                        $trigger_type = array_flip(Configure::read('serial_trigger_types'))['others'];
+                        $trigger_id = $user['administrative_unit_id'];
+                    endif;
+
+                    // Resource entry
+                    $resource = $this->TransferResources->newEntity();
+                    $resourceData['resource_type'] = array_flip(Configure::read('transfer_resource_types'))['chalan'];
+                    $resourceData['trigger_type'] = $trigger_type;
+                    $resourceData['trigger_id'] = $trigger_id;
+                    $resourceData['serial_no'] = $data['chalan_no'];
+                    $resourceData['created_by'] = $user['id'];
+                    $resourceData['created_date'] = $time;
+                    $resource = $this->TransferResources->patchEntity($resource, $resourceData);
+                    $resourceResult = $this->TransferResources->save($resource);
+
+                    // Corresponding event entry
+                    $eventTbl = $this->TransferEvents->newEntity();
+                    $eventData['transfer_resource_id'] = $resourceResult['id'];
+                    $eventData['recipient_id'] = $warehouseInChargeData['id'];
+                    $eventData['recipient_action'] = array_flip(Configure::read('transfer_event_types'))['deliver'];
+                    $eventData['chalan_references'] = json_encode($data['eventIds']);
+                    $eventData['created_by'] = $user['id'];
+                    $eventData['created_date'] = $time;
+                    $eventTbl = $this->TransferEvents->patchEntity($eventTbl, $eventData);
+                    $this->TransferEvents->save($eventTbl);
+
+                    // Corresponding item entry
+                    if(sizeof($data['detail'])>0):
+                        foreach($data['detail'] as $item_id=>$quantity):
+                            $item = $this->TransferItems->newEntity();
+                            $itemData['transfer_resource_id'] = $resourceResult['id'];
+                            $itemData['item_id'] = $item_id;
+                            $itemData['quantity'] = $quantity;
+                            $itemData['warehouse_id'] = $warehouse_id;
+                            $itemData['created_by'] = $user['id'];
+                            $itemData['created_date'] = $time;
+                            $item = $this->TransferItems->patchEntity($item, $itemData);
+                            $this->TransferItems->save($item);
+                        endforeach;
+                    endif;
+
+                    // Event update with is_action_taken = 1
+                    foreach($data['eventIds'] as $eventId){
+                        $transfer_events = TableRegistry::get('transfer_events');
+                        $query = $transfer_events->query();
+                        $query->update()->set(['is_action_taken' => 1])->where(['id' => $eventId])->execute();
+                    }
+                } else {
+                    $this->Flash->error('Warehouse In-charge not available; Forwarding nor possible. Please try again!');
+                    return $this->redirect(['action' => 'index']);
+                }
+            });
+            $this->Flash->success('You have successfully forwarded the Chalan. Thank you!');
+            return $this->redirect(['action' => 'index']);
+        } catch (\Exception $e) {
+            echo '<pre>';
+            print_r($e);
+            echo '</pre>';
+            exit;
+            $this->Flash->error('Chalan forwarding not possible. Please try again!');
+            return $this->redirect(['action' => 'index']);
+        }
     }
 }

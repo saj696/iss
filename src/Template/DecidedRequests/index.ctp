@@ -15,7 +15,7 @@ $status = \Cake\Core\Configure::read('status_options');
 
 <div class="row">
     <div class="col-md-12">
-        <form class="form-horizontal" role="form" action="<?= $this->Url->build("/DecidedRequests/chalan")?>" method="post">
+        <form class="form-horizontal" id="chalanForm" role="form" action="<?= $this->Url->build("/DecidedRequests/chalan")?>" method="post">
         <div class="portlet box blue-hoki">
             <div class="portlet-title">
                 <div class="caption">
@@ -45,8 +45,9 @@ $status = \Cake\Core\Configure::read('status_options');
                             <tr>
                                 <td style="width: 4%">
                                     <?php if(in_array($event['transfer_resource']['transfer_items'][0]['warehouse_id'], $myLevelWarehouses)):?>
-                                        <input type="checkbox" name="chalan_event[]" data-warehouse-id="<?=$event['transfer_resource']['transfer_items'][0]['warehouse_id']?>" class="form-control warehouse_for_chalan" value="<?=$event->id?>" />
+                                        <input type="checkbox" <?php if($event['is_action_taken']==1){echo 'disabled';} ?> name="chalan_event[]" data-warehouse-id="<?=$event['transfer_resource']['transfer_items'][0]['warehouse_id']?>" class="warehouse_for_chalan" value="<?=$event->id?>" />
                                     <?php endif;?>
+                                    <div class="warehouse"></div>
                                 </td>
                                 <td><?= $this->Number->format($key + 1) ?></td>
                                 <td><?= date('d-m-Y', $event->created_date) ?></td>
@@ -144,6 +145,20 @@ $status = \Cake\Core\Configure::read('status_options');
                 $(this).closest('span').removeClass('checked');
                 alert('Multiple warehouse not allowed! Make chalan for a single warehouse.');
             }
+        });
+
+        $("#chalanForm").submit(function(e) {
+            var self = this;
+            e.preventDefault();
+
+            $( ".warehouse_for_chalan" ).each(function( index ) {
+                if($(this).prop('checked')){
+                    var warehouse_id = $(this).attr('data-warehouse-id');
+                    $(".warehouse").html('<input type="hidden" name="warehouse_id" value="'+warehouse_id+'" />');
+                    return false;
+                }
+            });
+            self.submit();
         });
     });
 

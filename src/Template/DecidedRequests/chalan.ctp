@@ -35,11 +35,10 @@ $status = \Cake\Core\Configure::read('status_options');
                         <?php foreach($eventIds as $eventId):?>
                             <input type="hidden" name="eventIds[]" value="<?= $eventId?>" />
                         <?php endforeach;?>
-                        <input type="hidden" name="warehouse_id" value="<??>">
-
+                        <input type="hidden" name="warehouse_id" value="<?=$warehouse_id?>" />
                         <table class="table table-bordered">
                             <tr>
-                                <td class="pull-left">Chalan No: <?= $sl_no?></td>
+                                <td class="pull-left">Chalan No: <?= $sl_no?><input type="hidden" name="chalan_no" value="<?=$sl_no?>" /></td>
                                 <td class="pull-right">Date: <?= date('d-m-Y')?></td>
                             </tr>
                         </table>
@@ -59,9 +58,9 @@ $status = \Cake\Core\Configure::read('status_options');
                                 <?php endforeach;?>
                             </tbody>
                         </table>
-                    <div class="text-center" style="margin-bottom: 20px;">
-                        <?= $this->Form->button(__('Forward'), ['class' => 'btn blue submitBtn', 'style'=>'font-size:13px; padding:6px 8px;']) ?>
-                    </div>
+                        <div class="text-center" style="margin-bottom: 20px;">
+                            <?= $this->Form->button(__('Forward'), ['class' => 'btn blue submitBtn', 'style'=>'font-size:13px; padding:6px 8px;']) ?>
+                        </div>
                     </form>
                 </div>
             </div>

@@ -1,6 +1,5 @@
 <?php
 use Cake\Core\Configure;
-
 $status = Configure::read('status_options');
 $user = $this->request->Session()->read('Auth')['User'];
 ?>
@@ -51,9 +50,9 @@ $user = $this->request->Session()->read('Auth')['User'];
                                     if(sizeof($size>0)):
                                         foreach($items as $key=>$item):
                                             if($size==$key+1):
-                                                echo $itemArray[$item['item_id']]. '('.$item['quantity'].')';
+                                                echo $itemArray[$item['item_id']]. ' ('.$item['quantity'].')';
                                             else:
-                                                echo $itemArray[$item['item_id']]. '('.$item['quantity'].') | ';
+                                                echo $itemArray[$item['item_id']]. ' ('.$item['quantity'].') | ';
                                             endif;
                                         endforeach;
                                     endif;

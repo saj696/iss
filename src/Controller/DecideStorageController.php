@@ -189,11 +189,24 @@ class DecideStorageController extends AppController
                     $itemDetail = $input['detail'];
                     $event = $this->TransferEvents->get($event_id, ['contain' => ['TransferResources']]);
 
+                    if($user['user_group_id']==Configure::read('depot_in_charge_ug')):
+                        $trigger_type = array_flip(Configure::read('serial_trigger_types'))['depot'];
+                        $trigger_id = $user['depot_id'];
+                    elseif($user['user_group_id']==Configure::read('warehouse_in_charge_ug')):
+                        $trigger_type = array_flip(Configure::read('serial_trigger_types'))['warehouse'];
+                        $trigger_id = $user['warehouse_id'];
+                    else:
+                        $trigger_type = array_flip(Configure::read('serial_trigger_types'))['others'];
+                        $trigger_id = $user['administrative_unit_id'];
+                    endif;
+
                     foreach($itemDetail as $warehouse_id=>$detail):
                         $resource = $this->TransferResources->newEntity();
                         $resourceData['reference_resource_id'] = $event['transfer_resource_id'];
                         $resourceData['resource_type'] = array_flip(Configure::read('transfer_resource_types'))['decide_storage'];
                         $resourceData['serial_no'] = $event['transfer_resource']['serial_no'];
+                        $resourceData['trigger_type'] = $trigger_type;
+                        $resourceData['trigger_id'] = $trigger_id;
                         $resourceData['created_by'] = $user['id'];
                         $resourceData['created_date'] = $time;
                         $resource = $this->TransferResources->patchEntity($resource, $resourceData);

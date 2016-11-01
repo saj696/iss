@@ -50,18 +50,19 @@ class ReceiveItemsController extends AppController
         $warehouses = $this->Warehouses->find('list', ['conditions'=>['status'=>1]])->toArray();
         $depots = $this->Depots->find('list', ['conditions'=>['status'=>1]])->toArray();
         $users = $this->Users->find('list', ['conditions'=>['user_group_id !='=>1,'status'=>1]]);
+
+
+//        $userLevelWarehouses = $this->Warehouses->find('all', ['conditions'=>['status'=>1, 'unit_id'=>$user['administrative_unit_id']], 'fields'=>['id']])->hydrate(false)->toArray();
+//        $myLevelWarehouses = [];
+//        foreach($userLevelWarehouses as $userLevelWarehouse):
+//            $myLevelWarehouses[] = $userLevelWarehouse['id'];
+//        endforeach;
+//
+//        $userDepotInfo = $this->Depots->get($user['depot_id']);
+//        $depotWarehouses = json_decode($userDepotInfo['warehouses'], true);
+
         $events = $this->paginate($events);
-
-        $userLevelWarehouses = $this->Warehouses->find('all', ['conditions'=>['status'=>1, 'unit_id'=>$user['administrative_unit_id']], 'fields'=>['id']])->hydrate(false)->toArray();
-        $myLevelWarehouses = [];
-        foreach($userLevelWarehouses as $userLevelWarehouse):
-            $myLevelWarehouses[] = $userLevelWarehouse['id'];
-        endforeach;
-
-        $userDepotInfo = $this->Depots->get($user['depot_id']);
-        $depotWarehouses = json_decode($userDepotInfo['warehouses'], true);
-
-        $this->set(compact('itemArray', 'users', 'events', 'warehouses', 'depots', 'myLevelWarehouses', 'depotWarehouses'));
+        $this->set(compact('itemArray', 'users', 'events', 'warehouses'));
         $this->set('_serialize', ['events']);
     }
 
