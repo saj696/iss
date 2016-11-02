@@ -2,6 +2,7 @@
 namespace App\Controller;
 
 use App\Controller\AppController;
+use Cake\Core\Configure;
 
 /**
  * CustomerApproval Controller
@@ -21,13 +22,13 @@ class CustomerApprovalController extends AppController
         $user = $this->Auth->user();
         $this->loadModel('Customers');
 
-        $approves = $this->Customers->find('all',[
-                'conditions' => ['Customers.status !=' => 99, 'Customers.status' => 0]
+        $customers = $this->Customers->find('all',[
+            'conditions' => ['Customers.status !=' => 99]
         ]);
 
-        $approves = $this->paginate($approves);
-        $this->set(compact('approves'));
-        $this->set('_serialize', ['approves']);
+        $customers = $this->paginate($customers);
+        $this->set(compact('customers'));
+        $this->set('_serialize', ['customers']);
     }
 
     /**
@@ -42,25 +43,48 @@ class CustomerApprovalController extends AppController
         $user = $this->Auth->user();
         $time = time();
         $this->loadModel('Customers');
-        $approves = $this->Customers->get($id, [
+        $customer = $this->Customers->get($id, [
             'contain' => []
         ]);
         if ($this->request->is(['patch', 'post', 'put'])) {
-            $approves = $this->Customers->patchEntity($approves, $this->request->data);
-            $approves['opening_balance'] = 0;
-            $approves['approved_by'] = $user['id'];
-            $approves['approval_date'] = $time;
-
+            $data = $this->request->data;
+            $data['updated_by'] = $user['id'];
+            $data['updated_date'] = $time;
+            $approves = $this->Customers->patchEntity($customer, $data);
             if ($this->Customers->save($approves)) {
                 $this->Flash->success(__('The customer approval has been saved.'));
-
                 return $this->redirect(['action' => 'index']);
             } else {
                 $this->Flash->error(__('The customer approval could not be saved. Please, try again.'));
+                return $this->redirect(['action' => 'index']);
             }
         }
-        $this->set(compact('approves'));
-        $this->set('_serialize', ['approves']);
+        $this->set(compact('customer'));
+        $this->set('_serialize', ['customer']);
+    }
+
+    public function approve($id = null)
+    {
+        $user = $this->Auth->user();
+        $time = time();
+        $this->loadModel('Customers');
+        $approves = $this->Customers->get($id, [
+            'contain' => []
+        ]);
+
+        $approves = $this->Customers->patchEntity($approves, $this->request->data);
+        $approves['business_type'] = array_flip(Configure::read('customer_business_type'))['cash'];
+        $approves['status'] = 1;
+        $approves['opening_balance'] = 0;
+        $approves['approved_by'] = $user['id'];
+        $approves['approval_date'] = $time;
+
+        if ($this->Customers->save($approves)) {
+            $this->Flash->success(__('The customer approved.'));
+        } else {
+            $this->Flash->error(__('The customer not approved, try again.'));
+        }
+        return $this->redirect(['action' => 'index']);
     }
 
 }

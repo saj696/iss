@@ -30,14 +30,15 @@ use Cake\Core\Configure;
             </div>
 
             <div class="portlet-body">
-                <?= $this->Form->create($approves, ['class' => 'form-horizontal', 'role' => 'form']) ?>
+                <?= $this->Form->create($customer, ['class' => 'form-horizontal', 'role' => 'form']) ?>
                 <div class="row">
                     <div class="col-md-6 col-md-offset-3">
                         <?php
                             echo $this->Form->input('credit_limit',['label'=> 'Credit Limit','type'=>'number','required'=>'required']);
                             echo $this->Form->input('credit_invoice_days',['label'=> 'Credit Invoice Days','type'=>'number','required'=>'required']);
                             echo $this->Form->input('cash_invoice_days',['label'=> 'Cash Invoice Days','type'=>'number','required'=>'required']);
-                            echo $this->Form->input('status', ['options'=>Configure::read('approve')]);
+                            echo $this->Form->input('business_type', ['options'=>Configure::read('customer_business_types')]);
+//                            echo $this->Form->input('status', ['options'=>Configure::read('approval_status')]);
                         ?>
                         <?= $this->Form->button(__('Submit'), ['class' => 'btn blue pull-right', 'style' => 'margin-top:20px']) ?>
                     </div>

@@ -57,16 +57,16 @@ $status = \Cake\Core\Configure::read('status_options');
                                     if(in_array($event['transfer_resource']['transfer_items'][0]['warehouse_id'], $myLevelWarehouses)):
                                         if($event['is_action_taken']==0):
                                             echo $this->Html->link(__('Send Delivery'), ['action' => 'sendDelivery', $event->id], ['class' => 'btn btn-sm btn-primary']);
-                                            echo $this->Html->link(__('Forward'), ['action' => 'forward', $event->id], ['class' => 'btn btn-sm btn-success']);
+                                            echo $this->Html->link(__('Forward'), ['action' => 'forwardThisLevel', $event->id], ['class' => 'btn btn-sm btn-success']);
                                         else:
                                             echo $this->Html->link(__('Send Delivery'), ['action' => 'sendDelivery', $event->id], ['class' => 'btn btn-sm btn-primary', 'disabled']);
-                                            echo $this->Html->link(__('Forward'), ['action' => 'forward', $event->id], ['class' => 'btn btn-sm btn-success', 'disabled']);
+                                            echo $this->Html->link(__('Forward'), ['action' => 'forwardThisLevel', $event->id], ['class' => 'btn btn-sm btn-success', 'disabled']);
                                         endif;
                                     else:
                                         if($event['is_action_taken']==0):
                                             ?>
                                             <div class="row popContainer" style="display: none;">
-                                                <form method="post" class="form-horizontal" role="form" action="<?= $this->Url->build("/DecidedRequests/forward")?>">
+                                                <form method="post" class="form-horizontal" role="form" action="<?= $this->Url->build("/DecidedRequests/forwardOtherLevel")?>">
                                                     <input type="hidden" name="event_id" value="<?= $event->id?>" />
                                                     <table class="table table-bordered" style="margin-bottom: 0px;">
                                                         <tr>

@@ -36,18 +36,21 @@ $status = \Cake\Core\Configure::read('status_options');
                         </tr>
                         </thead>
                         <tbody>
-                        <?php foreach ($approves as $key => $approve) { ?>
+                        <?php foreach ($customers as $key => $customer) { ?>
                             <tr>
                                 <td><?= $this->Number->format($key + 1) ?></td>
-                                <td><?= h($approve->name) ?></td>
-                                <td><?= h($approve->proprietor) ?></td>
-                                <td><?= h($approve->contact_person) ?></td>
-                                <td><?= ($approve->status)==0?"Not Approved":"Approved" ?></td>
+                                <td><?= h($customer->name) ?></td>
+                                <td><?= h($customer->proprietor) ?></td>
+                                <td><?= h($customer->contact_person) ?></td>
+                                <td><?= ($customer->status)==0?"Not Approved":"Approved" ?></td>
                                 <td class="actions">
                                     <?php
-//                                    echo $this->Html->link(__('View'), ['action' => 'view', $approve->id], ['class' => 'btn btn-sm btn-info']);
-                                    echo $this->Html->link(__('Edit'), ['action' => 'edit', $approve->id], ['class' => 'btn btn-sm btn-warning']);
-//                                    echo $this->Form->postLink(__('Delete'), ['action' => 'delete', $approve->id], ['class' => 'btn btn-sm btn-danger', 'confirm' => __('Are you sure you want to delete # {0}?', $approve->id)]);
+                                    if($customer->status==0):
+                                        echo $this->Html->link(__('Approve'), ['action' => 'approve', $customer->id], ['class' => 'btn btn-sm btn-info']);
+                                    else:
+                                        echo $this->Html->link(__('Approve'), ['action' => 'approve', $customer->id], ['class' => 'btn btn-sm btn-info', 'disabled']);
+                                    endif;
+                                    echo $this->Html->link(__('Edit'), ['action' => 'edit', $customer->id], ['class' => 'btn btn-sm btn-warning']);
                                     ?>
                                 </td>
                             </tr>

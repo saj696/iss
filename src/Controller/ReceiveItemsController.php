@@ -37,7 +37,7 @@ class ReceiveItemsController extends AppController
         $this->loadModel('Users');
 
         $events = $this->TransferEvents->find('all', [
-            'conditions' => ['TransferEvents.status !=' => 99, 'is_action_taken'=>0,'TransferEvents.recipient_id'=>$user['id'], 'recipient_action'=>array_flip(Configure::read('transfer_event_types'))['receive']],
+            'conditions' => ['TransferEvents.status !=' => 99, 'TransferEvents.recipient_id'=>$user['id'], 'recipient_action'=>array_flip(Configure::read('transfer_event_types'))['receive']],
             'contain' => ['TransferResources'=>['TransferItems']]
         ]);
 
@@ -96,9 +96,21 @@ class ReceiveItemsController extends AppController
                     if(sizeof($event['transfer_resource']['transfer_items'])>0):
                         foreach($event['transfer_resource']['transfer_items'] as $itemInfo):
                             $existingStock = $this->Stocks->find('all', ['conditions'=>['warehouse_id'=>$depotWarehouses[0], 'item_id'=>$itemInfo['item_id']]])->first();
-                            $stocks = TableRegistry::get('stocks');
-                            $query = $stocks->query();
-                            $query->update()->set(['quantity' => $existingStock['quantity']+$itemInfo['quantity']])->where(['id' => $existingStock['id']])->execute();
+                            if($existingStock){
+                                $stocks = TableRegistry::get('stocks');
+                                $query = $stocks->query();
+                                $query->update()->set(['quantity' => $existingStock['quantity']+$itemInfo['quantity']])->where(['id' => $existingStock['id']])->execute();
+                            } else {
+                                $stock = $this->Stocks->newEntity();
+                                $stockData['warehouse_id'] = $depotWarehouses[0];
+                                $stockData['item_id'] = $itemInfo['item_id'];
+                                $stockData['quantity'] = $itemInfo['quantity'];
+                                $stockData['approved_quantity'] = 0;
+                                $stockData['created_by'] = $user['id'];
+                                $stockData['created_date'] = time();
+                                $stock = $this->Stocks->patchEntity($stock, $stockData);
+                                $this->Stocks->save($stock);
+                            }
                         endforeach;
                     endif;
 
@@ -139,9 +151,22 @@ class ReceiveItemsController extends AppController
                 if(sizeof($event['transfer_resource']['transfer_items'])>0):
                     foreach($event['transfer_resource']['transfer_items'] as $itemInfo):
                         $existingStock = $this->Stocks->find('all', ['conditions'=>['warehouse_id'=>$user['warehouse_id'], 'item_id'=>$itemInfo['item_id']]])->first();
-                        $stocks = TableRegistry::get('stocks');
-                        $query = $stocks->query();
-                        $query->update()->set(['quantity' => $existingStock['quantity']+$itemInfo['quantity']])->where(['id' => $existingStock['id']])->execute();
+                        if($existingStock) {
+                            $stocks = TableRegistry::get('stocks');
+                            $query = $stocks->query();
+                            $query->update()->set(['quantity' => $existingStock['quantity']+$itemInfo['quantity']])->where(['id' => $existingStock['id']])->execute();
+                        } else {
+                            $stock = $this->Stocks->newEntity();
+                            $stockData['warehouse_id'] = $user['warehouse_id'];
+                            $stockData['item_id'] = $itemInfo['item_id'];
+                            $stockData['quantity'] = $itemInfo['quantity'];
+                            $stockData['approved_quantity'] = 0;
+                            $stockData['created_by'] = $user['id'];
+                            $stockData['created_date'] = time();
+                            $stock = $this->Stocks->patchEntity($stock, $stockData);
+                            $this->Stocks->save($stock);
+                        }
+
                     endforeach;
                 endif;
             });

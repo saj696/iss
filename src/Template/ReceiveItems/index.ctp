@@ -61,27 +61,17 @@ $user = $this->request->Session()->read('Auth')['User'];
                                 <td class="actions" width="15%">
                                     <?php
                                     if($user['user_group_id'] == Configure::read('depot_in_charge_ug')):
-                                        ?>
-<!--                                        <div class="row popContainer" style="display: none;">-->
-<!--                                            <table class="table table-bordered" style="margin-bottom: 0px;">-->
-<!--                                                <tr><td colspan="12" class="text-center"><label class="label label-warning">Distribute among warehouses</label></td></tr>-->
-<!--                                                --><?php //foreach($depotWarehouses as $depotWarehouse):?>
-<!--                                                    <tr>-->
-<!--                                                        <td>--><?//= $warehouses[$depotWarehouse]?><!--</td>-->
-<!--                                                        <td><input type="text" name="" class="form-control" value="" /></td>-->
-<!--                                                    </tr>-->
-<!--                                                --><?php //endforeach;?>
-<!--                                                <tr>-->
-<!--                                                    <td colspan="2" class="text-center" style="border: 0px;">-->
-<!--                                                        <label class="btn btn-sm btn-success crossSpan">--><?//= __('Ok')?><!--</label>-->
-<!--                                                    </td>-->
-<!--                                                </tr>-->
-<!--                                            </table>-->
-<!--                                        </div>-->
-                                        <?php
-                                        echo $this->Html->link(__('Receive'), ['action' => 'distribute', $event->id], ['class' => 'btn btn-sm btn-success']);
+                                        if($event['is_action_taken']==0):
+                                            echo $this->Html->link(__('Receive'), ['action' => 'distribute', $event->id], ['class' => 'btn btn-sm btn-success']);
+                                        else:
+                                            echo $this->Html->link(__('Receive'), ['action' => 'distribute', $event->id], ['disabled', 'class' => 'btn btn-sm btn-success']);
+                                        endif;
                                     elseif($user['user_group_id'] == Configure::read('warehouse_in_charge_ug')):
-                                        echo $this->Html->link(__('Receive'), ['action' => 'receive', $event->id], ['class' => 'btn btn-sm btn-success']);
+                                        if($event['is_action_taken']==0):
+                                            echo $this->Html->link(__('Receive'), ['action' => 'receive', $event->id], ['class' => 'btn btn-sm btn-success']);
+                                        else:
+                                            echo $this->Html->link(__('Receive'), ['action' => 'receive', $event->id], ['disabled', 'class' => 'btn btn-sm btn-success']);
+                                        endif;
                                     endif;
                                     ?>
                                 </td>

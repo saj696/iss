@@ -152,7 +152,58 @@ class DecidedRequestsController extends AppController
         }
     }
 
-    public function forward()
+    public function forwardThisLevel($id=null)
+    {
+        $user = $this->Auth->user();
+        $time = time();
+        $this->loadModel('TransferEvents');
+        $this->loadModel('TransferResources');
+        $this->loadModel('TransferItems');
+        $this->loadModel('Users');
+
+        try {
+            $saveStatus = 0;
+            $conn = ConnectionManager::get('default');
+            $conn->transactional(function () use ($id, $user, $time, &$saveStatus)
+            {
+                $event = $this->TransferEvents->get($id, ['contain' => ['TransferResources'=>['TransferItems']]]);
+                $forwardingWarehouse = $event['transfer_resource']['transfer_items'][0]['warehouse_id'];
+                $forwardingWarehouseInChargeInfo = $this->Users->find('all', ['conditions'=>['warehouse_id'=>$forwardingWarehouse, 'status !='=>99, 'user_group_id'=>Configure::read('warehouse_in_charge_ug')], 'fields'=>['id']])->first();
+
+                if($forwardingWarehouseInChargeInfo['id'] && $forwardingWarehouseInChargeInfo['id']>0) {
+                    // New event
+                    $eventTbl = $this->TransferEvents->newEntity();
+                    $eventData['transfer_resource_id'] = $event['transfer_resource_id'];
+                    $eventData['recipient_id'] = $forwardingWarehouseInChargeInfo['id'];
+                    $eventData['recipient_action'] = array_flip(Configure::read('transfer_event_types'))['make_challan_forward_send_delivery'];
+                    $eventData['initiated_by'] = $event['initiated_by'];
+                    $eventData['created_by'] = $user['id'];
+                    $eventData['created_date'] = $time;
+                    $eventTbl = $this->TransferEvents->patchEntity($eventTbl, $eventData);
+                    $this->TransferEvents->save($eventTbl);
+
+                    // Update event
+                    $transfer_events = TableRegistry::get('transfer_events');
+                    $query = $transfer_events->query();
+                    $query->update()->set(['is_action_taken' => 1])->where(['id' => $id])->execute();
+
+                    $this->Flash->success('The Forwarding is done. Thank you!');
+                } else {
+                    $this->Flash->error('No warehouse in charge, please assign one and try again!');
+                }
+                return $this->redirect(['action' => 'index']);
+            });
+        } catch (\Exception $e) {
+            echo '<pre>';
+            print_r($e);
+            echo '</pre>';
+            exit;
+            $this->Flash->error('The Forwarding not done. Please try again!');
+        }
+        return $this->redirect(['action' => 'index']);
+    }
+
+    public function forwardOtherLevel()
     {
         $user = $this->Auth->user();
         $time = time();
@@ -174,7 +225,7 @@ class DecidedRequestsController extends AppController
                         $eventTbl = $this->TransferEvents->newEntity();
                         $eventData['transfer_resource_id'] = $event['transfer_resource_id'];
                         $eventData['recipient_id'] = $forward_user;
-                        $eventData['recipient_action'] = array_flip(Configure::read('transfer_event_types'))['deliver'];
+                        $eventData['recipient_action'] = array_flip(Configure::read('transfer_event_types'))['make_challan_forward_send_delivery'];
                         $eventData['initiated_by'] = $event['initiated_by'];
                         $eventData['created_by'] = $user['id'];
                         $eventData['created_date'] = $time;

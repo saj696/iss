@@ -41,13 +41,18 @@ $status = \Cake\Core\Configure::read('status_options');
                                     <th>Item</th>
                                     <th>Quantity</th>
                                 </tr>
-                                <?php foreach($itemDetail as $item=>$quantity):?>
+                                <?php foreach($itemDetail as $item=>$quantity):
+                                    if($quantity>0):
+                                    ?>
                                     <input type="hidden" name="detail[<?=$warehouseId?>][<?=$item?>]" value="<?= $quantity?>" />
                                     <tr>
                                         <td><?= $itemArray[$item]?></td>
                                         <td><?= $quantity>0?$quantity:0?></td>
                                     </tr>
-                                <?php endforeach;?>
+                                <?php
+                                    endif;
+                                endforeach;
+                                ?>
                             </tbody>
                         </table>
                     <?php endforeach;?>

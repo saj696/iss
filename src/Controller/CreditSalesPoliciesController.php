@@ -16,8 +16,7 @@ class CreditSalesPoliciesController extends AppController
     public $paginate = [
         'limit' => 15,
         'order' => [
-            'DuePayCommissions.id' => 'desc',
-            'PaymentCommissions.id' => 'desc'
+            'CreditSalesPolicies.id' => 'desc'
         ]
     ];
 
@@ -28,23 +27,16 @@ class CreditSalesPoliciesController extends AppController
      */
     public function index()
     {
-        $this->loadModel('DuePayCommissions');
-        $this->loadModel('PaymentCommissions');
+        $this->loadModel('CreditSalesPolicies');
 
-        $duePayCommissions = $this->DuePayCommissions->find('all', [
+        $creditSalesPolicies = $this->CreditSalesPolicies->find('all', [
             'conditions' => ['status !=' => 99],
             'contain' => []
         ]);
-        $duePayCommissions = $this->paginate($duePayCommissions, ['scope' => 'DuePayCommissions']);
+        $creditSalesPolicies = $this->paginate($creditSalesPolicies);
 
-        $paymentCommissions = $this->PaymentCommissions->find('all', [
-            'conditions' => ['status !=' => 99],
-            'contain' => []
-        ]);
-        $paymentCommissions = $this->paginate($paymentCommissions, ['scope' => 'PaymentCommissions']);
-
-        $this->set(compact('duePayCommissions', 'paymentCommissions'));
-        $this->set('_serialize', ['stocks']);
+        $this->set(compact('creditSalesPolicies'));
+        $this->set('_serialize', ['creditSalesPolicies']);
     }
 
     /**
