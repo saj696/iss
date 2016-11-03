@@ -48,18 +48,18 @@ class CreditSalesPoliciesTable extends Table
             ->allowEmpty('id', 'create');
 
         $validator
-            ->integer('start_date')
-            ->requirePresence('start_date', 'create')
-            ->notEmpty('start_date');
+            ->integer('policy_start_date')
+            ->requirePresence('policy_start_date', 'create')
+            ->notEmpty('policy_start_date');
 
         $validator
-            ->integer('end_date')
-            ->requirePresence('end_date', 'create')
-            ->notEmpty('end_date');
+            ->integer('policy_end_date')
+            ->requirePresence('policy_end_date', 'create')
+            ->notEmpty('policy_end_date');
 
         $validator
-            ->requirePresence('detail', 'create')
-            ->notEmpty('detail');
+            ->requirePresence('policy_detail', 'create')
+            ->notEmpty('policy_detail');
 
         return $validator;
     }

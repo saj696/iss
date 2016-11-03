@@ -74,14 +74,10 @@ class CustomersController extends AppController
      */
     public function add()
     {
-
-
         $user = $this->Auth->user();
         $time = time();
         $customer = $this->Customers->newEntity();
         if ($this->request->is('post')) {
-
-
             $data = $this->request->data;
             $this->loadModel('AdministrativeUnits');
             $unitInfo = $this->AdministrativeUnits->get($data['administrative_unit_id']);

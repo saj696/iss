@@ -36,8 +36,8 @@ use Cake\Core\Configure;
                         <?php
                         echo $this->Form->input('warehouse_id', ['options' => $warehouses, 'empty' => __('Select')]);
                         echo $this->Form->input('item_id', ['options' => $items, 'empty' => __('Select')]);
-                        echo $this->Form->input('quantity');
-                        echo $this->Form->input('approved_quantity');
+                        echo $this->Form->input('quantity', ['class'=>'form-control numbersOnly']);
+                        echo $this->Form->input('approved_quantity', ['class'=>'form-control numbersOnly']);
                         echo $this->Form->input('status', ['options' => Configure::read('status_options')]);
                         ?>
                         <?= $this->Form->button(__('Submit'), ['class' => 'btn blue pull-right', 'style' => 'margin-top:20px']) ?>
@@ -49,3 +49,10 @@ use Cake\Core\Configure;
     </div>
 </div>
 
+<script>
+    $(document).ready(function () {
+        $(document).on("keyup", ".numbersOnly", function(event) {
+            this.value = this.value.replace(/[^0-9\.]/g,'');
+        });
+    });
+</script>

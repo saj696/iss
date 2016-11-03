@@ -22,7 +22,7 @@ if(sizeof($dropArray)>0):
                 <tr class="item_tr single_list">
                     <td style="width: 35%;"><?php echo $this->Form->input('details.0.item_id', ['options' => $dropArray, 'required' => 'required', 'style' => 'max-width: 100%', 'class' => 'form-control item', 'empty' => __('Select'), 'templates' => ['label' => '']]); ?></td>
                     <td style="width: 35%;"><?php echo $this->Form->input('details.0.type', ['options' => Configure::read('reduction_types'), 'empty' => 'Select', 'style' => 'width: 100%', 'required' => 'required', 'class' => 'form-control', 'templates' => ['label' => '']]); ?></td>
-                    <td><?php echo $this->Form->input('details.0.quantity', ['type' => 'text', 'style' => 'width: 100%', 'class' => 'form-control quantity', 'required', 'templates' => ['label' => '']]); ?></td>
+                    <td><?php echo $this->Form->input('details.0.quantity', ['type' => 'text', 'style' => 'width: 100%', 'class' => 'form-control quantity numbersOnly', 'required', 'templates' => ['label' => '']]); ?></td>
                     <td width="50px;"><span class="btn btn-sm btn-circle btn-danger remove pull-right">X</span></td>
                 </tr>
             </table>

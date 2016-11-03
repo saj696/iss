@@ -1,6 +1,5 @@
 <?php
 use Cake\Core\Configure;
-
 ?>
 <div class="page-bar">
     <ul class="page-breadcrumb">
@@ -37,8 +36,10 @@ use Cake\Core\Configure;
                             echo $this->Form->input('credit_limit',['label'=> 'Credit Limit','type'=>'number','required'=>'required']);
                             echo $this->Form->input('credit_invoice_days',['label'=> 'Credit Invoice Days','type'=>'number','required'=>'required']);
                             echo $this->Form->input('cash_invoice_days',['label'=> 'Cash Invoice Days','type'=>'number','required'=>'required']);
-                            echo $this->Form->input('business_type', ['options'=>Configure::read('customer_business_types')]);
-//                            echo $this->Form->input('status', ['options'=>Configure::read('approval_status')]);
+                            echo $this->Form->input('business_type', ['options'=>Configure::read('customer_business_types'),'class'=>'form-control business_type']);
+                            echo $this->Form->input('user_group', ['label'=>'User Group', 'options' => $userGroups, 'class'=>'form-control user_group', 'empty' => __('Select')]);
+                            echo $this->Form->input('credit_approved_by', ['type'=>'select', 'empty' => 'Select', 'label'=>'Approved By', 'class'=>'form-control credit_approved_by']);
+                            echo $this->Form->input('credit_approval_date',['type'=>'text', 'class'=>'form-control datepicker', 'label'=>'Approval Date']);
                         ?>
                         <?= $this->Form->button(__('Submit'), ['class' => 'btn blue pull-right', 'style' => 'margin-top:20px']) ?>
                     </div>
@@ -49,4 +50,33 @@ use Cake\Core\Configure;
     </div>
 </div>
 
+<script>
+    $(document).ready(function(){
+        $(document).on("focus",".datepicker", function()
+        {
+            $(this).removeClass('hasDatepicker').datepicker({
+                dateFormat: 'dd-mm-yy'
+            });
+        });
 
+        $(document).on('change', '.user_group', function() {
+            var obj = $(this);
+            var user_group = obj.val();
+            $('.credit_approved_by').html('<option value="">Select</option>');
+
+            if(user_group>0) {
+                $.ajax({
+                    type: 'POST',
+                    url: '<?= $this->Url->build("/CustomerApproval/ajax")?>',
+                    data: {user_group: user_group},
+                    success: function (data, status) {
+                        obj.closest('.input').next().find('.col-sm-9').html('');
+                        obj.closest('.input').next().find('.col-sm-9').html(data);
+                    }
+                });
+            } else {
+                $('.credit_approved_by').html('<option value="">Select</option>');
+            }
+        }); 
+    });
+</script>

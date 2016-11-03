@@ -30,11 +30,9 @@ $status = \Cake\Core\Configure::read('status_options');
                         <thead>
                         <tr>
                             <th><?= __('Sl. No.') ?></th>
-                            <th><?= __('Age From') ?></th>
-                            <th><?= __('Age To') ?></th>
-                            <th><?= __('Commission') ?></th>
                             <th><?= __('Start Date') ?></th>
                             <th><?= __('End Date') ?></th>
+                            <th><?= __('Policy Detail') ?></th>
                             <th><?= __('Actions') ?></th>
                         </tr>
                         </thead>
@@ -42,9 +40,9 @@ $status = \Cake\Core\Configure::read('status_options');
                         <?php foreach ($creditSalesPolicies as $key => $creditSalesPolicy) { ?>
                             <tr>
                                 <td><?= $this->Number->format($key + 1) ?></td>
-                                <td><?= $creditSalesPolicy->start_date ?></td>
-                                <td><?= $creditSalesPolicy->end_date ?></td>
-                                <td><?= $creditSalesPolicy->detail ?></td>
+                                <td><?= $creditSalesPolicy->policy_start_date ?></td>
+                                <td><?= $creditSalesPolicy->policy_end_date ?></td>
+                                <td><?= $creditSalesPolicy->policy_detail ?></td>
                                 <td class="actions">
                                     <?php
                                     echo $this->Html->link(__('View'), ['action' => 'view', $creditSalesPolicy->id], ['class' => 'btn btn-sm btn-info']);

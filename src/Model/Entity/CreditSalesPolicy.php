@@ -7,9 +7,9 @@ use Cake\ORM\Entity;
  * CreditSalesPolicy Entity
  *
  * @property int $id
- * @property int $start_date
- * @property int $end_date
- * @property string $detail
+ * @property int $policy_start_date
+ * @property int $policy_end_date
+ * @property string $policy_detail
  * @property int $status
  * @property int $created_by
  * @property int $created_date

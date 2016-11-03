@@ -67,7 +67,6 @@ class CreditSalesPoliciesController extends AppController
         $time = time();
         $stock = $this->Stocks->newEntity();
         if ($this->request->is('post')) {
-
             try {
                 $saveStatus = 0;
                 $conn = ConnectionManager::get('default');

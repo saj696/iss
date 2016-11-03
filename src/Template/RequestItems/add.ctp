@@ -43,7 +43,7 @@ use Cake\Core\Configure;
                                     </tr>
                                     <tr class="item_tr single_list">
                                         <td style="width: 50%;"><?php echo $this->Form->input('details.0.item_id', ['options' => $dropArray, 'required'=>'required', 'style'=>'max-width: 100%', 'class'=>'form-control item', 'empty' => __('Select'), 'templates'=>['label' => '']]);?></td>
-                                        <td><?php echo $this->Form->input('details.0.quantity', ['type' => 'text', 'style'=>'width: 100%', 'required'=>'required', 'class'=>'form-control quantity', 'templates'=>['label' => '']]);?></td>
+                                        <td><?php echo $this->Form->input('details.0.quantity', ['type' => 'text', 'style'=>'width: 100%', 'required'=>'required', 'class'=>'form-control quantity numbersOnly', 'templates'=>['label' => '']]);?></td>
                                         <td width="50px;"><span class="btn btn-sm btn-circle btn-danger remove pull-right">X</span></td>
                                     </tr>
                                 </table>
@@ -76,6 +76,11 @@ use Cake\Core\Configure;
 
 <script>
     $(document).ready(function(){
+
+        $(document).on("keyup", ".numbersOnly", function(event) {
+            this.value = this.value.replace(/[^0-9\.]/g,'');
+        });
+
         $(document).on('click', '.add_more', function () {
             var index = $('.list').data('index_no');
             $('.list').data('index_no', index + 1);

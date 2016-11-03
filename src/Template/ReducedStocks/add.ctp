@@ -47,6 +47,10 @@ use Cake\Core\Configure;
 
 <script>
     $(document).ready(function() {
+        $(document).on("keyup", ".numbersOnly", function(event) {
+            this.value = this.value.replace(/[^0-9\.]/g,'');
+        });
+
         $(document).on('change', '.store', function() {
             var store = $(this).val();
             if(store>0)

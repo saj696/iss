@@ -35,8 +35,8 @@ use Cake\Core\Configure;
                     <div class="col-md-6 col-md-offset-3">
                         <?php
                         echo $this->Form->input('item_id', ['options' => $dropArray, 'empty' => __('Select')]);
-                        echo $this->Form->input('order_quantity');
-                        echo $this->Form->input('bonus_quantity');
+                        echo $this->Form->input('order_quantity', ['class'=>'numbersOnly form-control']);
+                        echo $this->Form->input('bonus_quantity', ['class'=>'numbersOnly form-control']);
                         echo $this->Form->input('status', ['options' => Configure::read('status_options')]);
                         ?>
                         <?= $this->Form->button(__('Submit'), ['class' => 'btn blue pull-right', 'style' => 'margin-top:20px']) ?>
@@ -47,4 +47,10 @@ use Cake\Core\Configure;
         </div>
     </div>
 </div>
-
+<script>
+    $(document).ready(function () {
+        $(document).on("keyup", ".numbersOnly", function(event) {
+            this.value = this.value.replace(/[^0-9\.]/g,'');
+        });
+    });
+</script>

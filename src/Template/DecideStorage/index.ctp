@@ -88,6 +88,10 @@ $status = \Cake\Core\Configure::read('status_options');
 <script>
     $(document).ready(function()
     {
+        $(document).on("keyup", ".numbersOnly", function(event) {
+            this.value = this.value.replace(/[^0-9\.]/g,'');
+        });
+
         $(document).on("click", ".forward", function(event)
         {
             $(".popContainer").hide();

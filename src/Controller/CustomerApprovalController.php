@@ -3,12 +3,9 @@ namespace App\Controller;
 
 use App\Controller\AppController;
 use Cake\Core\Configure;
+use Cake\ORM\TableRegistry;
 
-/**
- * CustomerApproval Controller
- *
- * @property \App\Model\Table\CustomerApprovalTable $CustomerApproval
- */
+
 class CustomerApprovalController extends AppController
 {
 
@@ -46,20 +43,27 @@ class CustomerApprovalController extends AppController
         $customer = $this->Customers->get($id, [
             'contain' => []
         ]);
+
         if ($this->request->is(['patch', 'post', 'put'])) {
             $data = $this->request->data;
+            unset($data['user_group']);
+            $data['credit_approval_date'] = strtotime($data['credit_approval_date']);
             $data['updated_by'] = $user['id'];
             $data['updated_date'] = $time;
+
             $approves = $this->Customers->patchEntity($customer, $data);
             if ($this->Customers->save($approves)) {
-                $this->Flash->success(__('The customer approval has been saved.'));
+                $this->Flash->success(__('The customer credit approval has been saved.'));
                 return $this->redirect(['action' => 'index']);
             } else {
                 $this->Flash->error(__('The customer approval could not be saved. Please, try again.'));
                 return $this->redirect(['action' => 'index']);
             }
         }
-        $this->set(compact('customer'));
+
+        $this->loadModel('UserGroups');
+        $userGroups = $this->UserGroups->find('list', ['conditions'=>['status'=>1]]);
+        $this->set(compact('customer', 'userGroups'));
         $this->set('_serialize', ['customer']);
     }
 
@@ -76,8 +80,8 @@ class CustomerApprovalController extends AppController
         $approves['business_type'] = array_flip(Configure::read('customer_business_type'))['cash'];
         $approves['status'] = 1;
         $approves['opening_balance'] = 0;
-        $approves['approved_by'] = $user['id'];
-        $approves['approval_date'] = $time;
+        $approves['cash_approved_by'] = $user['id'];
+        $approves['cash_approval_date'] = $time;
 
         if ($this->Customers->save($approves)) {
             $this->Flash->success(__('The customer approved.'));
@@ -85,6 +89,16 @@ class CustomerApprovalController extends AppController
             $this->Flash->error(__('The customer not approved, try again.'));
         }
         return $this->redirect(['action' => 'index']);
+    }
+
+    public function ajax()
+    {
+        $data = $this->request->data;
+        $user_group = $data['user_group'];
+        $dropArray = TableRegistry::get('users')->find('list', ['conditions' => ['user_group_id' => $user_group]])->hydrate(false)->toArray();
+
+        $this->viewBuilder()->layout('ajax');
+        $this->set(compact('dropArray'));
     }
 
 }
