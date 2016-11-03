@@ -26,7 +26,7 @@ class UsersController extends AppController
     public function index()
     {
         $users = $this->Users->find('all', [
-            'conditions' => ['Users.status !=' => 99],
+            'conditions' => ['Users.status !=' => 99, 'user_group_id !='=>1],
             'contain' => ['AdministrativeUnits', 'UserGroups']
         ]);
         $this->set('users', $this->paginate($users));

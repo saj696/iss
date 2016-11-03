@@ -95,10 +95,10 @@ $status = \Cake\Core\Configure::read('status_options');
                                     <th>Decided Qty</th>
                                 </tr>
                                 <?php foreach($myWarehouseDetails as $detail):?>
-                                    <tr>
+                                    <tr class="main_tr">
                                         <td><?= $itemArray[$detail['item_id']]?></td>
                                         <td><?= $allWarehouses[$detail['warehouse_id']]?></td>
-                                        <td><?= $detail['quantity']?></td>
+                                        <td class="existing_quantity"><?= $detail['quantity']?></td>
                                         <td width="20%">
                                             <input type="hidden" class="warehouse_id" value="<?= $detail['warehouse_id']?>">
                                             <input type="text" name="decided[<?= $detail['warehouse_id']?>][<?= $detail['item_id']?>]" style="height: 25px;" class="form-control decided_quantity numbersOnly" value="" />
@@ -121,6 +121,15 @@ $status = \Cake\Core\Configure::read('status_options');
     $(document).ready(function(){
         $(document).on("keyup", ".numbersOnly", function(event) {
             this.value = this.value.replace(/[^0-9\.]/g,'');
+        });
+
+        $(document).on('keyup', '.decided_quantity', function(){
+            var obj = $(this);
+            var inputQty = obj.val();
+            var existingQty = parseInt(obj.closest('.main_tr').find('.existing_quantity').html());
+            if(inputQty>existingQty){
+                obj.val('');
+            }
         });
 
         $(document).on('change', '.warehouse', function () {
