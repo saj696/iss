@@ -36,6 +36,7 @@ class CustomersController extends AppController
         $user = $this->Auth->user();
         $userAdmin = $user['administrative_unit_id'];
         $this->loadModel('AdministrativeUnits');
+
         $userAdminGlobal = $this->AdministrativeUnits->get($userAdmin);
         $limitStart = pow(2,(Configure::read('max_level_no')- $user['level_no']-1)*5);
         $limitEnd = pow(2,(Configure::read('max_level_no')- $user['level_no'])*5);

@@ -1,0 +1,37 @@
+<?php
+namespace App\Model\Entity;
+
+use Cake\ORM\Entity;
+
+/**
+ * SpecialOffer Entity.
+ *
+ * @property int $id
+ * @property string $program_name
+ * @property int $program_period_start
+ * @property int $program_period_end
+ * @property int $invoice_type
+ * @property string $offer_detail
+ * @property int $status
+ * @property int $created_by
+ * @property int $created_date
+ * @property int $updated_by
+ * @property int $updated_date
+ */
+class SpecialOffer extends Entity
+{
+
+    /**
+     * Fields that can be mass assigned using newEntity() or patchEntity().
+     *
+     * Note that when '*' is set to true, this allows all unspecified fields to
+     * be mass assigned. For security purposes, it is advised to set '*' to false
+     * (or remove it), and explicitly make individual fields accessible as needed.
+     *
+     * @var array
+     */
+    protected $_accessible = [
+        '*' => true,
+        'id' => false,
+    ];
+}

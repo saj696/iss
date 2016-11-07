@@ -88,16 +88,25 @@ use Cake\Core\Configure;
             if(myArr.length != uniqueArr.length) {
                 alert('Duplicate item not acceptable!');
                 $(this).val('');
-            } else {
-                $.ajax({
-                    type: 'POST',
-                    url: '<?= $this->Url->build("/ReducedStocks/existing")?>',
-                    data: {item_id: item_id, store_id:store_id},
-                    success: function (data, status) {
-                        //console.log(data);
-                        obj.closest('.item_tr').find('.quantity').attr('placeholder', data);
-                    }
-                });
+            }
+            else
+            {
+                if(item_id>0)
+                {
+                    $.ajax({
+                        type: 'POST',
+                        url: '<?= $this->Url->build("/ReducedStocks/existing")?>',
+                        data: {item_id: item_id, store_id:store_id},
+                        success: function (data, status) {
+                            //console.log(data);
+                            obj.closest('.item_tr').find('.quantity').attr('placeholder', data);
+                        }
+                    });
+                }
+                else
+                {
+                    obj.closest('.item_tr').find('.quantity').attr('placeholder', 0);
+                }
             }
         });
 

@@ -53,9 +53,9 @@ class CreditSalesPoliciesTable extends Table
             ->notEmpty('policy_start_date');
 
         $validator
-            ->integer('policy_end_date')
-            ->requirePresence('policy_end_date', 'create')
-            ->notEmpty('policy_end_date');
+            ->integer('policy_expected_end_date')
+            ->requirePresence('policy_expected_end_date', 'create')
+            ->notEmpty('policy_expected_end_date');
 
         $validator
             ->requirePresence('policy_detail', 'create')

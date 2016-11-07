@@ -9,7 +9,7 @@ $status = \Cake\Core\Configure::read('status_options');
             <a href="<?= $this->Url->build(('/Dashboard'), true); ?>"><?= __('Dashboard') ?></a>
             <i class="fa fa-angle-right"></i>
         </li>
-        <li><?= $this->Html->link(__('Credit Sales Policy'), ['action' => 'index']) ?></li>
+        <li><?= $this->Html->link(__('Special Offers'), ['action' => 'index']) ?></li>
     </ul>
 </div>
 
@@ -18,10 +18,10 @@ $status = \Cake\Core\Configure::read('status_options');
         <div class="portlet box blue-hoki">
             <div class="portlet-title">
                 <div class="caption">
-                    <i class="fa fa-list-alt fa-lg"></i><?= __('Policy List') ?>
+                    <i class="fa fa-list-alt fa-lg"></i><?= __('Special Offer List') ?>
                 </div>
                 <div class="tools">
-                    <?= $this->Html->link(__('New Policy'), ['action' => 'add'], ['class' => 'btn btn-sm btn-primary']); ?>
+                    <?= $this->Html->link(__('New Special Offer'), ['action' => 'add'], ['class' => 'btn btn-sm btn-primary']); ?>
                 </div>
             </div>
             <div class="portlet-body">
@@ -30,18 +30,20 @@ $status = \Cake\Core\Configure::read('status_options');
                         <thead>
                         <tr>
                             <th><?= __('Sl. No.') ?></th>
-                            <th><?= __('Start Date') ?></th>
-                            <th><?= __('End Date') ?></th>
-                            <th><?= __('Policy Detail') ?></th>
+                            <th><?= __('Program Name') ?></th>
+                            <th><?= __('Period Start') ?></th>
+                            <th><?= __('Period End') ?></th>
+                            <th><?= __('Invoice Type') ?></th>
                         </tr>
                         </thead>
                         <tbody>
-                        <?php foreach ($creditSalesPolicies as $key => $creditSalesPolicy) { ?>
+                        <?php foreach ($specialOffers as $key => $specialOffer) { ?>
                             <tr>
                                 <td><?= $this->Number->format($key + 1) ?></td>
-                                <td><?= date('d-m-Y', $creditSalesPolicy->policy_start_date) ?></td>
-                                <td><?= date('d-m-Y', $creditSalesPolicy->policy_expected_end_date) ?></td>
-                                <td><?php echo '<pre>'; print_r(json_decode($creditSalesPolicy->policy_detail, true)); echo '</pre>';?></td>
+                                <td><?= h($specialOffer->program_name) ?></td>
+                                <td><?= $this->Number->format($specialOffer->program_period_start) ?></td>
+                                <td><?= $this->Number->format($specialOffer->program_period_end) ?></td>
+                                <td><?= $this->Number->format($specialOffer->invoice_type) ?></td>
                             </tr>
                         <?php
                         }
@@ -49,6 +51,13 @@ $status = \Cake\Core\Configure::read('status_options');
                         </tbody>
                     </table>
                 </div>
+                <ul class="pagination">
+                    <?php
+                    echo $this->Paginator->prev('<<');
+                    echo $this->Paginator->numbers();
+                    echo $this->Paginator->next('>>');
+                    ?>
+                </ul>
             </div>
         </div>
     </div>

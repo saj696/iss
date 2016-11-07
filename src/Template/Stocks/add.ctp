@@ -50,7 +50,7 @@ use Cake\Core\Configure;
                                 <table class="table table-bordered moreTable">
                                     <tr>
                                         <th><?= __('Item')?></th>
-                                        <th><?= __('Quantity')?></th>
+                                        <th><?= __('Quantity (Pcs)')?></th>
                                         <th><?= __('Approved Qty')?></th>
                                         <th></th>
                                     </tr>

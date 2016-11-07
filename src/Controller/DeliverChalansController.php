@@ -90,6 +90,7 @@ class DeliverChalansController extends AppController
                 endif;
 
                 $chalanEvent = $this->TransferEvents->get($id, ['contain' => ['TransferResources'=>['TransferItems']]]);
+
                 $chalanReferences = json_decode($chalanEvent['chalan_references'], true);
 
                 foreach($chalanReferences as $chalanReference)

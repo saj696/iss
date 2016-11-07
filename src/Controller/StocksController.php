@@ -32,6 +32,7 @@ class StocksController extends AppController
             'conditions' => ['Stocks.status !=' => 99],
             'contain' => ['Warehouses', 'Items']
         ]);
+
         $this->set('stocks', $this->paginate($stocks));
         $this->set('_serialize', ['stocks']);
     }
@@ -103,11 +104,11 @@ class StocksController extends AppController
         }
 
         $this->loadModel('Items');
-        $warehouses = $this->Stocks->Warehouses->find('list', ['conditions' => ['status' => 1]]);
+        $warehouses = $this->Stocks->Warehouses->find('list', ['conditions' => ['status' => 1, 'id'=>$user['warehouse_id']]]);
         $items = $this->Items->find('all', ['conditions' => ['status' => 1]]);
         $dropArray = [];
         foreach($items as $item) {
-            $dropArray[$item['id']] = $item['name'].' - '.$item['pack_size'].' '.Configure::read('pack_size_units')[$item['unit']];
+            $dropArray[$item['id']] = $item['name'].' - '.$item['pack_size'].' '.Configure::read('pack_size_units')[$item['unit']].' ('.$item['code'].')';
         }
         $this->set(compact('stock', 'warehouses', 'dropArray'));
         $this->set('_serialize', ['stock']);
@@ -139,7 +140,7 @@ class StocksController extends AppController
                 $this->Flash->error('The stock could not be saved. Please, try again.');
             }
         }
-        $warehouses = $this->Stocks->Warehouses->find('list', ['conditions' => ['status' => 1]]);
+        $warehouses = $this->Stocks->Warehouses->find('list', ['conditions' => ['status' => 1, 'id'=>$user['warehouse_id']]]);
         $items = $this->Stocks->Items->find('list', ['conditions' => ['status' => 1]]);
         $this->set(compact('stock', 'warehouses', 'items'));
         $this->set('_serialize', ['stock']);

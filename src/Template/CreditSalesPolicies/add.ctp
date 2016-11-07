@@ -1,6 +1,9 @@
 <?php
 use Cake\Core\Configure;
-
+//echo '<pre>';
+//print_r($policyDetail);
+//echo '</pre>';
+//exit;
 ?>
 <div class="page-bar">
     <ul class="page-breadcrumb">
@@ -10,10 +13,10 @@ use Cake\Core\Configure;
             <i class="fa fa-angle-right"></i>
         </li>
         <li>
-            <?= $this->Html->link(__('Stocks'), ['action' => 'index']) ?>
+            <?= $this->Html->link(__('Policies'), ['action' => 'index']) ?>
             <i class="fa fa-angle-right"></i>
         </li>
-        <li><?= __('New Stock') ?></li>
+        <li><?= __('New Policy') ?></li>
     </ul>
 </div>
 
@@ -22,7 +25,7 @@ use Cake\Core\Configure;
         <div class="portlet box blue-hoki">
             <div class="portlet-title">
                 <div class="caption">
-                    <i class="fa fa-plus-square-o fa-lg"></i><?= __('Add New Stock') ?>
+                    <i class="fa fa-plus-square-o fa-lg"></i><?= __('Add New Policy') ?>
                 </div>
                 <div class="tools">
                     <?= $this->Html->link(__('Back'), ['action' => 'index'], ['class' => 'btn btn-sm btn-success']); ?>
@@ -30,47 +33,22 @@ use Cake\Core\Configure;
             </div>
 
             <div class="portlet-body">
-                <?= $this->Form->create($stock, ['class' => 'form-horizontal', 'role' => 'form']) ?>
+                <?= $this->Form->create($creditSalesPolicy, ['class' => 'form-horizontal', 'role' => 'form']) ?>
                 <div class="row">
-                    <div class="col-lg-12">
-                        <table class="table table-bordered">
-                            <tr>
-                                <td>
-                                    <?php echo $this->Form->input('warehouse_id', ['options' => $warehouses, 'style'=>'width:50%', 'class'=>'form-control', 'empty' => __('Select')]);?>
-                                </td>
-                            </tr>
-                        </table>
-                    </div>
-                </div>
-
-                <div class="row">
-                    <div class="col-lg-12">
-                        <div class="list" data-index_no="0">
-                            <div class="itemWrapper">
-                                <table class="table table-bordered moreTable">
-                                    <tr>
-                                        <th><?= __('Item')?></th>
-                                        <th><?= __('Quantity')?></th>
-                                        <th><?= __('Approved Qty')?></th>
-                                        <th></th>
-                                    </tr>
-                                    <tr class="item_tr single_list">
-                                        <td style="width: 40%;"><?php echo $this->Form->input('details.0.item_id', ['options' => $dropArray, 'required'=>'required', 'style'=>'max-width: 100%', 'class'=>'form-control', 'empty' => __('Select'), 'templates'=>['label' => '']]);?></td>
-                                        <td><?php echo $this->Form->input('details.0.quantity', ['type' => 'text', 'style'=>'width: 100%', 'required'=>'required', 'class'=>'form-control quantity', 'templates'=>['label' => '']]);?></td>
-                                        <td><?php echo $this->Form->input('details.0.approved_quantity', ['type' => 'text', 'style'=>'width: 100%', 'class'=>'form-control','required', 'templates'=>['label' => '']]);?></td>
-                                        <td width="50px;"><span class="btn btn-sm btn-circle btn-danger remove pull-right">X</span></td>
-                                    </tr>
-                                </table>
-                            </div>
+                    <div class="col-md-7 col-md-offset-2">
+                    <?php
+                    echo $this->Form->input('policy_start_date', ['type'=>'text', 'class'=>'form-control datepicker']);
+                    echo $this->Form->input('policy_expected_end_date', ['type'=>'text', 'class'=>['form-control datepicker']]);
+                    ?>
+                    <div class="form-group input text">
+                        <label for="policy-expected-end-date" class="col-sm-3 control-label text-right">Policy Expected End Date</label>
+                        <div class="col-sm-9 container_policy_expected_end_date">
+                            <textarea rows="14" cols="50" name="policy_detail" readonly="readonly" class="form-control"><?php echo json_encode($policyDetail)?></textarea>
                         </div>
                     </div>
-
-                    <div class="row col-md-offset-11">
-                        <input type="button" class="btn btn-circle btn-warning add_more" value="Add" />
-                    </div>
-
                     <div class="row text-center" style="margin-bottom: 20px;">
                         <?= $this->Form->button(__('Submit'), ['class' => 'btn blue', 'style' => 'margin-top:20px']) ?>
+                    </div>
                     </div>
                 </div>
                 <?= $this->Form->end() ?>
@@ -81,24 +59,11 @@ use Cake\Core\Configure;
 
 <script>
     $(document).ready(function(){
-        $(document).on('click', '.add_more', function () {
-            var index = $('.list').data('index_no');
-            $('.list').data('index_no', index + 1);
-            var html = $('.itemWrapper .item_tr:last').clone().find('.form-control').each(function () {
-                this.name = this.name.replace(/\d+/, index+1);
-                this.id = this.id.replace(/\d+/, index+1);
-                this.value = '';
-            }).end();
-
-            $('.moreTable').append(html);
-        });
-
-        $(document).on('click', '.remove', function () {
-            var obj=$(this);
-            var count= $('.single_list').length;
-            if(count > 1){
-                obj.closest('.single_list').remove();
-            }
+        $(document).on("focus",".datepicker", function()
+        {
+            $(this).removeClass('hasDatepicker').datepicker({
+                dateFormat: 'dd-mm-yy'
+            });
         });
     });
 </script>

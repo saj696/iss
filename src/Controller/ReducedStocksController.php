@@ -104,7 +104,7 @@ class ReducedStocksController extends AppController
                 return $this->redirect(['action' => 'index']);
             }
         }
-        $warehouses = $this->ReducedStocks->Warehouses->find('list', ['conditions' => ['status' => 1]]);
+        $warehouses = $this->ReducedStocks->Warehouses->find('list', ['conditions' => ['status' => 1, 'id'=>$user['warehouse_id']]]);
         $items = $this->ReducedStocks->Items->find('list', ['conditions' => ['status' => 1]]);
         $this->set(compact('reducedStock', 'warehouses', 'items'));
         $this->set('_serialize', ['reducedStock']);

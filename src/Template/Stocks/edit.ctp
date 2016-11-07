@@ -36,7 +36,7 @@ use Cake\Core\Configure;
                         <?php
                         echo $this->Form->input('warehouse_id', ['options' => $warehouses, 'empty' => __('Select')]);
                         echo $this->Form->input('item_id', ['options' => $items, 'empty' => __('Select')]);
-                        echo $this->Form->input('quantity', ['class'=>'form-control numbersOnly']);
+                        echo $this->Form->input('quantity', ['class'=>'form-control numbersOnly', 'label'=>'Quantity (Pcs)']);
                         echo $this->Form->input('approved_quantity', ['class'=>'form-control numbersOnly']);
                         echo $this->Form->input('status', ['options' => Configure::read('status_options')]);
                         ?>

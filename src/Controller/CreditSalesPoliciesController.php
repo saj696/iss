@@ -65,7 +65,8 @@ class CreditSalesPoliciesController extends AppController
     {
         $user = $this->Auth->user();
         $time = time();
-        $stock = $this->Stocks->newEntity();
+        $creditSalesPolicy = $this->CreditSalesPolicies->newEntity();
+
         if ($this->request->is('post')) {
             try {
                 $saveStatus = 0;
@@ -73,46 +74,63 @@ class CreditSalesPoliciesController extends AppController
                 $conn->transactional(function () use ($user, $time, &$saveStatus)
                 {
                     $input = $this->request->data;
-                    $detailArray = $input['details'];
+                    $creditSalesPolicy = $this->CreditSalesPolicies->newEntity();
+                    $data['policy_start_date'] = strtotime($input['policy_start_date']);
+                    $data['policy_expected_end_date'] = strtotime($input['policy_expected_end_date']);
+                    $data['policy_detail'] = $input['policy_detail'];
+                    $data['created_by'] = $user['id'];
+                    $data['created_date'] = $time;
 
-                    foreach($detailArray as $detail) {
-                        $existing = TableRegistry::get('stocks')->find('all', ['conditions'=>['warehouse_id'=>$input['warehouse_id'], 'item_id'=>$detail['item_id']]])->first();
-                        if($existing) {
-                            $updateData['quantity'] = $existing['quantity']+$detail['quantity'];
-                            $updateData['approved_quantity'] = $existing['approved_quantity']+$detail['approved_quantity'];
-                            $stock = $this->Stocks->patchEntity($existing, $updateData);
-                            $this->Stocks->save($stock);
-                        } else {
-                            $stock = $this->Stocks->newEntity();
-                            $data['warehouse_id'] = $input['warehouse_id'];
-                            $data['item_id'] = $detail['item_id'];
-                            $data['quantity'] = $detail['quantity'];
-                            $data['approved_quantity'] = $detail['approved_quantity'];
-                            $data['created_by'] = $user['id'];
-                            $data['created_date'] = $time;
-                            $stock = $this->Stocks->patchEntity($stock, $data);
-                            $this->Stocks->save($stock);
-                        }
-                    }
+                    $creditSalesPolicy = $this->CreditSalesPolicies->patchEntity($creditSalesPolicy, $data);
+                    $this->CreditSalesPolicies->save($creditSalesPolicy);
                 });
 
-                $this->Flash->success('The Stock has been updated. Thank you!');
+                $this->Flash->success('The Policy is defined. Thank you!');
                 return $this->redirect(['action' => 'index']);
             } catch (\Exception $e) {
-                $this->Flash->error('The Stock has not been updated. Please try again!');
+                $this->Flash->error('Policy Not Defined. Please try again!');
                 return $this->redirect(['action' => 'index']);
             }
         }
 
-        $this->loadModel('Items');
-        $warehouses = $this->Stocks->Warehouses->find('list', ['conditions' => ['status' => 1]]);
-        $items = $this->Items->find('all', ['conditions' => ['status' => 1]]);
-        $dropArray = [];
-        foreach($items as $item) {
-            $dropArray[$item['id']] = $item['name'].' - '.$item['pack_size'].' '.Configure::read('pack_size_units')[$item['unit']];
-        }
-        $this->set(compact('stock', 'warehouses', 'dropArray'));
-        $this->set('_serialize', ['stock']);
+        $policyDetail = [];
+        $policyDetail['credit_invoice_max_age_for_credit_invoicing'] = 180;
+        $policyDetail['credit_invoice_max_age_for_cash_invoicing'] = 120;
+        $policyDetail['commissions_based_on_payment_age']['commissions'][0]['payment_age_start'] = 0;
+        $policyDetail['commissions_based_on_payment_age']['commissions'][0]['payment_age_end'] = 30;
+        $policyDetail['commissions_based_on_payment_age']['commissions'][0]['commission'] = 8;
+        $policyDetail['commissions_based_on_payment_age']['commissions'][1]['payment_age_start'] = 31;
+        $policyDetail['commissions_based_on_payment_age']['commissions'][1]['payment_age_end'] = 60;
+        $policyDetail['commissions_based_on_payment_age']['commissions'][1]['commission'] = 7;
+        $policyDetail['commissions_based_on_payment_age']['commissions'][2]['payment_age_start'] = 61;
+        $policyDetail['commissions_based_on_payment_age']['commissions'][2]['payment_age_end'] = 90;
+        $policyDetail['commissions_based_on_payment_age']['commissions'][2]['commission'] = 6;
+        $policyDetail['commissions_based_on_payment_age']['commissions'][3]['payment_age_start'] = 91;
+        $policyDetail['commissions_based_on_payment_age']['commissions'][3]['payment_age_end'] = 180;
+        $policyDetail['commissions_based_on_payment_age']['commissions'][3]['commission'] = 5;
+        $policyDetail['commissions_based_on_payment_age']['adjustment_time_period'][0]['commission_adjusted_from'] = "01-07";
+        $policyDetail['commissions_based_on_payment_age']['adjustment_time_period'][0]['commission_adjusted_within'] = "31-12";
+        $policyDetail['commissions_based_on_payment_age']['adjustment_time_period'][1]['commission_adjusted_from'] = "01-01";
+        $policyDetail['commissions_based_on_payment_age']['adjustment_time_period'][1]['commission_adjusted_within'] = "30-06";
+        $policyDetail['commission_for_paying_due_invoices_of_a_particular_time_period_within_another_specified_time_period']['commissions'][0]['due_invoice_from'] = '';
+        $policyDetail['commission_for_paying_due_invoices_of_a_particular_time_period_within_another_specified_time_period']['commissions'][0]['due_invoice_upto'] = "30-09";
+        $policyDetail['commission_for_paying_due_invoices_of_a_particular_time_period_within_another_specified_time_period']['commissions'][0]['payment_from'] = "01-10";
+        $policyDetail['commission_for_paying_due_invoices_of_a_particular_time_period_within_another_specified_time_period']['commissions'][0]['payment_upto'] = "30-06";
+        $policyDetail['commission_for_paying_due_invoices_of_a_particular_time_period_within_another_specified_time_period']['commissions'][0]['due_payment_ratio'] = 1;
+        $policyDetail['commission_for_paying_due_invoices_of_a_particular_time_period_within_another_specified_time_period']['commissions'][0]['commission'] = 5;
+        $policyDetail['commission_for_paying_due_invoices_of_a_particular_time_period_within_another_specified_time_period']['commissions'][0]['due_invoice_from'] = '';
+        $policyDetail['commission_for_paying_due_invoices_of_a_particular_time_period_within_another_specified_time_period']['commissions'][0]['due_invoice_upto'] = "31-03";
+        $policyDetail['commission_for_paying_due_invoices_of_a_particular_time_period_within_another_specified_time_period']['commissions'][0]['payment_from'] = "01-04";
+        $policyDetail['commission_for_paying_due_invoices_of_a_particular_time_period_within_another_specified_time_period']['commissions'][0]['payment_upto'] = "31-12";
+        $policyDetail['commission_for_paying_due_invoices_of_a_particular_time_period_within_another_specified_time_period']['commissions'][0]['due_payment_ratio'] = 1;
+        $policyDetail['commission_for_paying_due_invoices_of_a_particular_time_period_within_another_specified_time_period']['commissions'][0]['commission'] = 5;
+        $policyDetail['commission_for_paying_due_invoices_of_a_particular_time_period_within_another_specified_time_period']['adjustment_time_period'][0]['commission_adjusted_from'] = "01-07";
+        $policyDetail['commission_for_paying_due_invoices_of_a_particular_time_period_within_another_specified_time_period']['adjustment_time_period'][0]['commission_adjusted_within'] = "31-12";
+        $policyDetail['commission_for_paying_due_invoices_of_a_particular_time_period_within_another_specified_time_period']['adjustment_time_period'][1]['commission_adjusted_from'] = "01-01";
+        $policyDetail['commission_for_paying_due_invoices_of_a_particular_time_period_within_another_specified_time_period']['adjustment_time_period'][1]['commission_adjusted_within'] = "30-06";
+
+        $this->set(compact('policyDetail', 'creditSalesPolicy'));
+        $this->set('_serialize', ['policyDetail']);
     }
 
     /**
