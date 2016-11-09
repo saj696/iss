@@ -28,8 +28,9 @@ class StocksController extends AppController
      */
     public function index()
     {
+        $user = $this->Auth->user();
         $stocks = $this->Stocks->find('all', [
-            'conditions' => ['Stocks.status !=' => 99],
+            'conditions' => ['Stocks.status !=' => 99, 'warehouse_id'=>$user['warehouse_id']],
             'contain' => ['Warehouses', 'Items']
         ]);
 

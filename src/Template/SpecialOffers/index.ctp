@@ -1,5 +1,7 @@
 <?php
-$status = \Cake\Core\Configure::read('status_options');
+use Cake\Core\Configure;
+
+$status = Configure::read('status_options');
 ?>
 
 <div class="page-bar">
@@ -41,9 +43,9 @@ $status = \Cake\Core\Configure::read('status_options');
                             <tr>
                                 <td><?= $this->Number->format($key + 1) ?></td>
                                 <td><?= h($specialOffer->program_name) ?></td>
-                                <td><?= $this->Number->format($specialOffer->program_period_start) ?></td>
-                                <td><?= $this->Number->format($specialOffer->program_period_end) ?></td>
-                                <td><?= $this->Number->format($specialOffer->invoice_type) ?></td>
+                                <td><?= date('d-m-Y', $specialOffer->program_period_start) ?></td>
+                                <td><?= date('d-m-Y', $specialOffer->program_period_end) ?></td>
+                                <td><?= Configure::read('special_offer_invoice_types')[$specialOffer->invoice_type] ?></td>
                             </tr>
                         <?php
                         }

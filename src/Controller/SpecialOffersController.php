@@ -3,6 +3,7 @@ namespace App\Controller;
 
 use App\Controller\AppController;
 use Cake\Core\Configure;
+use Cake\Datasource\ConnectionManager;
 
 /**
  * SpecialOffers Controller
@@ -61,16 +62,53 @@ class SpecialOffersController extends AppController
         $time = time();
         $specialOffer = $this->SpecialOffers->newEntity();
         if ($this->request->is('post')) {
+            try {
+                $saveStatus = 0;
+                $conn = ConnectionManager::get('default');
+                $conn->transactional(function () use ($time, $user, &$saveStatus)
+                {
+                    $specialOffer = $this->SpecialOffers->newEntity();
+                    $input = $this->request->data;
+                    $data['program_name'] = $input['program_name'];
+                    $data['program_period_start'] = strtotime($input['program_period_start']);
+                    $data['program_period_end'] = strtotime($input['program_period_end']);
+                    $data['invoice_type'] = $input['invoice_type'];
+                    $offerDetail['invoicing'] = $input['invoicing'];
+                    $offerDetail['product_bonus_in_cash_sales'] = $input['product_bonus_in_cash_sales'];
+                    $offerDetail['credit_note'] = $input['credit_note'];
+                    $offerDetail['previous_additional_circular'] = $input['previous_additional_circular'];
+                    $offerDetail['detailOffer'] = json_encode($input['main']);
+                    $data['offer_detail'] = $offerDetail;
+                    $data['created_by'] = $user['id'];
+                    $data['created_date'] = $time;
+                    $specialOffer = $this->SpecialOffers->patchEntity($specialOffer, $data);
+                    $result = $this->SpecialOffers->save($specialOffer);
 
-            $data = $this->request->data;
-            $data['create_by'] = $user['id'];
-            $data['create_date'] = $time;
-            $specialOffer = $this->SpecialOffers->patchEntity($specialOffer, $data);
-            if ($this->SpecialOffers->save($specialOffer)) {
-                $this->Flash->success('The special offer has been saved.');
+                    // ProductWise Special Offer Table
+                    $this->loadModel('ProductwiseSpecialOffers');
+                    foreach($input['main'] as $info){
+                        foreach($info['items'] as $item){
+                            if($item>0){
+                                $productWise = $this->ProductwiseSpecialOffers->newEntity();
+                                $insert['item_id'] = $item;
+                                $insert['offer_id'] = $result['id'];
+                                $insert['created_by'] = $user['id'];
+                                $insert['created_date'] = $time;
+                                $productWise = $this->ProductwiseSpecialOffers->patchEntity($productWise, $insert);
+                                $this->ProductwiseSpecialOffers->save($productWise);
+                            }
+                        }
+                    }
+                    $this->Flash->success('The special offer has been saved.');
+                    return $this->redirect(['action' => 'index']);
+                });
+            } catch (\Exception $e) {
+                echo '<pre>';
+                print_r($e);
+                echo '</pre>';
+                exit;
+                $this->Flash->error('The special offer has not been saved. Please try again!');
                 return $this->redirect(['action' => 'index']);
-            } else {
-                $this->Flash->error('The special offer could not be saved. Please, try again.');
             }
         }
 
@@ -81,7 +119,10 @@ class SpecialOffersController extends AppController
             $itemsArray[$item['id']] = $item['name'].' - '.$item['pack_size'].' '.Configure::read('pack_size_units')[$item['unit']].' ('.$item['code'].')';
         }
 
-        $this->set(compact('specialOffer', 'itemsArray'));
+        $this->loadModel('Trips');
+        $trips = $this->Trips->find('list', ['conditions'=>['status !='=>99]]);
+
+        $this->set(compact('specialOffer', 'itemsArray', 'trips'));
         $this->set('_serialize', ['specialOffer']);
     }
 
