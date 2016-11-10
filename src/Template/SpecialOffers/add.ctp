@@ -74,7 +74,7 @@ use Cake\Core\Configure;
                                                                                 <tr class="offer_tr single_list" style="border: none !important;">
                                                                                     <td><?php echo $this->Form->input('main[0][offer][0][quantity]', ['type' => 'text', 'style'=>'width: 100%;', 'placeholder'=>'Qty', 'class'=>'parent offer_add form-control quantity numbersOnly', 'templates'=>['label' => '']]);?></td>
                                                                                     <td>
-                                                                                        <span style="margin-top: -20%;" class="btn default green-stripe load_offer">Set Offer</span>
+                                                                                        <span style="margin-top: -20%;" class="btn default purple-stripe load_offer">Set Offer</span>
                                                                                         <div class="row popContainerOffer" style="display: none; width: 500px;">
                                                                                             <table class="table table-bordered" style="margin-bottom: 0px;">
                                                                                                 <tr><td><span class="label label-info">Offer Detail</span></td></tr>
@@ -92,12 +92,20 @@ use Cake\Core\Configure;
                                                                                                                             echo $this->Form->input('main[0][offer][0][detail][0][amount]', ['label'=>'Amount', 'style'=>'margin-top:6px;', 'class'=>'form-control parent offer_add offer_detail_add', 'templates'=>['label' =>'<label {{attrs}} class="col-sm-5 control-label text-right" >{{text}}</label>','input' => '<div class="col-sm-5 container_{{name}}"> <input {{attrs}} class="form-control" type="{{type}}" name="{{name}}"></div>', 'inputContainer' => '<div style="margin-bottom: 0px;" class="form-group hidden cash_discount input {{type}}{{required}}">{{content}}</div>']]);
                                                                                                                             echo $this->Form->input('main[0][offer][0][detail][0][offer_product]', ['label'=>'Offer Product', 'options'=>$itemsArray, 'style'=>'margin-top:6px;', 'class'=>'form-control parent offer_add offer_detail_add', 'empty' => __('Select'), 'templates'=>['label' =>'<label {{attrs}} class="col-sm-5 control-label text-right" >{{text}}</label>','select' => '<div id="container_{{name}}" class="col-sm-5"><select name="{{name}}"{{attrs}} class="form-control">{{content}}</select></div>', 'inputContainer' => '<div style="margin-bottom: 0px;" class="form-group hidden product input {{type}}{{required}}">{{content}}</div>']]);
                                                                                                                             echo $this->Form->input('main[0][offer][0][detail][0][offer_product_quantity]', ['label'=>'Product Quantity', 'style'=>'margin-top:6px;', 'class'=>'form-control parent offer_add offer_detail_add', 'templates'=>['label' =>'<label {{attrs}} class="col-sm-5 control-label text-right" >{{text}}</label>','input' => '<div class="col-sm-5 container_{{name}}"> <input {{attrs}} class="form-control" type="{{type}}" name="{{name}}"></div>', 'inputContainer' => '<div style="margin-bottom: 0px;" class="form-group hidden product input {{type}}{{required}}">{{content}}</div>']]);
+
                                                                                                                             echo $this->Form->input('main[0][offer][0][detail][0][offer_trip]', ['label'=>'Offer Trip', 'options'=>$trips, 'style'=>'margin-top:6px;', 'class'=>'form-control parent offer_add offer_detail_add', 'empty' => __('Select'), 'templates'=>['label' =>'<label {{attrs}} class="col-sm-5 control-label text-right" >{{text}}</label>','select' => '<div id="container_{{name}}" class="col-sm-5"><select name="{{name}}"{{attrs}} class="form-control">{{content}}</select></div>', 'inputContainer' => '<div style="margin-bottom: 0px;" class="form-group hidden trip input {{type}}{{required}}">{{content}}</div>']]);
                                                                                                                             echo $this->Form->input('main[0][offer][0][detail][0][cash_equivalent]', ['label'=>'Cash Equivalent', 'style'=>'margin-top:6px;', 'class'=>'form-control parent offer_add offer_detail_add', 'templates'=>['label' =>'<label {{attrs}} class="col-sm-5 control-label text-right" >{{text}}</label>','input' => '<div class="col-sm-5 container_{{name}}"> <input {{attrs}} class="form-control" type="{{type}}" name="{{name}}"></div>', 'inputContainer' => '<div style="margin-bottom: 0px;" class="form-group hidden trip input {{type}}{{required}}">{{content}}</div>']]);
                                                                                                                             echo $this->Form->input('main[0][offer][0][detail][0][credit_equivalent]', ['label'=>'Credit Equivalent', 'style'=>'margin-top:6px;', 'class'=>'form-control parent offer_add offer_detail_add', 'templates'=>['label' =>'<label {{attrs}} class="col-sm-5 control-label text-right" >{{text}}</label>','input' => '<div class="col-sm-5 container_{{name}}"> <input {{attrs}} class="form-control" type="{{type}}" name="{{name}}"></div>', 'inputContainer' => '<div style="margin-bottom: 0px;" class="form-group hidden trip input {{type}}{{required}}">{{content}}</div>']]);
+
+                                                                                                                            echo $this->Form->input('main[0][offer][0][detail][0][season_start]', ['label'=>'Season Start', 'style'=>'margin-top:6px;', 'class'=>'datepicker form-control parent offer_add offer_detail_add', 'templates'=>['label' =>'<label {{attrs}} class="col-sm-5 control-label text-right" >{{text}}</label>','input' => '<div class="col-sm-5 container_{{name}}"> <input {{attrs}} class="form-control" type="{{type}}" name="{{name}}"></div>', 'inputContainer' => '<div style="margin-bottom: 0px;" class="hidden seasonal form-group input {{type}}{{required}}">{{content}}</div>']]);
+                                                                                                                            echo $this->Form->input('main[0][offer][0][detail][0][season_end]', ['label'=>'Season End', 'style'=>'margin-top:6px;', 'class'=>'datepicker form-control parent offer_add offer_detail_add', 'templates'=>['label' =>'<label {{attrs}} class="col-sm-5 control-label text-right" >{{text}}</label>','input' => '<div class="col-sm-5 container_{{name}}"> <input {{attrs}} class="form-control" type="{{type}}" name="{{name}}"></div>', 'inputContainer' => '<div style="margin-bottom: 0px;" class="hidden seasonal form-group input {{type}}{{required}}">{{content}}</div>']]);
+                                                                                                                            echo $this->Form->input('main[0][offer][0][detail][0][payment_start]', ['label'=>'Payment Start', 'style'=>'margin-top:6px;', 'class'=>'datepicker form-control parent offer_add offer_detail_add', 'templates'=>['label' =>'<label {{attrs}} class="col-sm-5 control-label text-right" >{{text}}</label>','input' => '<div class="col-sm-5 container_{{name}}"> <input {{attrs}} class="form-control" type="{{type}}" name="{{name}}"></div>', 'inputContainer' => '<div style="margin-bottom: 0px;" class="hidden seasonal form-group input {{type}}{{required}}">{{content}}</div>']]);
+                                                                                                                            echo $this->Form->input('main[0][offer][0][detail][0][payment_end]', ['label'=>'Payment End', 'style'=>'margin-top:6px;', 'class'=>'datepicker form-control parent offer_add offer_detail_add', 'templates'=>['label' =>'<label {{attrs}} class="col-sm-5 control-label text-right" >{{text}}</label>','input' => '<div class="col-sm-5 container_{{name}}"> <input {{attrs}} class="form-control" type="{{type}}" name="{{name}}"></div>', 'inputContainer' => '<div style="margin-bottom: 0px;" class="hidden seasonal form-group input {{type}}{{required}}">{{content}}</div>']]);
+                                                                                                                            echo $this->Form->input('main[0][offer][0][detail][0][bonus]', ['label'=>'Bonus (%)', 'style'=>'margin-top:6px;', 'class'=>'form-control parent offer_add offer_detail_add', 'templates'=>['label' =>'<label {{attrs}} class="col-sm-5 control-label text-right" >{{text}}</label>','input' => '<div class="col-sm-5 container_{{name}}"> <input {{attrs}} class="form-control" type="{{type}}" name="{{name}}"></div>', 'inputContainer' => '<div style="margin-bottom: 0px;" class="hidden seasonal form-group input {{type}}{{required}}">{{content}}</div>']]);
+
                                                                                                                             echo $this->Form->input('main[0][offer][0][detail][0][offer_customer_type]', ['label'=>'Offer Customer Type', 'options'=>Configure::read('special_offer_detail_customer_type'), 'style'=>'margin-top:6px;', 'class'=>'form-control parent offer_add offer_detail_add', 'empty' => __('Select'), 'templates'=>['label' =>'<label {{attrs}} class="col-sm-5 control-label text-right" >{{text}}</label>','select' => '<div id="container_{{name}}" class="col-sm-5"><select name="{{name}}"{{attrs}} class="form-control">{{content}}</select></div>', 'inputContainer' => '<div style="margin-bottom: 0px;" class="form-group input {{type}}{{required}}">{{content}}</div>']]);
-                                                                                                                            echo $this->Form->input('main[0][offer][0][detail][0][offer_adjusted_from]', ['label'=>'Offer Adjusted From', 'style'=>'margin-top:6px;', 'class'=>'datepicker form-control parent offer_add offer_detail_add', 'templates'=>['label' =>'<label {{attrs}} class="col-sm-5 control-label text-right" >{{text}}</label>','input' => '<div class="col-sm-5 container_{{name}}"> <input {{attrs}} class="form-control" type="{{type}}" name="{{name}}"></div>', 'inputContainer' => '<div style="margin-bottom: 0px;" class="form-group input {{type}}{{required}}">{{content}}</div>']]);
-                                                                                                                            echo $this->Form->input('main[0][offer][0][detail][0][offer_adjusted_to]', ['label'=>'Offer Adjusted To', 'style'=>'margin-top:6px;', 'class'=>'datepicker form-control parent offer_add offer_detail_add', 'templates'=>['label' =>'<label {{attrs}} class="col-sm-5 control-label text-right" >{{text}}</label>','input' => '<div class="col-sm-5 container_{{name}}"> <input {{attrs}} class="form-control" type="{{type}}" name="{{name}}"></div>', 'inputContainer' => '<div style="margin-bottom: 10px;" class="form-group input {{type}}{{required}}">{{content}}</div>']]);
+                                                                                                                            echo $this->Form->input('main[0][offer][0][detail][0][offer_adjusted_from]', ['label'=>'Adjust From', 'style'=>'margin-top:6px;', 'class'=>'datepicker form-control parent offer_add offer_detail_add', 'templates'=>['label' =>'<label {{attrs}} class="col-sm-5 control-label text-right" >{{text}}</label>','input' => '<div class="col-sm-5 container_{{name}}"> <input {{attrs}} class="form-control" type="{{type}}" name="{{name}}"></div>', 'inputContainer' => '<div style="margin-bottom: 0px;" class="form-group input {{type}}{{required}}">{{content}}</div>']]);
+                                                                                                                            echo $this->Form->input('main[0][offer][0][detail][0][offer_adjusted_to]', ['label'=>'Adjust To', 'style'=>'margin-top:6px;', 'class'=>'datepicker form-control parent offer_add offer_detail_add', 'templates'=>['label' =>'<label {{attrs}} class="col-sm-5 control-label text-right" >{{text}}</label>','input' => '<div class="col-sm-5 container_{{name}}"> <input {{attrs}} class="form-control" type="{{type}}" name="{{name}}"></div>', 'inputContainer' => '<div style="margin-bottom: 10px;" class="form-group input {{type}}{{required}}">{{content}}</div>']]);
                                                                                                                             ?>
                                                                                                                             <span style="margin-top: -25%; margin-right: 5%" class="btn btn-sm btn-circle btn-danger remove_offer pull-right">X</span>
                                                                                                                         </td>
@@ -127,7 +135,7 @@ use Cake\Core\Configure;
                                                             </div>
                                                         </div>
                                                         <div class="col-md-1">
-                                                            <input type="button" class="btn btn-circle btn-success add_more" value="Add" />
+                                                            <input type="button" class="btn btn-circle default green-stripe add_more" value="Add" />
                                                         </div>
                                                     </div>
                                                 </div>
@@ -141,7 +149,7 @@ use Cake\Core\Configure;
                             </div>
                         </div>
                         <div class="row text-center" style="margin-bottom: 20px;">
-                            <?= $this->Form->button(__('Submit'), ['class' => 'btn blue', 'style' => 'margin-top:20px']) ?>
+                            <?= $this->Form->button(__('Submit'), ['class' => 'btn green', 'style' => 'margin-top:20px']) ?>
                         </div>
                     </div>
                     <?= $this->Form->end() ?>
@@ -180,18 +188,27 @@ use Cake\Core\Configure;
                 $(this).closest('.offer_detail_tr').find('.cash_discount').removeClass('hidden');
                 $(this).closest('.offer_detail_tr').find('.product').addClass('hidden');
                 $(this).closest('.offer_detail_tr').find('.trip').addClass('hidden');
+                $(this).closest('.offer_detail_tr').find('.seasonal').addClass('hidden');
             } else if(offer_type==2) {
                 $(this).closest('.offer_detail_tr').find('.cash_discount').addClass('hidden');
                 $(this).closest('.offer_detail_tr').find('.product').removeClass('hidden');
                 $(this).closest('.offer_detail_tr').find('.trip').addClass('hidden');
+                $(this).closest('.offer_detail_tr').find('.seasonal').addClass('hidden');
             } else if(offer_type==3) {
                 $(this).closest('.offer_detail_tr').find('.cash_discount').addClass('hidden');
                 $(this).closest('.offer_detail_tr').find('.product').addClass('hidden');
+                $(this).closest('.offer_detail_tr').find('.seasonal').addClass('hidden');
                 $(this).closest('.offer_detail_tr').find('.trip').removeClass('hidden');
+            } else if(offer_type==4) {
+                $(this).closest('.offer_detail_tr').find('.cash_discount').addClass('hidden');
+                $(this).closest('.offer_detail_tr').find('.product').addClass('hidden');
+                $(this).closest('.offer_detail_tr').find('.trip').addClass('hidden');
+                $(this).closest('.offer_detail_tr').find('.seasonal').removeClass('hidden');
             } else {
                 $(this).closest('.offer_detail_tr').find('.cash_discount').addClass('hidden');
                 $(this).closest('.offer_detail_tr').find('.product').addClass('hidden');
                 $(this).closest('.offer_detail_tr').find('.trip').addClass('hidden');
+                $(this).closest('.offer_detail_tr').find('.seasonal').addClass('hidden');
             }
         });
 
@@ -201,7 +218,8 @@ use Cake\Core\Configure;
             var index = obj.closest('.portlet-body').find('.list').data('index_no');
             obj.closest('.portlet-body').find('.list').data('index_no', index + 1);
 
-            var html = $('.itemWrapper .offer_tr:last').clone().find('.offer_add').each(function () {
+            var html = $(this).closest('.portlet-body').find('.offer_tr:last').clone().find('.offer_add').each(function () {
+//            var html = $('.itemWrapper .offer_tr:last').clone().find('.offer_add').each(function () {
                 var new_index = index+1;
                 var i = 0;
 
@@ -233,7 +251,8 @@ use Cake\Core\Configure;
             var index = obj.closest('.offer_detail_tr').find('.offer_list').data('index_no');
             obj.closest('.offer_detail_tr').find('.offer_list').data('index_no', index + 1);
 
-            var html = $('.offerWrapper .offer_detail_tr:last').clone().find('.offer_detail_add').each(function () {
+            var html = $(this).closest('.offer_list').find('tr:last').clone().find('.offer_detail_add').each(function () {
+//            var html = $('.offerWrapper .offer_detail_tr:last').clone().find('.offer_detail_add').each(function () {
                 var new_index = index+1;
                 var i = 0;
 
@@ -262,7 +281,8 @@ use Cake\Core\Configure;
         $(document).on('click', '.add_more_productWise', function () {
             var index = $('.productWise_list').data('index_no');
             $('.productWise_list').data('index_no', index + 1);
-            var html = $('.productWiseWrapper .productWise_tr:last').clone().find('.parent').each(function () {
+            var html = $(this).closest('.productWise_list').find('.productWise_tr:last').clone().find('.parent').each(function () {
+//            var html = $('.productWiseWrapper .productWise_tr:last').clone().find('.parent').each(function () {
                 var new_index = index+1;
                 var i = 0;
 

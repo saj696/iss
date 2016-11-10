@@ -73,12 +73,14 @@ class SpecialOffersController extends AppController
                     $data['program_period_start'] = strtotime($input['program_period_start']);
                     $data['program_period_end'] = strtotime($input['program_period_end']);
                     $data['invoice_type'] = $input['invoice_type'];
+
                     $offerDetail['invoicing'] = $input['invoicing'];
                     $offerDetail['product_bonus_in_cash_sales'] = $input['product_bonus_in_cash_sales'];
                     $offerDetail['credit_note'] = $input['credit_note'];
                     $offerDetail['previous_additional_circular'] = $input['previous_additional_circular'];
-                    $offerDetail['detailOffer'] = json_encode($input['main']);
-                    $data['offer_detail'] = $offerDetail;
+                    $offerDetail['detailOffer'] = $input['main'];
+
+                    $data['offer_detail'] = json_encode($offerDetail);
                     $data['created_by'] = $user['id'];
                     $data['created_date'] = $time;
                     $specialOffer = $this->SpecialOffers->patchEntity($specialOffer, $data);

@@ -130,4 +130,27 @@ class SystemHelper extends Helper
             endif;
         endif;
     }
+
+    public function item_offers($item_id)
+    {
+        $expected = [];
+        $offers = TableRegistry::get('productwise_special_offers')->find('all', ['conditions'=>['item_id'=>$item_id, 'status !='=>99]]);
+
+        foreach($offers as $offer)
+        {
+            $offerInfo = TableRegistry::get('special_offers')->find('all', ['conditions'=>['id'=>$offer->offer_id, 'program_period_start <='=>time(),'program_period_end >='=>time(), 'status !='=>99]])->first();
+
+            if($offerInfo['offer_detail']){
+                $offerDetail = json_decode($offerInfo['offer_detail'], true);
+                foreach($offerDetail['detailOffer'] as $detailInfo){
+                    if(in_array($item_id, $detailInfo['items'])){
+                        $expected[] = $detailInfo['offer'];
+                    }
+                }
+            }
+
+        }
+
+        return $expected;
+    }
 }
