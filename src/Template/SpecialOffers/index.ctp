@@ -1,12 +1,6 @@
 <?php
 use Cake\Core\Configure;
 $status = Configure::read('status_options');
-
-$arr = $this->System->item_offers(9);
-echo '<pre>';
-print_r($arr);
-echo '</pre>';
-exit;
 ?>
 
 <div class="page-bar">
