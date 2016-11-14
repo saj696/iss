@@ -7,20 +7,20 @@ use Cake\ORM\Table;
 use Cake\Validation\Validator;
 
 /**
- * PoProducts Model
+ * PoEvents Model
  *
  * @property \Cake\ORM\Association\BelongsTo $Pos
- * @property \Cake\ORM\Association\BelongsTo $Products
+ * @property \Cake\ORM\Association\BelongsTo $Recipients
  *
- * @method \App\Model\Entity\PoProduct get($primaryKey, $options = [])
- * @method \App\Model\Entity\PoProduct newEntity($data = null, array $options = [])
- * @method \App\Model\Entity\PoProduct[] newEntities(array $data, array $options = [])
- * @method \App\Model\Entity\PoProduct|bool save(\Cake\Datasource\EntityInterface $entity, $options = [])
- * @method \App\Model\Entity\PoProduct patchEntity(\Cake\Datasource\EntityInterface $entity, array $data, array $options = [])
- * @method \App\Model\Entity\PoProduct[] patchEntities($entities, array $data, array $options = [])
- * @method \App\Model\Entity\PoProduct findOrCreate($search, callable $callback = null)
+ * @method \App\Model\Entity\PoEvent get($primaryKey, $options = [])
+ * @method \App\Model\Entity\PoEvent newEntity($data = null, array $options = [])
+ * @method \App\Model\Entity\PoEvent[] newEntities(array $data, array $options = [])
+ * @method \App\Model\Entity\PoEvent|bool save(\Cake\Datasource\EntityInterface $entity, $options = [])
+ * @method \App\Model\Entity\PoEvent patchEntity(\Cake\Datasource\EntityInterface $entity, array $data, array $options = [])
+ * @method \App\Model\Entity\PoEvent[] patchEntities($entities, array $data, array $options = [])
+ * @method \App\Model\Entity\PoEvent findOrCreate($search, callable $callback = null)
  */
-class PoProductsTable extends Table
+class PoEventsTable extends Table
 {
 
     /**
@@ -33,7 +33,7 @@ class PoProductsTable extends Table
     {
         parent::initialize($config);
 
-        $this->table('po_products');
+        $this->table('po_events');
         $this->displayField('id');
         $this->primaryKey('id');
 
@@ -54,19 +54,6 @@ class PoProductsTable extends Table
         $validator
             ->integer('id')
             ->allowEmpty('id', 'create');
-
-        $validator
-            ->numeric('product_quantity')
-            ->requirePresence('product_quantity', 'create')
-            ->notEmpty('product_quantity');
-
-        $validator
-            ->numeric('bonus_quantity')
-            ->allowEmpty('bonus_quantity');
-
-        $validator
-            ->integer('instant_discount')
-            ->allowEmpty('instant_discount');
 
         return $validator;
     }

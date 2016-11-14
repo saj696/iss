@@ -148,9 +148,7 @@ class SystemHelper extends Helper
                     }
                 }
             }
-
         }
-
         return $expected;
     }
 }

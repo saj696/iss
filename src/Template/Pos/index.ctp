@@ -31,28 +31,28 @@ $status = \Cake\Core\Configure::read('status_options');
                         <thead>
                         <tr>
                             <th><?= __('Sl. No.') ?></th>
-                            <th><?= __('Customer Locataion') ?></th>
-                            <th><?= __('Customer Type') ?></th>
                             <th><?= __('Customer') ?></th>
                             <th><?= __('PO Date') ?></th>
-                            <th><?= __('Actions') ?></th>
+                            <th><?= __('Delivery Date') ?></th>
+                            <th><?= __('Total Amount') ?></th>
+<!--                            <th>--><?//= __('Actions') ?><!--</th>-->
                         </tr>
                         </thead>
                         <tbody>
                         <?php foreach ($pos as $key => $po) { ?>
                             <tr>
                                 <td><?= $this->Number->format($key + 1) ?></td>
-                                <td><?= $po->customer_unit_global_id ?></td>
-                                <td><?= $po->customer_type ?></td>
                                 <td><?= $po->customer->name ?></td>
                                 <td><?= $this->System->display_date($po->po_date) ?></td>
-                                <td class="actions">
-                                    <?php
-                                    echo $this->Html->link(__('View'), ['action' => 'view', $po->id], ['class' => 'btn btn-sm btn-info']);
-                                    echo $this->Html->link(__('Edit'), ['action' => 'edit', $po->id], ['class' => 'btn btn-sm btn-warning']);
-                                    echo $this->Form->postLink(__('Delete'), ['action' => 'delete', $po->id], ['class' => 'btn btn-sm btn-danger', 'confirm' => __('Are you sure you want to delete # {0}?', $po->id)]);
-                                    ?>
-                                </td>
+                                <td><?= $this->System->display_date($po->delivery_date) ?></td>
+                                <td><?= $po->net_total ?></td>
+<!--                                <td class="actions">-->
+<!--                                    --><?php
+//                                    echo $this->Html->link(__('View'), ['action' => 'view', $po->id], ['class' => 'btn btn-sm btn-info']);
+//                                    echo $this->Html->link(__('Edit'), ['action' => 'edit', $po->id], ['class' => 'btn btn-sm btn-warning']);
+//                                    echo $this->Form->postLink(__('Delete'), ['action' => 'delete', $po->id], ['class' => 'btn btn-sm btn-danger', 'confirm' => __('Are you sure you want to delete # {0}?', $po->id)]);
+//                                    ?>
+<!--                                </td>-->
                             </tr>
                         <?php
                         }
