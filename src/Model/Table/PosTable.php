@@ -65,11 +65,6 @@ class PosTable extends Table
             ->notEmpty('po_date');
             
         $validator
-            ->add('delivery_date', 'valid', ['rule' => 'numeric'])
-            ->requirePresence('delivery_date', 'create')
-            ->notEmpty('delivery_date');
-            
-        $validator
             ->add('invoice_type', 'valid', ['rule' => 'numeric'])
             ->requirePresence('invoice_type', 'create')
             ->notEmpty('invoice_type');

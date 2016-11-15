@@ -1,7 +1,7 @@
 <?php
 use Cake\Core\Configure;
-
 ?>
+
 <div class="page-bar">
     <ul class="page-breadcrumb">
         <li>
@@ -10,10 +10,10 @@ use Cake\Core\Configure;
             <i class="fa fa-angle-right"></i>
         </li>
         <li>
-            <?= $this->Html->link(__('POs'), ['action' => 'index']) ?>
+            <?= $this->Html->link(__('Approve POs'), ['action' => 'index']) ?>
             <i class="fa fa-angle-right"></i>
         </li>
-        <li><?= __('New PO') ?></li>
+        <li><?= __('Approve PO') ?></li>
     </ul>
 </div>
 
@@ -22,7 +22,7 @@ use Cake\Core\Configure;
         <div class="portlet box grey-cascade">
             <div class="portlet-title">
                 <div class="caption">
-                    <i class="fa fa-plus-square-o fa-lg"></i><?= __('Add New PO') ?>
+                    <i class="fa fa-plus-square-o fa-lg"></i><?= __('Approve PO') ?>
                 </div>
                 <div class="tools">
                     <?= $this->Html->link(__('Back'), ['action' => 'index'], ['class' => 'btn btn-sm grey-gallery']); ?>
@@ -30,24 +30,24 @@ use Cake\Core\Configure;
             </div>
 
             <div class="portlet-body">
-                <?= $this->Form->create($po, ['class' => 'form-horizontal', 'role' => 'form']) ?>
+                <?= $this->Form->create($event['po'], ['class' => 'form-horizontal', 'role' => 'form']) ?>
                 <div class="row">
                     <div class="col-md-6">
                         <?php
                         echo $this->Form->input('customer_level_no', ['label'=>'Customer Level', 'empty'=>'Select', 'options'=>$administrativeLevels, 'class'=>'form-control level_no', 'templates'=>['label' =>'<label {{attrs}} class="col-sm-5 control-label text-right" >{{text}}</label>', 'select' => '<div id="container_{{name}}" class="col-sm-6"><select name="{{name}}"{{attrs}} class="form-control">{{content}}</select></div>']]);
-                        echo $this->Form->input('customer_unit', ['type'=>'select', 'label'=>'Customer Location', 'empty'=>'Select', 'class'=>'form-control customer_unit', 'templates'=>['label' =>'<label {{attrs}} class="col-sm-5 control-label text-right" >{{text}}</label>', 'select' => '<div id="container_{{name}}" class="col-sm-6 unit_select"><select name="{{name}}"{{attrs}} class="form-control">{{content}}</select></div>']]);
-                        echo $this->Form->input('credit_limit', ['label'=>'Credit Limit', 'type'=>'text', 'readonly', 'class'=>'form-control credit_limit', 'templates'=>['label' => '<label {{attrs}} class="col-sm-5 control-label text-right" >{{text}}</label>','input' => '<div class="col-sm-6 container_{{name}}"> <input {{attrs}} class="form-control" type="{{type}}" name="{{name}}"></div>']]);
-                        echo $this->Form->input('cash_invoice_days', ['label'=>'Cash Invoice Days', 'type'=>'text', 'readonly', 'class'=>'numbersOnly form-control cash_invoice_days', 'templates'=>['label' => '<label {{attrs}} class="col-sm-5 control-label text-right" >{{text}}</label>','input' => '<div class="col-sm-6 container_{{name}}"> <input {{attrs}} class="form-control" type="{{type}}" name="{{name}}"></div>']]);
+                        echo $this->Form->input('customer_unit', ['options'=>$administrativeUnits, 'value'=>$customerAdministrativeUnit, 'type'=>'select', 'label'=>'Customer Location', 'empty'=>'Select', 'class'=>'form-control customer_unit', 'templates'=>['label' =>'<label {{attrs}} class="col-sm-5 control-label text-right" >{{text}}</label>', 'select' => '<div id="container_{{name}}" class="col-sm-6 unit_select"><select name="{{name}}"{{attrs}} class="form-control">{{content}}</select></div>']]);
+                        echo $this->Form->input('credit_limit', ['value'=>$event['po']['customer']['credit_limit']?$event['po']['customer']['credit_limit']:0, 'label'=>'Credit Limit', 'type'=>'text', 'readonly', 'class'=>'form-control credit_limit', 'templates'=>['label' => '<label {{attrs}} class="col-sm-5 control-label text-right" >{{text}}</label>','input' => '<div class="col-sm-6 container_{{name}}"> <input {{attrs}} class="form-control" type="{{type}}" name="{{name}}"></div>']]);
+                        echo $this->Form->input('cash_invoice_days', ['value'=>$event['po']['customer']['cash_invoice_days']?$event['po']['customer']['cash_invoice_days']:0, 'label'=>'Cash Invoice Days', 'type'=>'text', 'readonly', 'class'=>'numbersOnly form-control cash_invoice_days', 'templates'=>['label' => '<label {{attrs}} class="col-sm-5 control-label text-right" >{{text}}</label>','input' => '<div class="col-sm-6 container_{{name}}"> <input {{attrs}} class="form-control" type="{{type}}" name="{{name}}"></div>']]);
                         echo $this->Form->input('invoice_type', ['type'=>'select', 'options'=>[1=>'Cash', 2=>'Credit'], 'label'=>'Invoice Type', 'empty'=>'Select', 'class'=>'form-control invoice_type', 'templates'=>['label' =>'<label {{attrs}} class="col-sm-5 control-label text-right" >{{text}}</label>', 'select' => '<div id="container_{{name}}" class="col-sm-6"><select name="{{name}}"{{attrs}} class="form-control">{{content}}</select></div>']]);
                         ?>
                     </div>
                     <div class="col-md-6">
                         <?php
-                        echo $this->Form->input('po_date', ['label'=>'PO date', 'type'=>'text', 'class'=>'form-control datepicker', 'templates'=>['label' => '<label {{attrs}} class="col-sm-5 control-label text-right" >{{text}}</label>','input' => '<div class="col-sm-6 container_{{name}}"> <input {{attrs}} class="form-control" type="{{type}}" name="{{name}}"></div>']]);
-                        echo $this->Form->input('customer_id', ['label'=>'Customer', 'empty'=>'Select', 'options'=>[], 'class'=>'form-control customer_id', 'templates'=>['label' =>'<label {{attrs}} class="col-sm-5 control-label text-right" >{{text}}</label>', 'select' => '<div id="container_{{name}}" class="col-sm-6 customer_select"><select name="{{name}}"{{attrs}} class="form-control">{{content}}</select></div>']]);
-                        echo $this->Form->input('available_credit', ['label'=>'Available Credit', 'type'=>'text', 'readonly', 'class'=>'form-control available_credit', 'templates'=>['label' => '<label {{attrs}} class="col-sm-5 control-label text-right" >{{text}}</label>','input' => '<div class="col-sm-6 container_{{name}}"> <input {{attrs}} class="form-control" type="{{type}}" name="{{name}}"></div>']]);
-                        echo $this->Form->input('credit_invoice_days', ['label'=>'Credit Invoice Days', 'readonly', 'type'=>'text', 'class'=>'numbersOnly form-control credit_invoice_days', 'templates'=>['label' => '<label {{attrs}} class="col-sm-5 control-label text-right" >{{text}}</label>','input' => '<div class="col-sm-6 container_{{name}}"> <input {{attrs}} class="form-control" type="{{type}}" name="{{name}}"></div>']]);
-                        echo $this->Form->input('field_po_no', ['label'=>'Field PO No.', 'type'=>'text', 'class'=>'form-control', 'templates'=>['label' => '<label {{attrs}} class="col-sm-5 control-label text-right" >{{text}}</label>','input' => '<div class="col-sm-6 container_{{name}}"> <input {{attrs}} class="form-control" type="{{type}}" name="{{name}}"></div>']]);
+                        echo $this->Form->input('po_date', ['value'=>date('d-m-Y', $event['po']['po_date']), 'label'=>'PO date', 'type'=>'text', 'class'=>'form-control datepicker', 'templates'=>['label' => '<label {{attrs}} class="col-sm-5 control-label text-right" >{{text}}</label>','input' => '<div class="col-sm-6 container_{{name}}"> <input {{attrs}} class="form-control" type="{{type}}" name="{{name}}"></div>']]);
+                        echo $this->Form->input('customer_id', ['options'=>$customers, 'label'=>'Customer', 'empty'=>'Select', 'class'=>'form-control customer_id', 'templates'=>['label' =>'<label {{attrs}} class="col-sm-5 control-label text-right" >{{text}}</label>', 'select' => '<div id="container_{{name}}" class="col-sm-6 customer_select"><select name="{{name}}"{{attrs}} class="form-control">{{content}}</select></div>']]);
+                        echo $this->Form->input('available_credit', ['value'=>0, 'label'=>'Available Credit', 'type'=>'text', 'readonly', 'class'=>'form-control available_credit', 'templates'=>['label' => '<label {{attrs}} class="col-sm-5 control-label text-right" >{{text}}</label>','input' => '<div class="col-sm-6 container_{{name}}"> <input {{attrs}} class="form-control" type="{{type}}" name="{{name}}"></div>']]);
+                        echo $this->Form->input('credit_invoice_days', ['value'=>$event['po']['customer']['credit_invoice_days']?$event['po']['customer']['credit_invoice_days']:0, 'label'=>'Credit Invoice Days', 'readonly', 'type'=>'text', 'class'=>'numbersOnly form-control credit_invoice_days', 'templates'=>['label' => '<label {{attrs}} class="col-sm-5 control-label text-right" >{{text}}</label>','input' => '<div class="col-sm-6 container_{{name}}"> <input {{attrs}} class="form-control" type="{{type}}" name="{{name}}"></div>']]);
+                        echo $this->Form->input('po_no', ['label'=>'Field PO No.', 'type'=>'text', 'class'=>'form-control', 'templates'=>['label' => '<label {{attrs}} class="col-sm-5 control-label text-right" >{{text}}</label>','input' => '<div class="col-sm-6 container_{{name}}"> <input {{attrs}} class="form-control" type="{{type}}" name="{{name}}"></div>']]);
                         ?>
                     </div>
                 </div>
@@ -62,29 +62,46 @@ use Cake\Core\Configure;
                     <div class="col-md-12">
                         <table class="table table-bordered">
                             <tbody class="appendTr">
-                                <tr class="portlet box grey-silver" style="color: white">
-                                    <th>Name</th>
-                                    <th>Quantity</th>
-                                    <th>Unit Price</th>
-                                    <th>Bonus</th>
-                                    <th>Cash Discount</th>
-                                    <th>Item Net Total</th>
-                                </tr>
+                            <tr class="portlet box grey-silver" style="color: white">
+                                <th>Name</th>
+                                <th>Quantity</th>
+                                <th>Unit Price</th>
+                                <th>Bonus</th>
+                                <th>Cash Discount</th>
+                                <th>Item Net Total</th>
+                            </tr>
+                            <?php
+                            $total_amount = 0;
+                            if(sizeof($event['po']['po_products'])>0):
+                                foreach($event['po']['po_products'] as $item):
+                                    $total_amount+=$item['product_quantity']*$itemUnitPriceArray[$item['product_id']];
+                                    ?>
+                                    <tr class="itemTr">
+                                        <td><?= $itemArray[$item['product_id']]?></td>
+                                        <td><input type="text" name="detail[<?= $item['product_id']?>][item_quantity]" class="form-control item_quantity" value="<?= $item['product_quantity']?>" /><input type="hidden" class="itemId" name="itemId[]" value="<?=$item['product_id']?>?>"></td>
+                                        <td><input type="text" name="detail[<?= $item['product_id']?>][unit_price]" class="form-control unit_price" readonly value="<?= $itemUnitPriceArray[$item['product_id']]?>" /></td>
+                                        <td><input type="text" name="detail[<?= $item['product_id']?>][item_bonus]" class="form-control item_bonus" readonly value="0" /></td>
+                                        <td><input type="text" name="detail[<?= $item['product_id']?>][item_cash_discount]" class="form-control item_cash_discount" readonly value="0" /></td>
+                                        <td><input type="text" name="detail[<?= $item['product_id']?>][item_net_total]" class="form-control item_net_total" readonly value="<?= $item['product_quantity']*$itemUnitPriceArray[$item['product_id']]?>" /></td>
+                                    </tr>
+                                <?php
+                                endforeach;
+                            endif;
+                            ?>
                             </tbody>
                         </table>
                         <table class="table">
                             <tr>
                                 <td colspan="1">Delivery Date: </td>
-                                <td colspan="1"><input type="text" style="width: 120px" class="form-control delivery_date datepicker" name="delivery_date" value="" /></td>
+                                <td colspan="1"><input type="text" style="width: 120px" class="form-control delivery_date datepicker" name="delivery_date" value="<?= date('d-m-Y', $event['po']['delivery_date'])?>" /></td>
                                 <td colspan="1">Total Amount:</td>
-                                <td colspan="1"><label class="label label-danger total_amount">0</label><input type="hidden" name="total_amount_hidden" class="total_amount_hidden" value=""></td>
+                                <td colspan="1"><label class="label label-danger total_amount"><?= $total_amount?></label><input type="hidden" name="total_amount_hidden" class="total_amount_hidden" value="<?= $total_amount?>"></td>
                             </tr>
                         </table>
                     </div>
                 </div>
                 <div class="row text-center">
-                    <?= $this->Form->button(__('Save'), ['class' => 'btn default green-stripe', '', 'style' => 'margin-top:20px; margin-bottom:20px']) ?>
-                    <?= $this->Form->button(__('Forward'), ['class' => 'btn default yellow-stripe', 'style' => 'margin-top:20px; margin-bottom:20px']) ?>
+                    <?= $this->Form->button(__('Approve'), ['class' => 'btn default yellow-stripe', 'style' => 'margin-top:20px; margin-bottom:20px']) ?>
                 </div>
                 <?= $this->Form->end() ?>
             </div>
@@ -112,7 +129,7 @@ use Cake\Core\Configure;
             if(level>0 || level==0){
                 $.ajax({
                     type: 'POST',
-                    url: '<?= $this->Url->build("/Pos/getUnit")?>',
+                    url: '<?= $this->Url->build("/ApprovePos/getUnit")?>',
                     data: {level: level},
                     success: function (data, status) {
                         //console.log(data);
@@ -133,7 +150,7 @@ use Cake\Core\Configure;
             if(unit>0){
                 $.ajax({
                     type: 'POST',
-                    url: '<?= $this->Url->build("/Pos/getCustomer")?>',
+                    url: '<?= $this->Url->build("/ApprovePos/getCustomer")?>',
                     data: {unit: unit},
                     success: function (data, status) {
                         //console.log(data);
@@ -153,7 +170,7 @@ use Cake\Core\Configure;
             if(customer_id>0){
                 $.ajax({
                     type: 'POST',
-                    url: '<?= $this->Url->build("/Pos/getCustomerDetail")?>',
+                    url: '<?= $this->Url->build("/ApprovePos/getCustomerDetail")?>',
                     data: {customer_id: customer_id},
                     success: function (data, status) {
                         var data = JSON.parse(data);
@@ -191,7 +208,7 @@ use Cake\Core\Configure;
                 if(item_id>0 && invoice_type>0){
                     $.ajax({
                         type: 'POST',
-                        url: '<?= $this->Url->build("/Pos/loadItem")?>',
+                        url: '<?= $this->Url->build("/ApprovePos/loadItem")?>',
                         data: {item_id: item_id, invoice_type:invoice_type},
                         success: function (data, status) {
                             $('.appendTr').append(data);

@@ -1,7 +1,7 @@
 <?php
 use Cake\Core\Configure;
-
 ?>
+
 <div class="page-bar">
     <ul class="page-breadcrumb">
         <li>
@@ -10,10 +10,10 @@ use Cake\Core\Configure;
             <i class="fa fa-angle-right"></i>
         </li>
         <li>
-            <?= $this->Html->link(__('POs'), ['action' => 'index']) ?>
+            <?= $this->Html->link(__('Approve POs'), ['action' => 'index']) ?>
             <i class="fa fa-angle-right"></i>
         </li>
-        <li><?= __('New PO') ?></li>
+        <li><?= __('Approve PO') ?></li>
     </ul>
 </div>
 
@@ -83,7 +83,6 @@ use Cake\Core\Configure;
                     </div>
                 </div>
                 <div class="row text-center">
-                    <?= $this->Form->button(__('Save'), ['class' => 'btn default green-stripe', '', 'style' => 'margin-top:20px; margin-bottom:20px']) ?>
                     <?= $this->Form->button(__('Forward'), ['class' => 'btn default yellow-stripe', 'style' => 'margin-top:20px; margin-bottom:20px']) ?>
                 </div>
                 <?= $this->Form->end() ?>
