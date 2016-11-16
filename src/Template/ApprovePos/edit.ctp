@@ -31,6 +31,7 @@ use Cake\Core\Configure;
 
             <div class="portlet-body">
                 <?= $this->Form->create($event['po'], ['class' => 'form-horizontal', 'role' => 'form']) ?>
+                <input type="hidden" name="po_id" value="<?= $event['po']['id']?>">
                 <div class="row">
                     <div class="col-md-6">
                         <?php

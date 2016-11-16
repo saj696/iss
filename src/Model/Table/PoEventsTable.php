@@ -38,7 +38,7 @@ class PoEventsTable extends Table
         $this->primaryKey('id');
 
         $this->belongsTo('Pos', [
-            'foreignKey' => 'po_id',
+            'foreignKey' => 'reference_id',
             'joinType' => 'INNER'
         ]);
     }

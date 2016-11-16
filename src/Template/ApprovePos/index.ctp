@@ -15,7 +15,7 @@ $status = \Cake\Core\Configure::read('status_options');
 
 <div class="row">
     <div class="col-md-12">
-        <div class="portlet box blue-hoki">
+        <div class="portlet box grey-cascade">
             <div class="portlet-title">
                 <div class="caption">
                     <i class="fa fa-list-alt fa-lg"></i><?= __('PO List') ?>
@@ -46,8 +46,12 @@ $status = \Cake\Core\Configure::read('status_options');
                                 <td><?= $event->po->net_total ?></td>
                                 <td class="actions">
                                     <?php
-                                    echo $this->Html->link(__('View & Edit'), ['action' => 'edit', $event->id], ['class' => 'btn btn-sm btn-warning']);
-                                    echo $this->Form->postLink(__('Approve'), ['action' => 'delete', $event->id], ['class' => 'btn btn-sm btn-danger', 'confirm' => __('Are you sure you want to Approve # {0}?', $event->id)]);
+                                    if($event->is_action_taken==0):
+                                        echo $this->Html->link(__('Edit & Approve'), ['action' => 'edit', $event->id], ['class' => 'btn default red-stripe']);
+                                    else:
+                                        echo $this->Html->link(__('Edit & Approve'), ['action' => 'edit', $event->id], ['disabled', 'class' => 'btn default red-stripe']);
+                                    endif;
+//                                    echo $this->Form->postLink(__('Approve'), ['action' => 'delete', $event->id], ['class' => 'btn btn-sm btn-danger', 'confirm' => __('Are you sure you want to Approve # {0}?', $event->id)]);
                                     ?>
                                 </td>
                             </tr>

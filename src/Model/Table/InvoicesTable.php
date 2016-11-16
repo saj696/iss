@@ -109,27 +109,6 @@ class InvoicesTable extends Table
             ->requirePresence('invoice_date', 'create')
             ->notEmpty('invoice_date');
 
-        $validator
-            ->integer('status')
-            ->requirePresence('status', 'create')
-            ->notEmpty('status');
-
-        $validator
-            ->integer('created_by')
-            ->allowEmpty('created_by');
-
-        $validator
-            ->integer('created_date')
-            ->allowEmpty('created_date');
-
-        $validator
-            ->integer('updated_by')
-            ->allowEmpty('updated_by');
-
-        $validator
-            ->integer('updated_date')
-            ->allowEmpty('updated_date');
-
         return $validator;
     }
 

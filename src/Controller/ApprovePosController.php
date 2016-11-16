@@ -35,7 +35,7 @@ class ApprovePosController extends AppController
         $this->loadModel('Pos');
         $this->loadModel('PoEvents');
         $events = $this->PoEvents->find('all', [
-            'conditions' => ['Pos.status !=' => 99, 'recipient_id'=>$user['id']],
+            'conditions' => ['Pos.status !=' => 99, 'recipient_id'=>$user['id'], 'event_type'=>array_flip(Configure::read('po_event_types'))['po']],
             'contain' => ['Pos'=>['PoProducts', 'Customers']]
         ]);
 
@@ -62,138 +62,6 @@ class ApprovePosController extends AppController
     }
 
     /**
-     * Add method
-     *
-     * @return void Redirects on successful add, renders view otherwise.
-     */
-    public function add()
-    {
-        $user = $this->Auth->user();
-        $time = time();
-        $po = $this->Pos->newEntity();
-        if ($this->request->is('post')) {
-            try {
-                $saveStatus = 0;
-                $conn = ConnectionManager::get('default');
-                $conn->transactional(function () use ($po, $user, $time, &$saveStatus)
-                {
-                    $data = $this->request->data;
-                    $this->loadModel('Pos');
-                    $this->loadModel('AdministrativeUnits');
-                    $this->loadModel('Customers');
-                    $this->loadModel('PoProducts');
-                    $this->loadModel('DepotCoverages');
-                    $this->loadModel('PoEvents');
-                    $this->loadModel('Users');
-                    $this->loadModel('Depots');
-
-                    $poData['customer_level_no'] = $data['customer_level_no'];
-                    $customerUnitInfo = $this->AdministrativeUnits->get($data['customer_unit']);
-                    $poData['customer_unit_global_id'] = $customerUnitInfo['global_id'];
-                    $poData['customer_id'] = $data['customer_id'];
-                    $customerInfo = $this->Customers->get($data['customer_id']);
-                    if($customerInfo['is_mango']==1):
-                        $poData['customer_type'] = array_flip(Configure::read('po_customer_type'))['mango'];
-                    else:
-                        $poData['customer_type'] = array_flip(Configure::read('po_customer_type'))['general'];
-                    endif;
-                    $poData['po_date'] = strtotime($data['po_date']);
-                    $poData['delivery_date'] = strtotime($data['delivery_date']);
-                    $poData['invoice_type'] = $data['invoice_type'];
-                    $poData['net_total'] = $data['total_amount_hidden'];
-
-                    $poData['created_by'] = $user['id'];
-                    $poData['created_date'] = $time;
-                    $po = $this->Pos->patchEntity($po, $poData);
-                    $result = $this->Pos->save($po);
-                    // PO Products table insert
-                    foreach($data['detail'] as $item_id=>$itemDetail):
-                        $poProducts = $this->PoProducts->newEntity();
-                        $poProductData['po_id'] = $result['id'];
-                        $poProductData['product_id'] = $item_id;
-                        $poProductData['product_quantity'] = $itemDetail['item_quantity'];
-                        $poProductData['bonus_quantity'] = $itemDetail['item_bonus'];
-                        $poProductData['instant_discount'] = $itemDetail['item_cash_discount'];
-                        $poProductData['net_total'] = $itemDetail['item_net_total'];
-                        $poProductData['created_by'] = $user['id'];
-                        $poProductData['created_date'] = $time;
-                        $poProducts = $this->PoProducts->patchEntity($poProducts, $poProductData);
-                        $this->PoProducts->save($poProducts);
-                    endforeach;
-
-                    // Event Creation
-                    $poEvent = $this->PoEvents->newEntity();
-                    $customerLevel = $data['customer_level_no'];
-                    $customerLevelDepotCoverage = $this->DepotCoverages->find('all', ['conditions'=>['level_no'=>$customerLevel]])->first();
-                    $depotInCharge = $this->Users->find('all', ['conditions'=>['depot_id'=>$customerLevelDepotCoverage['depot_id']]])->first();
-
-                    if($depotInCharge['id']):
-                        $recipient_id = $depotInCharge['id'];
-                    else:
-                        $customerLevelDepot = $this->Depots->find('all', ['conditions'=>['status !='=>99, 'level_no'=>$customerLevel]])->first();
-                        $customerLevelDepotId = $customerLevelDepot['id'];
-                        if($customerLevelDepotId):
-                            $depotInCharge = $this->Users->find('all', ['conditions'=>['depot_id'=>$customerLevelDepotId]])->first();
-                            $recipient_id = $depotInCharge['id'];
-                        else:
-                            for($i=$customerLevel; $i>=0; $i--):
-                                $customerLevelDepot = $this->Depots->find('all', ['conditions'=>['status !='=>99, 'level_no'=>$i]])->first();
-                                $customerLevelDepotId = $customerLevelDepot['id'];
-                                $depotInCharge = $this->Users->find('all', ['conditions'=>['depot_id'=>$customerLevelDepotId]])->first();
-                                $recipient_id = $depotInCharge['id'];
-                                if($recipient_id>0):
-                                    break;
-                                else:
-                                    continue;
-                                endif;
-                            endfor;
-                        endif;
-                    endif;
-
-                    if($recipient_id && $recipient_id>0):
-                        $poEventData['po_id'] = $result['id'];
-                        $poEventData['recipient_id'] = $recipient_id;
-                        $poEventData['created_by'] = $user['id'];
-                        $poEventData['created_date'] = $time;
-                        $poEvent = $this->PoEvents->patchEntity($poEvent, $poEventData);
-                        $this->PoEvents->save($poEvent);
-                    else:
-                        $this->Flash->error('No Depot In Charge. Please try again!');
-                        throw new \Exception('error');
-                    endif;
-                });
-
-                $this->Flash->success('PO done successfully. Thank you!');
-                return $this->redirect(['action' => 'index']);
-            } catch (\Exception $e) {
-                echo '<pre>';
-                print_r($e);
-                echo '</pre>';
-                exit;
-                $this->Flash->error('PO not possible. Please try again!');
-                return $this->redirect(['action' => 'index']);
-            }
-        }
-
-        $this->loadModel('AdministrativeLevels');
-        $administrativeLevelsData = $this->AdministrativeLevels->find('all', ['conditions' => ['status' => 1]]);
-        $administrativeLevels = [];
-        foreach($administrativeLevelsData as $administrativeLevelsDatum)
-        {
-            $administrativeLevels[$administrativeLevelsDatum['level_no']] = $administrativeLevelsDatum['level_name'];
-        }
-        $customers = $this->Pos->Customers->find('list', ['conditions' => ['status' => 1]]);
-        $this->loadModel('Items');
-        $items = $this->Items->find('all', ['conditions' => ['status' => 1]]);
-        $itemArray = [];
-        foreach($items as $item) {
-            $itemArray[$item['id']] = $item['name'].' - '.$item['pack_size'].' '.Configure::read('pack_size_units')[$item['unit']].' ('.$item['code'].')';
-        }
-        $this->set(compact('po', 'customers', 'administrativeLevels', 'itemArray'));
-        $this->set('_serialize', ['po']);
-    }
-
-    /**
      * Edit method
      *
      * @param string|null $id Po id.
@@ -214,6 +82,9 @@ class ApprovePosController extends AppController
         $this->loadModel('Users');
         $this->loadModel('Depots');
         $this->loadModel('Items');
+        $this->loadModel('Invoices');
+        $this->loadModel('InvoicedProducts');
+        $this->loadModel('InvoiceCycleConfigurations');
 
         $event = $this->PoEvents->get($id, [
             'contain' => ['Pos'=>['PoProducts', 'Customers']]
@@ -223,52 +94,136 @@ class ApprovePosController extends AppController
             try {
                 $saveStatus = 0;
                 $conn = ConnectionManager::get('default');
-                $conn->transactional(function () use ($event, $user, $time, &$saveStatus)
+                $conn->transactional(function () use ($id, $event, $user, $time, &$saveStatus)
                 {
+                    $invoice = $this->Invoices->newEntity();
                     $data = $this->request->data;
-                    $poData['customer_level_no'] = $data['customer_level_no'];
+                    $invoiceData['customer_level_no'] = $data['customer_level_no'];
                     $customerUnitInfo = $this->AdministrativeUnits->get($data['customer_unit']);
-                    $poData['customer_unit_global_id'] = $customerUnitInfo['global_id'];
-                    $poData['customer_id'] = $data['customer_id'];
+                    $invoiceData['customer_unit_global_id'] = $customerUnitInfo['global_id'];
+                    $invoiceData['customer_id'] = $data['customer_id'];
                     $customerInfo = $this->Customers->get($data['customer_id']);
                     if($customerInfo['is_mango']==1):
-                        $poData['customer_type'] = array_flip(Configure::read('po_customer_type'))['mango'];
+                        $invoiceData['customer_type'] = array_flip(Configure::read('po_customer_type'))['mango'];
                     else:
-                        $poData['customer_type'] = array_flip(Configure::read('po_customer_type'))['general'];
+                        $invoiceData['customer_type'] = array_flip(Configure::read('po_customer_type'))['general'];
                     endif;
-                    $poData['po_date'] = strtotime($data['po_date']);
-                    $poData['delivery_date'] = strtotime($data['delivery_date']);
-                    $poData['invoice_type'] = $data['invoice_type'];
-                    $poData['net_total'] = $data['total_amount_hidden'];
+                    $invoiceData['po_id'] = strtotime($data['po_id']);
+                    $invoiceData['delivery_date'] = strtotime($data['delivery_date']);
+                    $invoiceData['invoice_type'] = $data['invoice_type'];
+                    $invoiceData['net_total'] = $data['total_amount_hidden'];
 
-                    $poData['created_by'] = $user['id'];
-                    $poData['created_date'] = $time;
-                    $po = $this->Pos->patchEntity($po, $poData);
-                    $result = $this->Pos->save($po);
-                    // PO Products table insert
+                    $depotInfo = $this->Depots->get($user['depot_id']);
+                    $depotUnitInfo = $this->AdministrativeUnits->get($depotInfo['unit_id']);
+                    $invoiceData['depot_level_no'] = $depotInfo['level_no'];
+                    $invoiceData['depot_unit_global_id'] = $depotUnitInfo['global_id'];
+                    $invoiceData['depot_id'] = $user['depot_id'];
+                    $invoiceData['due'] = $data['total_amount_hidden'];
+                    $invoiceData['invoice_date'] = $time;
+
+                    $invoiceData['created_by'] = $user['id'];
+                    $invoiceData['created_date'] = $time;
+                    $invoice = $this->Invoices->patchEntity($invoice, $invoiceData);
+                    $result = $this->Invoices->save($invoice);
+                    // Invoiced Products table insert
                     foreach($data['detail'] as $item_id=>$itemDetail):
-                        $poProducts = $this->PoProducts->newEntity();
-                        $poProductData['po_id'] = $result['id'];
-                        $poProductData['product_id'] = $item_id;
-                        $poProductData['product_quantity'] = $itemDetail['item_quantity'];
-                        $poProductData['bonus_quantity'] = $itemDetail['item_bonus'];
-                        $poProductData['instant_discount'] = $itemDetail['item_cash_discount'];
-                        $poProductData['net_total'] = $itemDetail['item_net_total'];
-                        $poProductData['created_by'] = $user['id'];
-                        $poProductData['created_date'] = $time;
-                        $poProducts = $this->PoProducts->patchEntity($poProducts, $poProductData);
-                        $this->PoProducts->save($poProducts);
+                        $invoicedProducts = $this->InvoicedProducts->newEntity();
+                        $invoicedProductsData['invoice_id'] = $result['id'];
+                        $invoicedProductsData['customer_level_no'] = $data['customer_level_no'];
+                        $invoicedProductsData['customer_unit_global_id'] = $customerUnitInfo['global_id'];
+                        $invoicedProductsData['customer_id'] = $data['customer_id'];
+                        $invoicedProductsData['customer_type'] = $invoiceData['customer_type'];
+                        $invoicedProductsData['invoice_date'] = $time;
+                        $invoicedProductsData['delivery_date'] = strtotime($data['delivery_date']);
+
+                        $invoicedProductsData['depot_level_no'] = $invoiceData['depot_level_no'];
+                        $invoicedProductsData['depot_unit_global_id'] = $invoiceData['depot_unit_global_id'];
+                        $invoicedProductsData['depot_id'] = $user['depot_id'];
+
+                        $invoicedProductsData['product_id'] = $item_id;
+                        $invoicedProductsData['product_quantity'] = $itemDetail['item_quantity'];
+                        $invoicedProductsData['bonus_quantity'] = $itemDetail['item_bonus'];
+                        $invoicedProductsData['instant_discount'] = $itemDetail['item_cash_discount'];
+                        $invoicedProductsData['net_total'] = $itemDetail['item_net_total'];
+                        $invoicedProductsData['due'] = $itemDetail['item_net_total'];
+                        $invoicedProductsData['created_by'] = $user['id'];
+                        $invoicedProductsData['created_date'] = $time;
+                        $invoicedProducts = $this->InvoicedProducts->patchEntity($invoicedProducts, $invoicedProductsData);
+                        $this->InvoicedProducts->save($invoicedProducts);
                     endforeach;
+
+                    // PO status update
+                    $pos = TableRegistry::get('pos');
+                    $query = $pos->query();
+                    $query->update()->set(['po_status' => array_flip(Configure::read('po_status'))['approved']])->where(['id' => $data['po_id']])->execute();
+                    // PO Event status update
+                    $poEvent = TableRegistry::get('po_events');
+                    $query = $poEvent->query();
+                    $query->update()->set(['is_action_taken' => 1])->where(['id' => $id])->execute();
+
+                    // Event creation
+                    $invoiceCycleInfo = $this->InvoiceCycleConfigurations->find('all', ['conditions'=>['status !='=>99]])->first();
+                    if($invoiceCycleInfo['invoice_approved_at']==array_flip(Configure::read('invoice_approved_at'))['Not Needed']){
+                        $poEvent = $this->PoEvents->newEntity();
+                        $poEventData['reference_id'] = $data['po_id'];
+                        $poEventData['recipient_id'] = $user['id'];
+                        $poEventData['event_type'] = array_flip(Configure::read('po_event_types'))['make_chalan'];
+                        $poEventData['created_by'] = $user['id'];
+                        $poEventData['created_date'] = $time;
+                        $poEvent = $this->PoEvents->patchEntity($poEvent, $poEventData);
+                        $this->PoEvents->save($poEvent);
+                    } else {
+                        if($invoiceCycleInfo['allow_delivery_before_approval']==1){
+                            // Self event
+                            $poEvent = $this->PoEvents->newEntity();
+                            $poEventData['reference_id'] = $result['id'];
+                            $poEventData['recipient_id'] = $user['id'];
+                            $poEventData['event_type'] = array_flip(Configure::read('po_event_types'))['make_chalan'];
+                            $poEventData['created_by'] = $user['id'];
+                            $poEventData['created_date'] = $time;
+                            $poEvent = $this->PoEvents->patchEntity($poEvent, $poEventData);
+                            $this->PoEvents->save($poEvent);
+                            // Approval users events
+                            $approvalUsers = $this->Users->find('all', ['conditions'=>['status !='=>99, 'level_no'=>$invoiceCycleInfo['invoice_approved_at'], 'user_group_id'=>$invoiceCycleInfo['approving_user_group']]]);
+                            if(sizeof($approvalUsers)>0){
+                                foreach($approvalUsers as $user){
+                                    $poEvent = $this->PoEvents->newEntity();
+                                    $poEventData['reference_id'] = $result['id'];
+                                    $poEventData['recipient_id'] = $user->id;
+                                    $poEventData['event_type'] = array_flip(Configure::read('po_event_types'))['invoice_approval'];
+                                    $poEventData['created_by'] = $user['id'];
+                                    $poEventData['created_date'] = $time;
+                                    $poEvent = $this->PoEvents->patchEntity($poEvent, $poEventData);
+                                    $this->PoEvents->save($poEvent);
+                                }
+                            }
+                        } else {
+                            // Approval users events
+                            $approvalUsers = $this->Users->find('all', ['conditions'=>['status !='=>99, 'level_no'=>$invoiceCycleInfo['invoice_approved_at'], 'user_group_id'=>$invoiceCycleInfo['approving_user_group']]]);
+                            if(sizeof($approvalUsers)>0){
+                                foreach($approvalUsers as $user){
+                                    $poEvent = $this->PoEvents->newEntity();
+                                    $poEventData['reference_id'] = $result['id'];
+                                    $poEventData['recipient_id'] = $user->id;
+                                    $poEventData['event_type'] = array_flip(Configure::read('po_event_types'))['invoice_approval'];
+                                    $poEventData['created_by'] = $user['id'];
+                                    $poEventData['created_date'] = $time;
+                                    $poEvent = $this->PoEvents->patchEntity($poEvent, $poEventData);
+                                    $this->PoEvents->save($poEvent);
+                                }
+                            }
+                        }
+                    }
                 });
 
-                $this->Flash->success('PO done successfully. Thank you!');
+                $this->Flash->success('PO approval done successfully. Thank you!');
                 return $this->redirect(['action' => 'index']);
             } catch (\Exception $e) {
                 echo '<pre>';
                 print_r($e);
                 echo '</pre>';
                 exit;
-                $this->Flash->error('PO not possible. Please try again!');
+                $this->Flash->error('PO approval not possible. Please try again!');
                 return $this->redirect(['action' => 'index']);
             }
         }

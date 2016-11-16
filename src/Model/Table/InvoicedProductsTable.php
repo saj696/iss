@@ -45,24 +45,12 @@ class InvoicedProductsTable extends Table
             'foreignKey' => 'invoice_id',
             'joinType' => 'INNER'
         ]);
-        $this->belongsTo('CustomerUnitGlobals', [
-            'foreignKey' => 'customer_unit_global_id',
-            'joinType' => 'INNER'
-        ]);
         $this->belongsTo('Customers', [
             'foreignKey' => 'customer_id',
             'joinType' => 'INNER'
         ]);
-        $this->belongsTo('DepotUnitGlobals', [
-            'foreignKey' => 'depot_unit_global_id',
-            'joinType' => 'INNER'
-        ]);
         $this->belongsTo('Depots', [
             'foreignKey' => 'depot_id',
-            'joinType' => 'INNER'
-        ]);
-        $this->belongsTo('Products', [
-            'foreignKey' => 'product_id',
             'joinType' => 'INNER'
         ]);
     }
@@ -118,33 +106,13 @@ class InvoicedProductsTable extends Table
             ->allowEmpty('instant_discount');
 
         $validator
-            ->numeric('item_net_total')
-            ->allowEmpty('item_net_total');
+            ->numeric('net_total')
+            ->requirePresence('net_total', 'create')
+            ->notEmpty('net_total');
 
         $validator
-            ->numeric('due_amount')
-            ->allowEmpty('due_amount');
-
-        $validator
-            ->integer('status')
-            ->requirePresence('status', 'create')
-            ->notEmpty('status');
-
-        $validator
-            ->integer('created_by')
-            ->allowEmpty('created_by');
-
-        $validator
-            ->integer('created_date')
-            ->allowEmpty('created_date');
-
-        $validator
-            ->integer('updated_by')
-            ->allowEmpty('updated_by');
-
-        $validator
-            ->integer('updated_date')
-            ->allowEmpty('updated_date');
+            ->numeric('due')
+            ->allowEmpty('due');
 
         return $validator;
     }
@@ -159,12 +127,8 @@ class InvoicedProductsTable extends Table
     public function buildRules(RulesChecker $rules)
     {
         $rules->add($rules->existsIn(['invoice_id'], 'Invoices'));
-        $rules->add($rules->existsIn(['customer_unit_global_id'], 'CustomerUnitGlobals'));
         $rules->add($rules->existsIn(['customer_id'], 'Customers'));
-        $rules->add($rules->existsIn(['depot_unit_global_id'], 'DepotUnitGlobals'));
         $rules->add($rules->existsIn(['depot_id'], 'Depots'));
-        $rules->add($rules->existsIn(['product_id'], 'Products'));
-
         return $rules;
     }
 }

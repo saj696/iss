@@ -156,7 +156,7 @@ class PosController extends AppController
                         endif;
 
                         if($recipient_id && $recipient_id>0):
-                            $poEventData['po_id'] = $result['id'];
+                            $poEventData['reference_id'] = $result['id'];
                             $poEventData['recipient_id'] = $recipient_id;
                             $poEventData['event_type'] = array_flip(Configure::read('po_event_types'))['po'];
                             $poEventData['created_by'] = $user['id'];
@@ -380,7 +380,7 @@ class PosController extends AppController
 
                 if($recipient_id && $recipient_id>0):
                     // Event entry
-                    $poEventData['po_id'] = $id;
+                    $poEventData['reference_id'] = $id;
                     $poEventData['recipient_id'] = $recipient_id;
                     $poEventData['event_type'] = array_flip(Configure::read('po_event_types'))['po'];
                     $poEventData['created_by'] = $user['id'];
