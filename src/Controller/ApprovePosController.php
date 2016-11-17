@@ -96,6 +96,7 @@ class ApprovePosController extends AppController
                 $conn = ConnectionManager::get('default');
                 $conn->transactional(function () use ($id, $event, $user, $time, &$saveStatus)
                 {
+                    $invoiceCycleInfo = $this->InvoiceCycleConfigurations->find('all', ['conditions'=>['status !='=>99]])->first();
                     $invoice = $this->Invoices->newEntity();
                     $data = $this->request->data;
                     $invoiceData['customer_level_no'] = $data['customer_level_no'];
@@ -112,6 +113,12 @@ class ApprovePosController extends AppController
                     $invoiceData['delivery_date'] = strtotime($data['delivery_date']);
                     $invoiceData['invoice_type'] = $data['invoice_type'];
                     $invoiceData['net_total'] = $data['total_amount_hidden'];
+
+                    if($invoiceCycleInfo['invoice_approved_at']==array_flip(Configure::read('invoice_approved_at'))['Not Needed']){
+                        $invoiceData['approval_status'] = array_flip(Configure::read('invoice_approval_status'))['not_required'];
+                    } else {
+                        $invoiceData['approval_status'] = array_flip(Configure::read('invoice_approval_status'))['waiting'];
+                    }
 
                     $depotInfo = $this->Depots->get($user['depot_id']);
                     $depotUnitInfo = $this->AdministrativeUnits->get($depotInfo['unit_id']);
@@ -162,7 +169,6 @@ class ApprovePosController extends AppController
                     $query->update()->set(['is_action_taken' => 1])->where(['id' => $id])->execute();
 
                     // Event creation
-                    $invoiceCycleInfo = $this->InvoiceCycleConfigurations->find('all', ['conditions'=>['status !='=>99]])->first();
                     if($invoiceCycleInfo['invoice_approved_at']==array_flip(Configure::read('invoice_approved_at'))['Not Needed']){
                         $poEvent = $this->PoEvents->newEntity();
                         $poEventData['reference_id'] = $data['po_id'];

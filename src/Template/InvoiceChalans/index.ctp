@@ -15,13 +15,14 @@ $status = \Cake\Core\Configure::read('status_options');
 
 <div class="row">
     <div class="col-md-12">
-        <div class="portlet box blue-hoki">
+        <form class="form-horizontal" id="chalanForm" role="form" action="<?= $this->Url->build("/InvoiceChalans/chalanInvoice")?>" method="post">
+        <div class="portlet box grey-cascade">
             <div class="portlet-title">
                 <div class="caption">
-                    <i class="fa fa-list-alt fa-lg"></i><?= __('Invoice Chalan List') ?>
+                    <i class="fa fa-list-alt fa-lg"></i><?= __('Invoice List') ?>
                 </div>
-                <div class="tools">
-                    <?= $this->Html->link(__('New Invoice Chalan'), ['action' => 'add'], ['class' => 'btn btn-sm btn-primary']); ?>
+                <div class="pull-right">
+                    <button type="submit" style="margin-top: 6px;" class="btn btn-sm grey-gallery">Make Chalan</button>
                 </div>
             </div>
 
@@ -30,25 +31,25 @@ $status = \Cake\Core\Configure::read('status_options');
                     <table class="table table-bordered table-hover">
                         <thead>
                         <tr>
+                            <th></th>
                             <th><?= __('Sl. No.') ?></th>
-                            <th><?= __('Chalan no.') ?></th>
-                            <th><?= __('Chalan Status') ?></th>
-                            <th><?= __('Actions') ?></th>
+                            <th><?= __('Customer') ?></th>
+                            <th><?= __('Invoice Date') ?></th>
+                            <th><?= __('Net Total') ?></th>
+                            <th><?= __('Delivery Date') ?></th>
                         </tr>
                         </thead>
                         <tbody>
-                        <?php foreach ($invoiceChalans as $key => $invoiceChalan) { ?>
+                        <?php foreach ($invoices as $key => $invoice) { ?>
                             <tr>
-                                <td><?= $this->Number->format($key + 1) ?></td>
-                                <td><?= $this->Number->format($invoiceChalan->chalan_no) ?></td>
-                                <td><?= $this->Number->format($invoiceChalan->chalan_status) ?></td>
-                                <td class="actions">
-                                    <?php
-                                    echo $this->Html->link(__('View'), ['action' => 'view', $invoiceChalan->id], ['class' => 'btn btn-sm btn-info']);
-                                    echo $this->Html->link(__('Edit'), ['action' => 'edit', $invoiceChalan->id], ['class' => 'btn btn-sm btn-warning']);
-                                    echo $this->Form->postLink(__('Delete'), ['action' => 'delete', $invoiceChalan->id], ['class' => 'btn btn-sm btn-danger', 'confirm' => __('Are you sure you want to delete # {0}?', $invoiceChalan->id)]);
-                                    ?>
+                                <td style="width: 4%">
+                                    <input type="checkbox" <?php if($invoice->is_action_taken==1){echo 'disabled';} ?> name="invoice_ids[]" value="<?=$invoice->invoice->id?>" />
                                 </td>
+                                <td><?= $this->Number->format($key + 1) ?></td>
+                                <td><?= $invoice->invoice->customer->name?></td>
+                                <td><?= date('d-m-Y', $invoice->invoice->invoice_date)?></td>
+                                <td><?= $invoice->invoice->net_total?></td>
+                                <td><?= date('d-m-Y', $invoice->invoice->delivery_date)?></td>
                             </tr>
                         <?php
                         }
@@ -64,6 +65,7 @@ $status = \Cake\Core\Configure::read('status_options');
                     ?>
                 </ul>
             </div>
+            </form>
         </div>
     </div>
 </div>
