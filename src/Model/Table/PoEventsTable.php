@@ -46,6 +46,11 @@ class PoEventsTable extends Table
             'foreignKey' => 'reference_id',
             'joinType' => 'INNER'
         ]);
+
+        $this->belongsTo('InvoiceChalans', [
+            'foreignKey' => 'reference_id',
+            'joinType' => 'INNER'
+        ]);
     }
 
     /**

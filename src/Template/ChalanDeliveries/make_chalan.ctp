@@ -35,9 +35,6 @@ $status = \Cake\Core\Configure::read('status_options');
                     <?php foreach($invoiceIds as $invoiceId):?>
                         <input type="hidden" name="invoiceIds[]" value="<?= $invoiceId?>" />
                     <?php endforeach;?>
-                    <?php foreach($eventIds as $eventId):?>
-                        <input type="hidden" name="eventIds[]" value="<?= $eventId?>" />
-                    <?php endforeach;?>
                     <input type="hidden" name="chalan_no" value="<?= $sl_no?>" />
                     <div class="col-md-12">
                         <table class="table table-bordered" style="margin: 20px 0 0 0;">

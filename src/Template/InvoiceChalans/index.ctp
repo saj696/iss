@@ -40,10 +40,11 @@ $status = \Cake\Core\Configure::read('status_options');
                         </tr>
                         </thead>
                         <tbody>
-                        <?php foreach ($invoices as $key => $invoice) { ?>
+                        <?php
+                        foreach ($invoices as $key => $invoice) { ?>
                             <tr>
                                 <td style="width: 4%">
-                                    <input type="checkbox" <?php if($invoice->is_action_taken==1){echo 'disabled';} ?> name="invoice_ids[]" value="<?=$invoice->invoice->id?>" />
+                                    <input type="checkbox" <?php if($invoice->is_action_taken==1){echo 'disabled';} ?> name="invoice_ids[<?=$invoice->id?>]" value="<?=$invoice->invoice->id?>" />
                                 </td>
                                 <td><?= $this->Number->format($key + 1) ?></td>
                                 <td><?= $invoice->invoice->customer->name?></td>

@@ -17,7 +17,7 @@ class InvoiceChalansController extends AppController
     public $paginate = [
         'limit' => 15,
         'order' => [
-            'InvoiceChalans.id' => 'desc'
+            'PoEvents.id' => 'desc'
         ]
     ];
 
@@ -70,6 +70,7 @@ class InvoiceChalansController extends AppController
         $this->loadModel('Depots');
         $this->loadModel('Stocks');
         $this->loadModel('PoEvents');
+        $this->loadModel('Users');
 
         try {
             $saveStatus = 0;
@@ -82,25 +83,24 @@ class InvoiceChalansController extends AppController
                     $chalan_no = $data['chalan_no'];
                     $detail = $data['detail'];
 
-                    $invoiceChalan = $this->InvoiceChalans->newEntity();
-                    $invoiceChalanData['reference_invoices'] = json_encode($invoiceIds);
-                    $invoiceChalanData['chalan_no'] = $chalan_no;
-                    $invoiceChalanData['chalan_status'] = array_flip(Configure::read('invoice_chalan_status'))['delivered'];
-                    $invoiceChalanData['create_by'] = $user['id'];
-                    $invoiceChalanData['create_date'] = $time;
-                    $invoiceChalan = $this->InvoiceChalans->patchEntity($invoiceChalan, $data);
-                    $chalanResult = $this->InvoiceChalans->save($invoiceChalan);
-                    // Chalan detail delivery
-                    foreach($detail as $item_id=>$quantity){
-                        $chalanDetail = $this->InvoiceChalanDetails->newEntity();
-                        $chalanDetailData['invoice_chalan_id'] = $chalanResult['id'];
-                        $chalanDetailData['product_id'] = $item_id;
-                        $chalanDetailData['quantity'] = $quantity;
-                        $chalanDetail = $this->InvoiceChalanDetails->patchEntity($chalanDetail, $chalanDetailData);
-                        $this->InvoiceChalanDetails->save($chalanDetail);
-                    }
-
                     if(isset($_POST['send'])) {
+                        $invoiceChalan = $this->InvoiceChalans->newEntity();
+                        $invoiceChalanData['reference_invoices'] = json_encode($invoiceIds);
+                        $invoiceChalanData['chalan_no'] = $chalan_no;
+                        $invoiceChalanData['chalan_status'] = array_flip(Configure::read('invoice_chalan_status'))['delivered'];
+                        $invoiceChalanData['created_by'] = $user['id'];
+                        $invoiceChalanData['created_date'] = $time;
+                        $invoiceChalan = $this->InvoiceChalans->patchEntity($invoiceChalan, $invoiceChalanData);
+                        $chalanResult = $this->InvoiceChalans->save($invoiceChalan);
+                        // Chalan detail delivery
+                        foreach($detail as $item_id=>$quantity){
+                            $chalanDetail = $this->InvoiceChalanDetails->newEntity();
+                            $chalanDetailData['invoice_chalan_id'] = $chalanResult['id'];
+                            $chalanDetailData['product_id'] = $item_id;
+                            $chalanDetailData['quantity'] = $quantity;
+                            $chalanDetail = $this->InvoiceChalanDetails->patchEntity($chalanDetail, $chalanDetailData);
+                            $this->InvoiceChalanDetails->save($chalanDetail);
+                        }
                         // Invoice delivery status change
                         foreach($invoiceIds as $invoiceId){
                             $invoice = TableRegistry::get('invoices');
@@ -125,7 +125,25 @@ class InvoiceChalansController extends AppController
                                 break;
                             }
                         }
-                    } elseif($_POST['forward']) {
+                    } elseif(isset($_POST['forward'])) {
+                        $invoiceChalan = $this->InvoiceChalans->newEntity();
+                        $invoiceChalanData['reference_invoices'] = json_encode($invoiceIds);
+                        $invoiceChalanData['chalan_no'] = $chalan_no;
+                        $invoiceChalanData['chalan_status'] = array_flip(Configure::read('invoice_chalan_status'))['forwarded'];
+                        $invoiceChalanData['created_by'] = $user['id'];
+                        $invoiceChalanData['created_date'] = $time;
+                        $invoiceChalan = $this->InvoiceChalans->patchEntity($invoiceChalan, $invoiceChalanData);
+                        $chalanResult = $this->InvoiceChalans->save($invoiceChalan);
+                        // Chalan detail delivery
+                        foreach($detail as $item_id=>$quantity){
+                            $chalanDetail = $this->InvoiceChalanDetails->newEntity();
+                            $chalanDetailData['invoice_chalan_id'] = $chalanResult['id'];
+                            $chalanDetailData['product_id'] = $item_id;
+                            $chalanDetailData['quantity'] = $quantity;
+                            $chalanDetail = $this->InvoiceChalanDetails->patchEntity($chalanDetail, $chalanDetailData);
+                            $this->InvoiceChalanDetails->save($chalanDetail);
+                        }
+
                         // Forward to warehouse in charge
                         $depotInfo = $this->Depots->get($user['depot_id']);
                         $warehouses = json_decode($depotInfo['warehouses'], true);
@@ -135,6 +153,7 @@ class InvoiceChalansController extends AppController
                         if($warehouseUserInfo){
                             // Event entry
                             $poEvent = $this->PoEvents->newEntity();
+                            $poEventData['reference_type'] = array_flip(Configure::read('po_event_reference_type'))['chalan'];
                             $poEventData['reference_id'] = $chalanResult['id'];
                             $poEventData['recipient_id'] = $warehouseUserInfo['id'];
                             $poEventData['event_type'] = array_flip(Configure::read('po_event_types'))['deliver'];
@@ -146,6 +165,14 @@ class InvoiceChalansController extends AppController
                             $this->Flash->error('Forward not possible, no warehouse in charge. Please try again!');
                             throw new \Exception('error');
                         }
+                    }
+
+                    // Event is_action_taken 1
+                    $eventIds = $data['eventIds'];
+                    foreach($eventIds as $eventId){
+                        $event = TableRegistry::get('po_events');
+                        $query = $event->query();
+                        $query->update()->set(['is_action_taken' => 1])->where(['id' => $eventId])->execute();
                     }
                 }
             });
@@ -227,7 +254,9 @@ class InvoiceChalansController extends AppController
 
         if(sizeof($invoiceIds)>0){
             $invoices = [];
-            foreach($invoiceIds as $id):
+            $eventIds = [];
+            foreach($invoiceIds as $event_id=>$id):
+                $eventIds[] = $event_id;
                 $invoices[] = $this->Invoices->find('all', ['contain'=>['InvoicedProducts', 'Customers'], 'conditions'=>['Invoices.status !='=>99, 'Invoices.id'=>$id]])->first();
             endforeach;
 
@@ -238,7 +267,7 @@ class InvoiceChalansController extends AppController
                 $itemArray[$item['id']] = $item['name'].' - '.$item['pack_size'].' '.Configure::read('pack_size_units')[$item['unit']].' ('.$item['code'].')';
             }
 
-            $this->set(compact('invoices', 'itemArray', 'invoiceIds'));
+            $this->set(compact('invoices', 'itemArray', 'invoiceIds', 'eventIds'));
             $this->set('_serialize', ['invoices']);
         } else{
             $this->Flash->error('Please come again sequentially. Thank you!');
@@ -253,6 +282,7 @@ class InvoiceChalansController extends AppController
         $this->loadModel('Items');
         $data = $this->request->data;
         $invoiceIds = $data['invoiceIds'];
+        $eventIds = $data['eventIds'];
 
         if(sizeof($invoiceIds)>0){
             $items = $this->Items->find('all', ['conditions' => ['status' => 1]]);
@@ -318,7 +348,7 @@ class InvoiceChalansController extends AppController
                 $sl_no = 1;
             }
 
-            $this->set(compact('returnData', 'itemArray', 'sl_no', 'invoiceIds'));
+            $this->set(compact('returnData', 'itemArray', 'sl_no', 'invoiceIds', 'eventIds'));
             $this->set('_serialize', ['returnData']);
         } else{
             $this->Flash->error('Please come again sequentially. Thank you!');

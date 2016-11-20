@@ -109,7 +109,7 @@ class ApprovePosController extends AppController
                     else:
                         $invoiceData['customer_type'] = array_flip(Configure::read('po_customer_type'))['general'];
                     endif;
-                    $invoiceData['po_id'] = strtotime($data['po_id']);
+                    $invoiceData['po_id'] = $data['po_id'];
                     $invoiceData['delivery_date'] = strtotime($data['delivery_date']);
                     $invoiceData['invoice_type'] = $data['invoice_type'];
                     $invoiceData['net_total'] = $data['total_amount_hidden'];
@@ -171,6 +171,7 @@ class ApprovePosController extends AppController
                     // Event creation
                     if($invoiceCycleInfo['invoice_approved_at']==array_flip(Configure::read('invoice_approved_at'))['Not Needed']){
                         $poEvent = $this->PoEvents->newEntity();
+                        $poEventData['reference_type'] = array_flip(Configure::read('po_event_reference_type'))['invoice'];
                         $poEventData['reference_id'] = $data['po_id'];
                         $poEventData['recipient_id'] = $user['id'];
                         $poEventData['event_type'] = array_flip(Configure::read('po_event_types'))['make_chalan'];
@@ -182,6 +183,7 @@ class ApprovePosController extends AppController
                         if($invoiceCycleInfo['allow_delivery_before_approval']==1){
                             // Self event
                             $poEvent = $this->PoEvents->newEntity();
+                            $poEventData['reference_type'] = array_flip(Configure::read('po_event_reference_type'))['invoice'];
                             $poEventData['reference_id'] = $result['id'];
                             $poEventData['recipient_id'] = $user['id'];
                             $poEventData['event_type'] = array_flip(Configure::read('po_event_types'))['make_chalan'];
@@ -194,6 +196,7 @@ class ApprovePosController extends AppController
                             if(sizeof($approvalUsers)>0){
                                 foreach($approvalUsers as $user){
                                     $poEvent = $this->PoEvents->newEntity();
+                                    $poEventData['reference_type'] = array_flip(Configure::read('po_event_reference_type'))['invoice'];
                                     $poEventData['reference_id'] = $result['id'];
                                     $poEventData['recipient_id'] = $user->id;
                                     $poEventData['event_type'] = array_flip(Configure::read('po_event_types'))['invoice_approval'];
@@ -209,6 +212,7 @@ class ApprovePosController extends AppController
                             if(sizeof($approvalUsers)>0){
                                 foreach($approvalUsers as $user){
                                     $poEvent = $this->PoEvents->newEntity();
+                                    $poEventData['reference_type'] = array_flip(Configure::read('po_event_reference_type'))['invoice'];
                                     $poEventData['reference_id'] = $result['id'];
                                     $poEventData['recipient_id'] = $user->id;
                                     $poEventData['event_type'] = array_flip(Configure::read('po_event_types'))['invoice_approval'];

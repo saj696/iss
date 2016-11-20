@@ -39,7 +39,16 @@ class CustomersTable extends Table
                     ],
                     'nid' => [
                         'path' => 'u_load/customer/nid/:md5'
-                    ]
+                    ],
+//                    'distributor_paper' => [
+//                        'path' => 'u_load/customer/distributor_paper/:md5'
+//                    ],
+//                    'appraisal_form' => [
+//                        'path' => 'u_load/customer/appraisal_form/:md5'
+//                    ],
+//                    'appointment_form' => [
+//                        'path' => 'u_load/customer/appointment_form/:md5'
+//                    ],
                 ]
             ]
         );
