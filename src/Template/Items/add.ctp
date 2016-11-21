@@ -40,13 +40,13 @@ use Cake\Core\Configure;
                         <?php
                         echo $this->Form->input('name');
                         echo $this->Form->input('code',['class'=>'form-control codeItem','readonly']);
-                        echo $this->Form->input('pack_size',['type'=>'text', 'class'=>'form-control numbersOnly']);
-                        echo $this->Form->input('unit', ['options'=>Configure::read('pack_size_units'), 'empty'=>'Select', 'required'=>'required']);
+                        //echo $this->Form->input('pack_size',['type'=>'text', 'class'=>'form-control numbersOnly']);
+                       // echo $this->Form->input('unit', ['options'=>Configure::read('pack_size_units'), 'empty'=>'Select', 'required'=>'required']);
                         echo $this->Form->input('generic_name');
-                        echo $this->Form->input('box_size',['type'=>'text', 'class'=>'form-control numbersOnly']);
-                        echo $this->Form->input('cash_sales_price',['type'=>'text', 'class'=>'form-control numbersOnly']);
-                        echo $this->Form->input('credit_sales_price',['type'=>'text', 'class'=>'form-control numbersOnly']);
-                        echo $this->Form->input('retail_price',['type'=>'text', 'class'=>'form-control numbersOnly']);
+                        //echo $this->Form->input('box_size',['type'=>'text', 'class'=>'form-control numbersOnly']);
+                        //echo $this->Form->input('cash_sales_price',['type'=>'text', 'class'=>'form-control numbersOnly']);
+                        //echo $this->Form->input('credit_sales_price',['type'=>'text', 'class'=>'form-control numbersOnly']);
+                        //echo $this->Form->input('retail_price',['type'=>'text', 'class'=>'form-control numbersOnly']);
                         ?>
                         <?= $this->Form->button(__('Submit'), ['class' => 'btn blue pull-right', 'style' => 'margin-top:20px']) ?>
                     </div>
