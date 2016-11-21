@@ -35,7 +35,7 @@ $status = \Cake\Core\Configure::read('status_options');
                             <th><?= __('Code') ?></th>
                             <th><?= __('Name') ?></th>
                             <th><?= __('Proprietor') ?></th>
-                            <th><?= __('Contact Person') ?></th>
+                            <th><?= __('Contact No.') ?></th>
                             <th><?= __('Status') ?></th>
                             <th><?= __('Actions') ?></th>
                         </tr>
@@ -43,7 +43,7 @@ $status = \Cake\Core\Configure::read('status_options');
                         <tbody>
                         <?php foreach ($customers as $key => $customer) { ?>
                             <tr>
-                                <td><?= $this->Number->format($key + 1) ?></td>
+                                <td><?= $customer->id ?></td>
                                 <td><?= $customer->has('administrative_unit') ?
                                         $this->Html->link($customer->administrative_unit
                                             ->unit_name, ['controller' => 'AdministrativeUnits',
@@ -52,7 +52,7 @@ $status = \Cake\Core\Configure::read('status_options');
                                 <td><?= h($customer->code) ?></td>
                                 <td><?= h($customer->name) ?></td>
                                 <td><?= h($customer->proprietor) ?></td>
-                                <td><?= h($customer->contact_person) ?></td>
+                                <td><?= h($customer->mobile) ?></td>
                                 <td><?= ($customer->status)==0?"Not Approved":"Approved" ?></td>
                                 <td class="actions">
                                     <?php

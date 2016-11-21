@@ -74,15 +74,16 @@ class ChalanDeliveriesController extends AppController
     public function edit($id = null)
     {
         $this->loadModel('PoEvents');
+        $this->loadModel('Stocks');
         $user = $this->Auth->user();
         $time = time();
         $event = $this->PoEvents->find('all', [
             'conditions' => ['PoEvents.id' => $id, 'recipient_id'=>$user['id'], 'is_action_taken'=>0, 'event_type'=>array_flip(Configure::read('po_event_types'))['deliver']],
             'contain'=>['InvoiceChalans'=>['InvoiceChalanDetails']]
-        ]);
+        ])->first();
 
-        $invoiceIds = json_decode($event->invoice_chalan->reference_invoices, true);
-        $chalanDetail = $event->invoice_chalan->invoice_chalan_details;
+        $invoiceIds = json_decode($event['invoice_chalan']['reference_invoices'], true);
+        $chalanDetail = $event['invoice_chalan']['invoice_chalan_details'];
 
         try {
             $saveStatus = 0;
@@ -115,7 +116,11 @@ class ChalanDeliveriesController extends AppController
                 //Chalan status update
                 $chalan = TableRegistry::get('invoice_chalans');
                 $query = $chalan->query();
-                $query->update()->set(['chalan_status' => array_flip(Configure::read('invoice_chalan_status'))['delivered']])->where(['id' => $event->invoice_chalan->id])->execute();
+                $query->update()->set(['chalan_status' => array_flip(Configure::read('invoice_chalan_status'))['delivered']])->where(['id' => $event['invoice_chalan']['id']])->execute();
+                //Event action update
+                $chalan = TableRegistry::get('po_events');
+                $query = $chalan->query();
+                $query->update()->set(['is_action_taken' => 1])->where(['id' => $id])->execute();
             });
 
             $this->Flash->success('You have successfully delivered the chalan. Thank you!');

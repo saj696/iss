@@ -103,7 +103,7 @@ class PosController extends AppController
                     else:
                         $poData['po_status'] = array_flip(Configure::read('po_status'))['saved'];
                     endif;
-                    $poData['po_no'] = $data['po_no'];
+                    $poData['field_po_no'] = $data['field_po_no'];
                     $poData['created_by'] = $user['id'];
                     $poData['created_date'] = $time;
                     $po = $this->Pos->patchEntity($po, $poData);

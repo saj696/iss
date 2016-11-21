@@ -57,7 +57,11 @@ $status = \Cake\Core\Configure::read('status_options');
                                 <td><?= date('d-m-Y', $event->invoice_chalan->created_date)?></td>
                                 <td>
                                     <?php
-                                    echo $this->Html->link(__('Deliver'), ['action' => 'Deliver', $event->id],['class'=>'btn btn-circle default green-stripe', 'confirm' => __('Are you sure you want to deliver?')]);
+                                    if($event->is_action_taken==1){
+                                        echo $this->Html->link(__('Deliver'), ['action' => 'edit', $event->id],['disabled', 'class'=>'btn btn-circle default green-stripe', 'confirm' => __('Are you sure you want to deliver?')]);
+                                    }else{
+                                        echo $this->Html->link(__('Deliver'), ['action' => 'edit', $event->id],['class'=>'btn btn-circle default green-stripe', 'confirm' => __('Are you sure you want to deliver?')]);
+                                    }
                                     ?>
                                 </td>
                             </tr>
