@@ -20,7 +20,8 @@ class CustomerApprovalController extends AppController
         $this->loadModel('Customers');
 
         $customers = $this->Customers->find('all',[
-            'conditions' => ['Customers.status !=' => 99]
+            'conditions' => ['Customers.status !=' => 99],
+            'contain'=>['AdministrativeUnits']
         ]);
 
         $customers = $this->paginate($customers);
@@ -77,7 +78,7 @@ class CustomerApprovalController extends AppController
         ]);
 
         $approves = $this->Customers->patchEntity($approves, $this->request->data);
-        $approves['business_type'] = array_flip(Configure::read('customer_business_type'))['cash'];
+        $approves['business_type'] = array_flip(Configure::read('customer_business_types'))['cash'];
         $approves['status'] = 1;
         $approves['opening_balance'] = 0;
         $approves['cash_approved_by'] = $user['id'];

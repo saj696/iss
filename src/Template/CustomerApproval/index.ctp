@@ -29,8 +29,8 @@ $status = \Cake\Core\Configure::read('status_options');
                         <tr>
                             <th><?= __('Sl. No.') ?></th>
                             <th><?= __('Name') ?></th>
+                            <th><?= __('Location')?></th>
                             <th><?= __('Proprietor') ?></th>
-                            <th><?= __('Contact Person') ?></th>
                             <th><?= __('Status') ?></th>
                             <th><?= __('Actions') ?></th>
                         </tr>
@@ -38,10 +38,10 @@ $status = \Cake\Core\Configure::read('status_options');
                         <tbody>
                         <?php foreach ($customers as $key => $customer) { ?>
                             <tr>
-                                <td><?= $this->Number->format($key + 1) ?></td>
+                                <td><?= $customer->id ?></td>
                                 <td><?= h($customer->name) ?></td>
+                                <td><?= $customer->administrative_unit->unit_name ?></td>
                                 <td><?= h($customer->proprietor) ?></td>
-                                <td><?= h($customer->contact_person) ?></td>
                                 <td><?= ($customer->status)==0?"Not Approved":"Approved" ?></td>
                                 <td class="actions">
                                     <?php

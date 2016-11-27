@@ -9,7 +9,7 @@ $status = \Cake\Core\Configure::read('status_options');
             <a href="<?= $this->Url->build(('/Dashboard'), true); ?>"><?= __('Dashboard') ?></a>
             <i class="fa fa-angle-right"></i>
         </li>
-        <li><?= $this->Html->link(__('Customers'), ['action' => 'index']) ?></li>
+        <li><?= $this->Html->link(__('Sales Budgets'), ['action' => 'index']) ?></li>
     </ul>
 </div>
 
@@ -18,43 +18,38 @@ $status = \Cake\Core\Configure::read('status_options');
         <div class="portlet box blue-hoki">
             <div class="portlet-title">
                 <div class="caption">
-                    <i class="fa fa-list-alt fa-lg"></i><?= __('Customer List') ?>
+                    <i class="fa fa-list-alt fa-lg"></i><?= __('Sales Budget List') ?>
                 </div>
                 <div class="tools">
-                    <?= $this->Html->link(__('New Customer'), ['action' => 'add'], ['class' => 'btn btn-sm btn-primary']); ?>
+                    <?= $this->Html->link(__('New Sales Budget'), ['action' => 'add'], ['class' => 'btn btn-sm btn-primary']); ?>
                 </div>
             </div>
-
             <div class="portlet-body">
                 <div class="table-scrollable">
                     <table class="table table-bordered table-hover">
                         <thead>
                         <tr>
                             <th><?= __('Sl. No.') ?></th>
-                            <th><?= __('Unit') ?></th>
-                            <th><?= __('Code') ?></th>
-                            <th><?= __('Name') ?></th>
-                            <th><?= __('Proprietor') ?></th>
-                            <th><?= __('Contact No.') ?></th>
-                            <th><?= __('Status') ?></th>
+                            <th><?= __('Period Start') ?></th>
+                            <th><?= __('Period End') ?></th>
+                            <th><?= __('Location') ?></th>
+                            <th><?= __('Product Scope') ?></th>
                             <th><?= __('Actions') ?></th>
                         </tr>
                         </thead>
                         <tbody>
-                        <?php foreach ($customers as $key => $customer) { ?>
+                        <?php foreach ($salesBudgets as $key => $salesBudget) { ?>
                             <tr>
-                                <td><?= $customer->id ?></td>
-                                <td><?= $customer->administrative_unit->unit_name ?></td>
-                                <td><?= h($customer->code) ?></td>
-                                <td><?= h($customer->name) ?></td>
-                                <td><?= h($customer->proprietor) ?></td>
-                                <td><?= h($customer->mobile) ?></td>
-                                <td><?= ($customer->status)==0?"Not Approved":"Approved" ?></td>
+                                <td><?= $this->Number->format($key + 1) ?></td>
+                                <td><?= h($salesBudget->budget_period_start) ?></td>
+                                <td><?= h($salesBudget->budget_period_end) ?></td>
+                                <td><?= $salesBudget->administrative_unit->unit_name ?></td>
+                                <td><?= $salesBudget->product_scope ?></td>
                                 <td class="actions">
                                     <?php
-                                    echo $this->Html->link(__('View'), ['action' => 'view', $customer->id], ['class' => 'btn btn-sm btn-info']);
-                                    echo $this->Html->link(__('Edit'), ['action' => 'edit', $customer->id], ['class' => 'btn btn-sm btn-warning']);
-                                    echo $this->Form->postLink(__('Delete'), ['action' => 'delete', $customer->id], ['class' => 'btn btn-sm btn-danger', 'confirm' => __('Are you sure you want to delete # {0}?', $customer->id)]);
+                                    echo $this->Html->link(__('View'), ['action' => 'view', $salesBudget->id], ['class' => 'btn btn-sm btn-info']);
+                                    echo $this->Html->link(__('Edit'), ['action' => 'edit', $salesBudget->id], ['class' => 'btn btn-sm btn-warning']);
+                                    echo $this->Form->postLink(__('Delete'), ['action' => 'delete', $salesBudget->id], ['class' => 'btn btn-sm btn-danger', 'confirm' => __('Are you sure you want to delete # {0}?', $salesBudget->id)]);
                                     ?>
                                 </td>
                             </tr>
