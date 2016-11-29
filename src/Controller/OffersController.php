@@ -80,6 +80,8 @@ class OffersController extends AppController
             $functionArray[$function->id] = $function->function_name.' ('.$function->arguments.')';
         }
 
+        $this->loadModel('ItemUnits');
+
         $this->set(compact('offer', 'functionArray'));
         $this->set('_serialize', ['offer']);
     }
