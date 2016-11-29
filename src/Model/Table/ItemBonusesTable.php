@@ -28,6 +28,10 @@ class ItemBonusesTable extends Table
             'foreignKey' => 'item_id',
             'joinType' => 'INNER'
         ]);
+        $this->belongsTo('Units', [
+            'foreignKey' => 'manufacture_unit_id',
+            'joinType' => 'INNER'
+        ]);
     }
 
     /**
@@ -65,6 +69,7 @@ class ItemBonusesTable extends Table
     public function buildRules(RulesChecker $rules)
     {
         $rules->add($rules->existsIn(['item_id'], 'Items'));
+        $rules->add($rules->existsIn(['manufacture_unit_id'], 'Units'));
         return $rules;
     }
 }

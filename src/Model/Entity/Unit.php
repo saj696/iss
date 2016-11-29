@@ -4,18 +4,23 @@ namespace App\Model\Entity;
 use Cake\ORM\Entity;
 
 /**
- * ItemUnit Entity.
+ * Unit Entity.
  *
  * @property int $id
- * @property int $item_id
- * @property int $item_unit_id
- * @property int $status
+ * @property int $unit_level
+ * @property int $constituent_unit_id
+ * @property string $unit_name
+ * @property string $unit_display_name
+ * @property float $unit_size
+ * @property string $unit_type
+ * @property float $converted_quantity
+ * @property int $created_by
  * @property int $created_date
  * @property int $updated_by
  * @property int $updated_date
- * @property int $created_by
+ * @property int $status
  */
-class ItemUnit extends Entity
+class Unit extends Entity
 {
 
     /**

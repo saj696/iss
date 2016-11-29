@@ -1,17 +1,16 @@
 <?php
 namespace App\Model\Table;
 
-use App\Model\Entity\ItemUnit;
+use App\Model\Entity\Unit;
 use Cake\ORM\Query;
 use Cake\ORM\RulesChecker;
 use Cake\ORM\Table;
 use Cake\Validation\Validator;
-use Cake\ORM\TableRegistry;
-use Cake\Core\Configure;
+
 /**
- * ItemUnits Model
+ * Units Model
  */
-class ItemUnitsTable extends Table
+class UnitsTable extends Table
 {
 
     /**
@@ -22,18 +21,9 @@ class ItemUnitsTable extends Table
      */
     public function initialize(array $config)
     {
-        $this->table('item_units');
-        $this->displayField('id');
+        $this->table('units');
+        $this->displayField('unit_display_name');
         $this->primaryKey('id');
-
-        $this->belongsTo('Items', [
-            'foreignKey' => 'item_id',
-            'joinType' => 'INNER'
-        ]);
-        $this->belongsTo('Units', [
-            'foreignKey' => 'manufacture_unit_id',
-            'joinType' => 'INNER'
-        ]);
 
     }
 
@@ -50,8 +40,34 @@ class ItemUnitsTable extends Table
             ->allowEmpty('id', 'create');
 
         $validator
-            ->add('status', 'valid', ['rule' => 'numeric'])
-            ->allowEmpty('status');
+            ->add('unit_level', 'valid', ['rule' => 'numeric'])
+            ->requirePresence('unit_level', 'create')
+            ->notEmpty('unit_level');
+
+        $validator
+            ->requirePresence('unit_name', 'create')
+            ->notEmpty('unit_name');
+
+        $validator
+            ->requirePresence('unit_display_name', 'create')
+            ->notEmpty('unit_display_name');
+
+        $validator
+            ->add('unit_size', 'valid', ['rule' => 'numeric'])
+            //->requirePresence('unit_size', 'create')
+            ->allowEmpty('unit_size');
+
+        $validator
+            ->requirePresence('unit_type', 'create')
+            ->notEmpty('unit_type');
+
+        $validator
+            ->add('converted_quantity', 'valid', ['rule' => 'numeric'])
+            ->allowEmpty('converted_quantity');
+
+        $validator
+            ->add('created_by', 'valid', ['rule' => 'numeric'])
+            ->allowEmpty('created_by');
 
         $validator
             ->add('created_date', 'valid', ['rule' => 'numeric'])
@@ -66,8 +82,8 @@ class ItemUnitsTable extends Table
             ->allowEmpty('updated_date');
 
         $validator
-            ->add('created_by', 'valid', ['rule' => 'numeric'])
-            ->allowEmpty('created_by');
+            ->add('status', 'valid', ['rule' => 'numeric'])
+            ->allowEmpty('status');
 
         return $validator;
     }
@@ -81,10 +97,6 @@ class ItemUnitsTable extends Table
      */
     public function buildRules(RulesChecker $rules)
     {
-        $rules->add($rules->existsIn(['item_id'], 'Items'));
-        $rules->add($rules->existsIn(['manufacture_unit_id'], 'Units'));
         return $rules;
     }
-
-
 }

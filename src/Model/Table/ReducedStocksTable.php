@@ -24,12 +24,13 @@ class ReducedStocksTable extends Table
         $this->table('reduced_stocks');
         $this->displayField('id');
         $this->primaryKey('id');
+
         $this->belongsTo('Warehouses', [
             'foreignKey' => 'warehouse_id',
             'joinType' => 'INNER'
         ]);
-        $this->belongsTo('Items', [
-            'foreignKey' => 'item_id',
+        $this->belongsTo('Stocks', [
+            'foreignKey' => 'stock_id',
             'joinType' => 'INNER'
         ]);
     }
@@ -45,12 +46,12 @@ class ReducedStocksTable extends Table
         $validator
             ->add('id', 'valid', ['rule' => 'numeric'])
             ->allowEmpty('id', 'create');
-            
+
         $validator
             ->add('type', 'valid', ['rule' => 'numeric'])
             ->requirePresence('type', 'create')
-            ->notEmpty('type');
-            
+            ->allowEmpty('type');
+
         $validator
             ->add('quantity', 'valid', ['rule' => 'numeric'])
             ->requirePresence('quantity', 'create')
@@ -69,7 +70,7 @@ class ReducedStocksTable extends Table
     public function buildRules(RulesChecker $rules)
     {
         $rules->add($rules->existsIn(['warehouse_id'], 'Warehouses'));
-        $rules->add($rules->existsIn(['item_id'], 'Items'));
+        $rules->add($rules->existsIn(['stock_id'], 'Stocks'));
         return $rules;
     }
 }

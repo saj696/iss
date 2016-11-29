@@ -4,18 +4,27 @@ namespace App\Model\Entity;
 use Cake\ORM\Entity;
 
 /**
- * ItemUnit Entity.
+ * ProductionRule Entity
  *
  * @property int $id
- * @property int $item_id
- * @property int $item_unit_id
+ * @property int $input_item_id
+ * @property int $input_unit_id
+ * @property int $input_quantity
+ * @property int $output_item_id
+ * @property int $output_unit_id
+ * @property int $output_quantity
  * @property int $status
+ * @property int $created_by
  * @property int $created_date
  * @property int $updated_by
  * @property int $updated_date
- * @property int $created_by
+ *
+ * @property \App\Model\Entity\Item $input_item
+ * @property \App\Model\Entity\Unit $input_unit
+ * @property \App\Model\Entity\Item $output_item
+ * @property \App\Model\Entity\Unit $output_unit
  */
-class ItemUnit extends Entity
+class ProductionRule extends Entity
 {
 
     /**
@@ -29,6 +38,6 @@ class ItemUnit extends Entity
      */
     protected $_accessible = [
         '*' => true,
-        'id' => false,
+        'id' => false
     ];
 }

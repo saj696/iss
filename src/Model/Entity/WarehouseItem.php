@@ -4,18 +4,19 @@ namespace App\Model\Entity;
 use Cake\ORM\Entity;
 
 /**
- * ItemUnit Entity.
+ * WarehouseItem Entity.
  *
  * @property int $id
+ * @property int $warehouse_id
  * @property int $item_id
- * @property int $item_unit_id
+ * @property int $use_alias
  * @property int $status
+ * @property int $created_by
  * @property int $created_date
  * @property int $updated_by
  * @property int $updated_date
- * @property int $created_by
  */
-class ItemUnit extends Entity
+class WarehouseItem extends Entity
 {
 
     /**

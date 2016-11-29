@@ -1,17 +1,16 @@
 <?php
 namespace App\Model\Table;
 
-use App\Model\Entity\ItemUnit;
+use App\Model\Entity\WarehouseItem;
 use Cake\ORM\Query;
 use Cake\ORM\RulesChecker;
 use Cake\ORM\Table;
 use Cake\Validation\Validator;
-use Cake\ORM\TableRegistry;
-use Cake\Core\Configure;
+
 /**
- * ItemUnits Model
+ * WarehouseItems Model
  */
-class ItemUnitsTable extends Table
+class WarehouseItemsTable extends Table
 {
 
     /**
@@ -22,19 +21,17 @@ class ItemUnitsTable extends Table
      */
     public function initialize(array $config)
     {
-        $this->table('item_units');
+        $this->table('warehouse_items');
         $this->displayField('id');
         $this->primaryKey('id');
-
+        $this->belongsTo('Warehouses', [
+            'foreignKey' => 'warehouse_id',
+            'joinType' => 'INNER'
+        ]);
         $this->belongsTo('Items', [
             'foreignKey' => 'item_id',
             'joinType' => 'INNER'
         ]);
-        $this->belongsTo('Units', [
-            'foreignKey' => 'manufacture_unit_id',
-            'joinType' => 'INNER'
-        ]);
-
     }
 
     /**
@@ -50,8 +47,17 @@ class ItemUnitsTable extends Table
             ->allowEmpty('id', 'create');
 
         $validator
+            ->add('use_alias', 'valid', ['rule' => 'numeric'])
+            ->requirePresence('use_alias', 'create')
+            ->notEmpty('use_alias');
+
+        $validator
             ->add('status', 'valid', ['rule' => 'numeric'])
             ->allowEmpty('status');
+
+        $validator
+            ->add('created_by', 'valid', ['rule' => 'numeric'])
+            ->allowEmpty('created_by');
 
         $validator
             ->add('created_date', 'valid', ['rule' => 'numeric'])
@@ -65,10 +71,6 @@ class ItemUnitsTable extends Table
             ->add('updated_date', 'valid', ['rule' => 'numeric'])
             ->allowEmpty('updated_date');
 
-        $validator
-            ->add('created_by', 'valid', ['rule' => 'numeric'])
-            ->allowEmpty('created_by');
-
         return $validator;
     }
 
@@ -81,10 +83,9 @@ class ItemUnitsTable extends Table
      */
     public function buildRules(RulesChecker $rules)
     {
+        $rules->add($rules->existsIn(['warehouse_id'], 'Warehouses'));
         $rules->add($rules->existsIn(['item_id'], 'Items'));
-        $rules->add($rules->existsIn(['manufacture_unit_id'], 'Units'));
+        $rules->add($rules->isUnique(['item_id'],'Items'));
         return $rules;
     }
-
-
 }

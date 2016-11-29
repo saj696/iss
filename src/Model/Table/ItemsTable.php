@@ -24,10 +24,12 @@ class ItemsTable extends Table
         $this->table('items');
         $this->displayField('name');
         $this->primaryKey('id');
+
         $this->belongsTo('Categories', [
             'foreignKey' => 'category_id',
             'joinType' => 'INNER'
         ]);
+
     }
 
     /**
@@ -41,38 +43,13 @@ class ItemsTable extends Table
         $validator
             ->add('id', 'valid', ['rule' => 'numeric'])
             ->allowEmpty('id', 'create');
-            
+
         $validator
             ->requirePresence('name', 'create')
             ->notEmpty('name');
-            
+
         $validator
-            ->requirePresence('code', 'create')
-            ->notEmpty('code');
-            
-        $validator
-//            ->add('pack_size', 'valid', ['rule' => 'numeric'])
-            ->allowEmpty('pack_size');
-            
-        $validator
-//            ->add('unit', 'valid', ['rule' => 'numeric'])
-            ->allowEmpty('unit');
-            
-        $validator
-//            ->add('box_size', 'valid', ['rule' => 'numeric'])
-            ->allowEmpty('box_size');
-            
-        $validator
-//            ->add('cash_sales_price', 'valid', ['rule' => 'numeric'])
-            ->allowEmpty('cash_sales_price');
-            
-        $validator
-//            ->add('credit_sales_price', 'valid', ['rule' => 'numeric'])
-            ->allowEmpty('credit_sales_price');
-            
-        $validator
-//            ->add('retail_price', 'valid', ['rule' => 'numeric'])
-            ->allowEmpty('retail_price');
+            ->allowEmpty('alias');
 
         return $validator;
     }

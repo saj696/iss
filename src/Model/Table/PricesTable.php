@@ -1,17 +1,16 @@
 <?php
 namespace App\Model\Table;
 
-use App\Model\Entity\ItemUnit;
+use App\Model\Entity\Price;
 use Cake\ORM\Query;
 use Cake\ORM\RulesChecker;
 use Cake\ORM\Table;
 use Cake\Validation\Validator;
-use Cake\ORM\TableRegistry;
-use Cake\Core\Configure;
+
 /**
- * ItemUnits Model
+ * Prices Model
  */
-class ItemUnitsTable extends Table
+class PricesTable extends Table
 {
 
     /**
@@ -22,7 +21,7 @@ class ItemUnitsTable extends Table
      */
     public function initialize(array $config)
     {
-        $this->table('item_units');
+        $this->table('prices');
         $this->displayField('id');
         $this->primaryKey('id');
 
@@ -30,11 +29,15 @@ class ItemUnitsTable extends Table
             'foreignKey' => 'item_id',
             'joinType' => 'INNER'
         ]);
+
         $this->belongsTo('Units', [
             'foreignKey' => 'manufacture_unit_id',
             'joinType' => 'INNER'
         ]);
-
+        $this->belongsTo('ItemUnits', [
+            'foreignKey' => 'item_unit_id',
+            'joinType' => 'INNER'
+        ]);
     }
 
     /**
@@ -50,24 +53,40 @@ class ItemUnitsTable extends Table
             ->allowEmpty('id', 'create');
 
         $validator
+            ->requirePresence('item_name', 'create')
+            ->notEmpty('item_name');
+
+        $validator
+            ->requirePresence('unit_name', 'create')
+            ->notEmpty('unit_name');
+
+        $validator
+            ->requirePresence('unit_display_name', 'create')
+            ->notEmpty('unit_display_name');
+
+        $validator
+            ->add('converted_quantity', 'valid', ['rule' => 'numeric'])
+            ->requirePresence('converted_quantity', 'create')
+            ->notEmpty('converted_quantity');
+
+        $validator
+            ->add('cash_sales_price', 'valid', ['rule' => 'numeric'])
+            ->requirePresence('cash_sales_price', 'create')
+            ->notEmpty('cash_sales_price');
+
+        $validator
+            ->add('credit_sales_price', 'valid', ['rule' => 'numeric'])
+            ->requirePresence('credit_sales_price', 'create')
+            ->notEmpty('credit_sales_price');
+
+        $validator
+            ->add('retail_price', 'valid', ['rule' => 'numeric'])
+            ->requirePresence('retail_price', 'create')
+            ->notEmpty('retail_price');
+
+        $validator
             ->add('status', 'valid', ['rule' => 'numeric'])
             ->allowEmpty('status');
-
-        $validator
-            ->add('created_date', 'valid', ['rule' => 'numeric'])
-            ->allowEmpty('created_date');
-
-        $validator
-            ->add('updated_by', 'valid', ['rule' => 'numeric'])
-            ->allowEmpty('updated_by');
-
-        $validator
-            ->add('updated_date', 'valid', ['rule' => 'numeric'])
-            ->allowEmpty('updated_date');
-
-        $validator
-            ->add('created_by', 'valid', ['rule' => 'numeric'])
-            ->allowEmpty('created_by');
 
         return $validator;
     }
@@ -85,6 +104,4 @@ class ItemUnitsTable extends Table
         $rules->add($rules->existsIn(['manufacture_unit_id'], 'Units'));
         return $rules;
     }
-
-
 }
