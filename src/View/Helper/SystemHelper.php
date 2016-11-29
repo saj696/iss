@@ -129,11 +129,11 @@ class SystemHelper extends Helper
 
     public function get_item_unit_array()
     {
-        $this->loadModel('ItemUnits');
-        $result = $this->ItemUnits->find('all')->contain(['Items', 'Units'])->where([
+        $item_unit_table = TableRegistry::get('item_units');
+        $result = $item_unit_table->find('all')->contain(['Items', 'Units'])->where([
             'Items.status' => 1,
             'Units.status' => 1,
-            'ItemUnits.status' => 1])->hydrate(false);
+            'item_units.status' => 1])->hydrate(false);
 
         $dropArray = [];
         foreach ($result as $key => $value):
