@@ -31,6 +31,11 @@ License: You must have a valid license purchased only from softbd
     <meta content="" name="description"/>
     <meta content="" name="author"/>
     <!-- BEGIN GLOBAL MANDATORY STYLES -->
+    <script src="<?= $this->request->webroot; ?>assets/global/plugins/jquery.min.js" type="text/javascript"></script>
+    <script src="<?= $this->request->webroot; ?>assets/pages/scripts/ui-toastr.js" type="text/javascript"></script>
+    <script src="<?= $this->request->webroot; ?>assets/global/plugins/bootstrap-toastr/toastr.js" type="text/javascript"></script>
+
+    <link href="<?= $this->request->webroot; ?>assets/global/plugins/bootstrap-toastr/toastr.min.css" rel="stylesheet" type="text/css"/>
     <link href="http://fonts.googleapis.com/css?family=Open+Sans:400,300,600,700&subset=all" rel="stylesheet"
           type="text/css"/>
     <link href="<?= $this->request->webroot; ?>assets/global/plugins/font-awesome/css/font-awesome.min.css"
@@ -73,7 +78,7 @@ License: You must have a valid license purchased only from softbd
 
 <!--    jquery -->
 
-    <script src="<?= $this->request->webroot; ?>assets/global/plugins/jquery.min.js" type="text/javascript"></script>
+
 </head>
 <!-- END HEAD -->
 <!-- BEGIN BODY -->
@@ -198,10 +203,14 @@ License: You must have a valid license purchased only from softbd
     <!-- BEGIN JAVASCRIPTS(Load javascripts at bottom, this will reduce page load time) -->
     <!-- BEGIN CORE PLUGINS -->
     <!--[if lt IE 9]>
+
+
+
     <script src="<?= $this->request->webroot; ?>assets/global/plugins/respond.min.js"></script>
     <script src="<?= $this->request->webroot; ?>assets/global/plugins/excanvas.min.js"></script>
     <![endif]-->
 
+    <script src="<?= $this->request->webroot; ?>js/notify.js"></script>
     <script src="<?= $this->request->webroot; ?>assets/global/plugins/jquery-migrate.min.js"
             type="text/javascript"></script>
     <!-- IMPORTANT! Load jquery-ui-1.10.3.custom.min.js before bootstrap.min.js to fix bootstrap tooltip conflict with jquery ui tooltip -->
@@ -239,6 +248,20 @@ License: You must have a valid license purchased only from softbd
     jQuery(document).ready(function () {
         Metronic.init(); // init metronic core componets
         Layout.init(); // init layout
+        toastr.options = {
+            "closeButton": true,
+            "debug": false,
+            "positionClass": "toast-bottom-right",
+            "onclick": null,
+            "showDuration": "1000",
+            "hideDuration": "1000",
+            "timeOut": "4500",
+            "extendedTimeOut": "9000",
+            "showEasing": "swing",
+            "hideEasing": "linear",
+            "showMethod": "fadeIn",
+            "hideMethod": "fadeOut"
+        }
     });
     </script>
 <!-- END JAVASCRIPTS -->

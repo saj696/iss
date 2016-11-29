@@ -63,12 +63,12 @@ class ExploreBudgetsController extends AppController
                 $unitAdminUnitInfo = $this->AdministrativeUnits->get($unit_id);
                 $childs = $this->AdministrativeUnits->find('all', ['conditions'=>['parent'=>$unitAdminUnitInfo['id']]]);
 
-                if(sizeof($childs)>0){
+                if($childs->toArray() && sizeof($childs->toArray())>0){
+                    $mainArr = [];
                     foreach($childs as $child){
-
-                        $unitGlobalId = $unitAdminUnitInfo['global_id'];
-                        $limitStart = pow(2,(Configure::read('max_level_no')- $explore_level-1)*5);
-                        $limitEnd = pow(2,(Configure::read('max_level_no')- $explore_level)*5);
+                        $unitGlobalId = $child->global_id;
+                        $limitStart = pow(2,(Configure::read('max_level_no')- $child->level_no-1)*5);
+                        $limitEnd = pow(2,(Configure::read('max_level_no')- $child->level_no)*5);
 
                         $budgets = TableRegistry::get('sales_budgets')->find()->hydrate(false);
                         $budgets->where('administrative_unit_global_id -'. $unitGlobalId .'>= '.$limitStart);
@@ -80,13 +80,38 @@ class ExploreBudgetsController extends AppController
                             $budgets->where(['budget_period_end <='=>$end_date]);
                         }
                         $budgets->where(['status'=>1]);
+                        $budgets->select(['total'=>'SUM(sales_amount)', 'sales_measure_unit']);
+                        $arr['total'] = $budgets->first()['total']?$budgets->first()['total']:0;
+                        $arr['unit_name'] = $child->unit_name;
+                        $arr['measure_unit'] = $budgets->first()['sales_measure_unit']?$budgets->first()['sales_measure_unit']:'';
+                        $mainArr[] = $arr;
                     }
 
                 }else{
-
+                    $unitGlobalId = $unitAdminUnitInfo['global_id'];
+                    $budgets = TableRegistry::get('sales_budgets')->find()->hydrate(false);
+                    $budgets->where(['administrative_unit_global_id'=>$unitGlobalId]);
+                    if($start_date){
+                        $budgets->where(['budget_period_start >='=>$start_date]);
+                    }
+                    if($end_date){
+                        $budgets->where(['budget_period_end <='=>$end_date]);
+                    }
+                    $budgets->where(['status'=>1]);
+                    $budgets->select(['total'=>'SUM(sales_amount)', 'sales_measure_unit']);
+                    $arr['total'] = $budgets->first()['total']?$budgets->first()['total']:0;
+                    $arr['unit_name'] = $unitAdminUnitInfo['unit_name'];
+                    $arr['measure_unit'] = $budgets->first()['sales_measure_unit']?$budgets->first()['sales_measure_unit']:'';
+                    $mainArr[] = $arr;
                 }
-
             }
+
+//            echo '<pre>';
+//            print_r($mainArr);
+//            echo '</pre>';
+//            exit;
+            $this->set('mainArr', $mainArr);
+            $this->set('_serialize', ['mainArr', 'explore_level', 'unit_id']);
         }
     }
 
