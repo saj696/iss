@@ -2,6 +2,9 @@
 namespace App\Controller;
 
 use App\Controller\AppController;
+use App\View\Helper\SystemHelper;
+use Cake\Core\App;
+use Cake\View\View;
 
 /**
  * Offers Controller
@@ -80,9 +83,17 @@ class OffersController extends AppController
             $functionArray[$function->id] = $function->function_name.' ('.$function->arguments.')';
         }
 
-        $this->loadModel('ItemUnits');
+        $this->loadModel('Awards');
+        $awards = $this->Awards->find('all', ['conditions'=>['status'=>1]]);
 
-        $this->set(compact('offer', 'functionArray'));
+        $this->loadModel('AccountHeads');
+        $accounts = $this->AccountHeads->find('all', ['conditions'=>['status'=>1]]);
+
+        App::import('Helper', 'SystemHelper');
+        $SystemHelper = new SystemHelper(new View());
+        $items = $SystemHelper->get_item_unit_array();
+
+        $this->set(compact('offer', 'functionArray', 'awards', 'accounts', 'items'));
         $this->set('_serialize', ['offer']);
     }
 

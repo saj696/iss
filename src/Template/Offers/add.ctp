@@ -34,7 +34,7 @@ use Cake\Core\Configure;
                 <div class="row">
                     <div class="col-md-7">
                         <div class="general condition_div">
-                            <table class="table table-bordered">
+                            <table class="table table-bordered magic_table">
                                 <tr>
                                     <td class="text-center">
                                         <span class="label label-warning">General Conditions</span>
@@ -49,19 +49,19 @@ use Cake\Core\Configure;
 
                         <div class="general condition_div">
                             <div class="list" data-index_no="0">
-                                <div class="itemWrapper">
+                                <div class="conditionWrapper">
                                     <div class="moreTable">
                                         <div class="specific_condition_div single_list">
-                                            <table class="table table-bordered">
+                                            <table class="table table-bordered magic_table">
                                                 <tr>
                                                     <td colspan="2" class="text-center">
                                                         <span style="padding: 0 6px;" class="pull-left btn btn-sm btn-circle btn-danger remove">X</span>
                                                         <span class="label label-success">Specific Conditions</span>
-                                                        <span class="pull-right"><input type="checkbox" style="height: 14px;" class="form-control condition_check noUniform" name="general_check" value="1"></span>
+                                                        <span class="pull-right"><input type="checkbox" style="height: 14px; border: 1px solid lightgrey" class="form-control condition_check noUniform" name="general_check" value="1"></span>
                                                     </td>
                                                 </tr>
                                                 <tr>
-                                                    <td width="70%"><?= $this->Form->input('general_conditions', ['type'=>'textarea', 'placeholder'=>'Conditions', 'style'=>'width:100%', 'rows'=>6, 'class'=>'form-control condition', 'templates'=>['label'=>'', 'textarea' => '<div class="col-sm-12"><textarea class="form-control condition" name="{{name}}"{{attrs}}>{{value}}</textarea></div>']]);?></td>
+                                                    <td width="70%"><?= $this->Form->input('general_conditions', ['type'=>'textarea', 'placeholder'=>'Conditions', 'rows'=>6, 'class'=>'form-control condition noUniform', 'templates'=>['label'=>'', 'textarea' => '<div class="col-sm-12"><textarea class="textareaCls condition noUniform" name="{{name}}"{{attrs}}>{{value}}</textarea></div>']]);?></td>
                                                     <td width="30%"><?= $this->Form->input('general_conditions', ['type'=>'textarea', 'placeholder'=>'Offers', 'style'=>'width:100%', 'rows'=>6, 'class'=>'form-control offers', 'templates'=>['label'=>'', 'textarea' => '<div class="col-sm-12"><textarea class="form-control" name="{{name}}"{{attrs}}>{{value}}</textarea></div>']]);?></td>
                                                 </tr>
                                             </table>
@@ -97,7 +97,7 @@ use Cake\Core\Configure;
                                         <tr><td colspan="3" class="text-center"><span class="label label-info">Key Functions</span></td></tr>
                                         <?php foreach($functionArray as $func):?>
                                             <tr class="func_tr">
-                                                <td width="2%"><input type="checkbox" class="func_check" name="func_check" value="<?= $func?>"></td>
+                                                <td width="2%"><input type="checkbox" class="func_check common_check" name="func_check" value="<?= $func?>"></td>
                                                 <td class="func_td"><?= $func?></td>
                                             </tr>
                                         <?php endforeach;?>
@@ -107,13 +107,46 @@ use Cake\Core\Configure;
                                     </table>
                                 </div>
                                 <div id="tab_5_2" class="tab-pane">
-
+                                    <table class="table table-bordered">
+                                        <tr><td colspan="3" class="text-center"><span class="label label-info">Item Units</span></td></tr>
+                                        <?php foreach($items as $item):?>
+                                            <tr class="item_tr">
+                                                <td width="2%"><input type="checkbox" class="item_check common_check" name="item_check" value="<?= $item?>"></td>
+                                                <td class="award_td"><?= $item?></td>
+                                            </tr>
+                                        <?php endforeach;?>
+                                        <tr>
+                                            <td colspan="2" class="text-center"><span class="btn btn-circle default yellow-stripe send_to">Send</span></td>
+                                        </tr>
+                                    </table>
                                 </div>
                                 <div id="tab_5_3" class="tab-pane">
-
+                                    <table class="table table-bordered">
+                                        <tr><td colspan="3" class="text-center"><span class="label label-info">Awards</span></td></tr>
+                                        <?php foreach($awards as $award):?>
+                                            <tr class="award_tr">
+                                                <td width="2%"><input type="checkbox" class="award_check common_check" name="award_check" value="<?= $award->name?>"></td>
+                                                <td class="award_td"><?= $award->name?></td>
+                                            </tr>
+                                        <?php endforeach;?>
+                                        <tr>
+                                            <td colspan="2" class="text-center"><span class="btn btn-circle default yellow-stripe send_to">Send</span></td>
+                                        </tr>
+                                    </table>
                                 </div>
                                 <div id="tab_5_4" class="tab-pane">
-
+                                    <table class="table table-bordered">
+                                        <tr><td colspan="3" class="text-center"><span class="label label-info">Account Heads</span></td></tr>
+                                        <?php foreach($accounts as $account):?>
+                                            <tr class="acc_tr">
+                                                <td width="2%"><input type="checkbox" class="acc_check common_check" name="acc_check" value="<?= $account->name?>"></td>
+                                                <td class="acc_td"><?= $account->name?></td>
+                                            </tr>
+                                        <?php endforeach;?>
+                                        <tr>
+                                            <td colspan="2" class="text-center"><span class="btn btn-circle default yellow-stripe send_to">Send</span></td>
+                                        </tr>
+                                    </table>
                                 </div>
                             </div>
                         </div>
@@ -129,6 +162,11 @@ use Cake\Core\Configure;
     </div>
 </div>
 
+<style>
+    .textareaCls{
+        width:100%; border: 1px solid lightgrey; padding:7px 7px 6px 11px; font-size:14px; border-radius:4px;
+    }
+</style>
 <script>
     $(document).ready(function(){
         $(document).on('keyup', '.condition', function(){
@@ -138,27 +176,27 @@ use Cake\Core\Configure;
 
         $(document).on('click', '.send_to', function(){
             var obj = $(this);
-            var funcArr = [];
+            var mainArr = [];
 
-            $('.func_check').each(function( index ) {
+            obj.closest('.tab-pane').find('.common_check').each(function( index ) {
                 if($(this).prop('checked')){
-                    funcArr.push($(this).val());
+                    mainArr.push($(this).val());
                 }
             });
 
-            $('.condition_check').each(function(){
-                if($(this).prop('checked')){
-                    $(this).closest('.condition_div').find('.condition').html('');
-                }
-            });
+//            $('.condition_check').each(function(){
+//                if($(this).prop('checked')){
+//                    $(this).closest('.condition_div').find('.condition').html('');
+//                }
+//            });
 
-            funcArr.forEach(function(entry, k) {
+            mainArr.forEach(function(entry, k) {
                 $('.condition_check').each(function(){
-                    if($(this).prop('checked')){
+                    if($(this).is(":checked")){
                         if(k>0) {
-                            $(this).closest('.condition_div').find('.condition').append(' ');
+                            $(this).closest('.magic_table').find('.condition').append(' ');
                         }
-                        $(this).closest('.condition_div').find('.condition').append(entry);
+                        $(this).closest('.magic_table').find('.condition').append(entry);
                     }
                 });
             });
@@ -167,7 +205,7 @@ use Cake\Core\Configure;
         $(document).on('click', '.add_more', function () {
             var index = $('.list').data('index_no');
             $('.list').data('index_no', index + 1);
-            var html = $('.itemWrapper .specific_condition_div:last').clone().find('.form-control').each(function () {
+            var html = $('.conditionWrapper .specific_condition_div:last').clone().find('.form-control').each(function () {
                 this.name = this.name.replace(/\d+/, index+1);
                 this.id = this.id.replace(/\d+/, index+1);
                 this.value = '';
