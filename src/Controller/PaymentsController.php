@@ -133,7 +133,6 @@ public function index()
      */
     public function delete($id = null)
     {
-
         $payment = $this->Payments->get($id);
         $user=$this->Auth->user();
         $data=$this->request->data;

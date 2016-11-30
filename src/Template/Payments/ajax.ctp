@@ -7,11 +7,11 @@
  */
 ?>
 <?php $key = 0; ?>
-<tr>
+<tr class="main_tr" data-invoice-id="<?= $dropArray['id']?>" data-due="<?= $dropArray['due'] ?>">
     <td><?= $this->Number->format($key + 1) ?></td>
     <td><?= date('d-m-y',$dropArray['invoice_date']) ?></td>
     <td><?= $dropArray['net_total'] ?></td>
     <td><?= $dropArray['net_total'] - $dropArray['due'] ?></td>
-    <td><?= $dropArray['due'] ?></td>
-    <td><input type="text" name="current_payment[<?= $dropArray['id']?>]" class="form-control"/></td>
+    <td><?= $dropArray['due'] ?><input type="hidden" name="dueAmount" class="due_hidden" value="<?= $dropArray['due']?>"></td>
+    <td><input type="text" name="current_payment[<?= $dropArray['id']?>]" class="form-control current_payment" readonly/></td>
 </tr>

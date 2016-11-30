@@ -44,8 +44,9 @@ use Cake\Core\Configure;
 
                     </div>
                 </div>
+
                 <div class="row">
-                    <div class="col-md-12">
+                    <div class="col-md-8 col-md-offset-2 tableDesign">
                         <table class="table table-bordered">
                             <tbody class="appendTr">
                             <tr class="portlet box grey-silver" style="color: white">
@@ -58,7 +59,29 @@ use Cake\Core\Configure;
                             </tr>
                             </tbody>
                         </table>
-                        <?= $this->Form->button(__('Submit'),['class'=>'btn blue pull-right','style'=>'margin-top:20px']) ?>
+                    </div>
+                </div>
+                <div class="row"><div class="col-md-12"></div></div>
+                <div class="row">
+                    <div class="col-md-6 col-md-offset-3">
+                        <?php
+                            echo $this->Form->input('payments_medium',['options' =>Configure::read('payment_mediums'), 'class' => 'form-control payment', 'empty' => __('Select')]);
+                        ?>
+                        <div class="paymentsGroupOne ">
+                            <?php
+                                echo $this->Form->input('reference_number');
+                                echo $this->Form->input('bank_branch');
+                                echo $this->Form->input('description');
+                            ?>
+                        </div>
+                        <div class="paymentsGroupTwo ">
+                            <?php
+                                echo $this->Form->input('collection_serial_no');
+                                echo $this->Form->input('collection_date', ['type' => 'text' ,'class' => 'form-control datepicker' ]);
+                                echo $this->Form->input('amount',['type'=>'text','class'=>'form-control amount'])
+                            ?>
+                            <?= $this->Form->button(__('Submit'),['class'=>'btn blue pull-right','style'=>'margin-top:20px']) ?>
+                        </div>
                     </div>
                 </div>
                 <?= $this->Form->end() ?>
@@ -70,6 +93,10 @@ use Cake\Core\Configure;
 
 <script>
     $(document).ready(function(){
+
+        //default condition
+        $('.paymentsGroupOne').addClass('hidden');
+        $('.paymentsGroupTwo').addClass('hidden');
 
         // Parent Level Onchange function
         $(document).on('change', '.level', function () {
@@ -178,15 +205,73 @@ use Cake\Core\Configure;
         $(document).on('change', '.dueInvoice', function () {
             var obj = $(this);
             var dueInvoice = obj.val();
-            console.log(dueInvoice);
-            $.ajax({
-                type: 'POST',
-                url: '<?= $this->Url->build("/Payments/ajax/paymentTable")?>',
-                data: {dueInvoice: dueInvoice},
-                success: function (data, status) {
-                    $('.appendTr').append(data);
-                }
+            if(dueInvoice){
+                $.ajax({
+                    type: 'POST',
+                    url: '<?= $this->Url->build("/Payments/ajax/paymentTable")?>',
+                    data: {dueInvoice: dueInvoice},
+                    success: function (data, status) {
+                        var numberOfRow = $('.appendTr tr').length;
+                        // to check the existance invoice
+                        var invoiceRow = '[data-invoice-id='+dueInvoice+']';
+                        if($(invoiceRow).length==0){
+                            $('.appendTr').append(data);
+                            $('.appendTr tr:last-child').find('td:first-child').html(numberOfRow);
+                        }
+                        else {
+                            alert("Already choose this invoice");
+                        }
+                    }
+                });
+            }
+        });
+
+        // Payments method selection function
+        $(document).on('change', '.payment', function(){
+            var obj = $(this);
+            var payment = obj.val();
+            if(payment == ''){
+                $('.paymentsGroupOne').addClass('hidden');
+                $('.paymentsGroupTwo').addClass('hidden');
+            }
+            else if(payment == 1 || payment == 2){
+                $('.paymentsGroupOne').addClass('hidden');
+                $('.paymentsGroupTwo').removeClass('hidden');
+            }
+            else{
+                $('.paymentsGroupOne').removeClass('hidden');
+                $('.paymentsGroupTwo').removeClass('hidden');
+            }
+        });
+
+        // Amount class onchange function
+        $(document).on('keyup','.amount',function(){
+            var obj = $(this);
+            var amount = obj.val();
+
+            $('.due_hidden').each(function(){
+                $(this).closest('.main_tr').find('.current_payment').val('');
             });
+            $('.due_hidden').each(function(){
+                var due = ($(this).val());
+                console.log(due);
+                if(amount>=due){
+                    $(this).closest('.main_tr').find('.current_payment').val(due);
+                }else{
+                    var rem = due-amount;
+                    if(rem>0 && amount>0){
+                        $(this).closest('.main_tr').find('.current_payment').val(amount);
+                    }
+                }
+                amount -= due;
+            });
+        });
+
+        // Datepicker function
+        $(document).on('focus','.datepicker',function(){
+           $(this).removeClass('hasDatepicker').datepicker({
+               dateFormat: "dd-mm-yy"
+           });
         });
 
     //End all funciton
