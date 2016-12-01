@@ -157,4 +157,198 @@ class FunctionHelper extends Helper
         }
         return $achievement;
     }
+
+    public function credit_note_value($period_start, $period_end, $level, $unit=null){
+        if(!is_int($period_start)){$period_start = strtotime($period_start);}
+        if(!is_int($period_end)){$period_end = strtotime($period_end);}
+
+        $credit = TableRegistry::get('credit_notes')->find('all', ['conditions'=>[
+            'credit_notes.date >='=>$period_start,
+            'credit_notes.date <='=>$period_end,
+        ]]);
+
+        if($level==Configure::read('max_level_no')+1){
+            if($unit){
+                $credit->where(['credit_notes.customer_id'=>$unit]);
+            }
+        }else{
+            if($unit){
+                $credit->where(['credit_notes.parent_global_id'=>$unit]);
+            }
+        }
+        $credit->select(['total_after_demurrage'=>'SUM(credit_notes.total_after_demurrage)']);
+        $total_after_demurrage = $credit->first()['total_after_demurrage'];
+        return round($total_after_demurrage, 2);
+    }
+
+    public function cash_sales_quantity($period_start, $period_end, $item, $item_unit, $level, $unit=null){
+        if(!is_int($period_start)){$period_start = strtotime($period_start);}
+        if(!is_int($period_end)){$period_end = strtotime($period_end);}
+
+        $sales = TableRegistry::get('invoices')->find('all', ['conditions'=>[
+            'invoices.invoice_date >='=>$period_start,
+            'invoices.invoice_date <='=>$period_end,
+            'invoices.invoice_type'=>1
+        ]]);
+
+        $sales->innerJoin('invoiced_products', 'invoices.id=invoiced_products.invoice_id');
+        if($item>0){
+            $sales->where(['invoiced_products.item_id', $item]);
+        }
+        if($item_unit>0){
+            $sales->where(['invoiced_products.manufacture_unit_id', $item_unit]);
+        }
+        if($level==Configure::read('max_level_no')+1){
+            if($unit){
+                $sales->where(['invoices.customer_id'=>$unit]);
+            }
+        }else{
+            if($unit){
+                $sales->where(['invoices.customer_unit_global_id'=>$unit]);
+            }
+        }
+
+        $sales->select(['sales_quantity'=>'SUM(invoiced_products.product_quantity)']);
+        $sales_quantity = $sales->first()['sales_quantity']?$sales->first()['sales_quantity']:0;
+        return $sales_quantity;
+    }
+
+    public function cash_sales_value($period_start, $period_end, $level, $unit=null){
+        if(!is_int($period_start)){$period_start = strtotime($period_start);}
+        if(!is_int($period_end)){$period_end = strtotime($period_end);}
+
+        $sales = TableRegistry::get('invoices')->find('all', ['conditions'=>[
+            'invoices.invoice_date >='=>$period_start,
+            'invoices.invoice_date <='=>$period_end,
+            'invoices.invoice_type'=>2
+        ]]);
+
+        if($level==Configure::read('max_level_no')+1){
+            if($unit){
+                $sales->where(['invoices.customer_id'=>$unit]);
+            }
+        }else{
+            if($unit){
+                $sales->where(['invoices.customer_unit_global_id'=>$unit]);
+            }
+        }
+
+        $sales->select(['sales_value'=>'SUM(invoices.net_total)']);
+        $sales_value = $sales->first()['sales_value']?$sales->first()['sales_value']:0;
+        return $sales_value;
+    }
+
+    public function credit_dues($period_start, $period_end, $level, $unit=null){
+        if(!is_int($period_start)){$period_start = strtotime($period_start);}
+        if(!is_int($period_end)){$period_end = strtotime($period_end);}
+
+        $sales = TableRegistry::get('invoices')->find('all', ['conditions'=>[
+            'invoices.invoice_date >='=>$period_start,
+            'invoices.invoice_date <='=>$period_end
+        ]]);
+
+        if($level==Configure::read('max_level_no')+1){
+            if($unit){
+                $sales->where(['invoices.customer_id'=>$unit]);
+            }
+        }else{
+            if($unit){
+                $sales->where(['invoices.customer_unit_global_id'=>$unit]);
+            }
+        }
+
+        $sales->select(['total_due'=>'SUM(invoices.due)']);
+        $due = $sales->first()['total_due']?$sales->first()['total_due']:0;
+        return $due;
+    }
+
+    public function collection($period_start, $period_end, $level, $unit){
+        $payments = TableRegistry::get('payments')->find('all', ['conditions'=>[
+            'collection_date >='=>$period_start,
+            'collection_date <='=>$period_end,
+        ]]);
+
+        if($level==Configure::read('max_level_no')+1){
+            if($unit){
+                $payments->where(['customer_id'=>$unit]);
+            }
+        }else{
+            if($unit){
+                $payments->where(['parent_global_id'=>$unit]);
+            }
+        }
+
+        $payments->select(['payment_total'=>'SUM(amount)']);
+        $payment_total = $payments->first()['payment_total'];
+        return $payment_total?$payment_total:0;
+    }
+
+    public function sales_budget($period_start, $period_end, $level, $unit){
+        if(!is_int($period_start)){$period_start = strtotime($period_start);}
+        if(!is_int($period_end)){$period_end = strtotime($period_end);}
+
+        $budget = TableRegistry::get('sales_budgets')->find('all', ['conditions'=>[
+            'sales_budgets.budget_period_start >='=>$period_start,
+            'sales_budgets.budget_period_end <='=>$period_end,
+        ]]);
+
+        if($level==Configure::read('max_level_no')+1){
+            if($unit){
+                $budget->where(['sales_budgets.administrative_unit_id'=>$unit]);
+            }
+        }else{
+            if($unit){
+                $budget->where(['sales_budgets.administrative_unit_global_id'=>$unit]);
+            }
+        }
+
+        $budget->select(['total_budget'=>'SUM(sales_budgets.sales_amount)']);
+        $total_budget = $budget->first()['total_budget']?$budget->first()['total_budget']:0;
+        return $total_budget;
+    }
+
+    public function location_age($unit){
+        $location_info = TableRegistry::get('administrative_units')->find('all', ['conditions'=>['global_id'=>$unit]])->first();
+        return $location_info['created_date'];
+    }
+
+    public function invoice_age($invoice){
+        $invoice = TableRegistry::get('invoices')->find('all', ['conditions'=>['id'=>$invoice]])->first();
+        return $invoice['invoice_date'];
+    }
+
+    public function is_mango($customer){
+        $customer_info = TableRegistry::get('customers')->find('all', ['conditions'=>['id'=>$customer]])->first();
+        return $customer_info['is_mango'];
+    }
+
+    public function payment_date($payment){
+        $payment_info = TableRegistry::get('payments')->find('all', ['conditions'=>['id'=>$payment]])->first();
+        return $payment_info['collection_date'];
+    }
+
+    public function invoice_quantity($item, $item_unit, $invoice){
+        $sales = TableRegistry::get('invoices')->find('all');
+        $sales->where(['invoices.id'=>$invoice]);
+        $sales->innerJoin('invoiced_products', 'invoices.id=invoiced_products.invoice_id');
+        if($item>0){
+            $sales->where(['invoiced_products.item_id', $item]);
+        }
+        if($item_unit>0){
+            $sales->where(['invoiced_products.manufacture_unit_id', $item_unit]);
+        }
+        $sales->select(['sales_quantity'=>'SUM(invoiced_products.product_quantity)']);
+        $sales_quantity = $sales->first()['sales_quantity']?$sales->first()['sales_quantity']:0;
+        return $sales_quantity;
+    }
+
+    public function no_of_immediate_child($unit){
+        $location_info = TableRegistry::get('administrative_units')->find('all', ['conditions'=>['global_id'=>$unit]])->first();
+        return $location_info['no_of_direct_successors'];
+    }
+
+    public function payment_age($invoice){
+        $payment_info = TableRegistry::get('invoice_payments')->find('all', ['conditions'=>['invoice_id'=>$invoice]])->first();
+        return $payment_info['payment_collection_date'];
+    }
 }

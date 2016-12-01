@@ -31,9 +31,10 @@ class OffersController extends AppController
     {
         App::import('Helper', 'FunctionHelper');
         $FunctionHelper = new FunctionHelper(new View());
-        $sales_quantity = $FunctionHelper->sales_target_achievement('01-11-2016', '30-11-2016', 4, 1082401);
+        $sales_quantity = $FunctionHelper->sales_budget('01-11-2016', '30-11-2016', 4, 1082401);
+        $age = $FunctionHelper->invoice_quantity(3, 2, 1);
 
-        echo $sales_quantity;
+        echo $age;
         exit;
 
         $offers = $this->Offers->find('all', [
