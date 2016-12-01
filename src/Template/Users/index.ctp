@@ -15,13 +15,13 @@ $status = \Cake\Core\Configure::read('status_options');
 
 <div class="row">
     <div class="col-md-12">
-        <div class="portlet box blue-hoki">
+        <div class="portlet box grey-cascade">
             <div class="portlet-title">
                 <div class="caption">
                     <i class="fa fa-list-alt fa-lg"></i><?= __('User List') ?>
                 </div>
                 <div class="tools">
-                    <?= $this->Html->link(__('New User'), ['action' => 'add'], ['class' => 'btn btn-sm btn-primary']); ?>
+                    <?= $this->Html->link(__('New User'), ['action' => 'add'], ['class' => 'btn btn-sm grey-gallery']); ?>
                 </div>
             </div>
             <div class="portlet-body">

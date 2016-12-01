@@ -92,7 +92,10 @@ class UsersController extends AppController
         $warehouses = $this->Users->Warehouses->find('list', ['conditions' => ['status' => 1]]);
         $depots = $this->Users->Depots->find('list', ['conditions' => ['status' => 1]]);
         $userGroups = $this->Users->UserGroups->find('list', ['conditions' => ['status' => 1]]);
-        $this->set(compact('user', 'warehouses', 'depots', 'userGroups', 'administrativeLevels'));
+        $this->loadModel('TaskForces');
+        $taskForces = $this->TaskForces->find('list', ['conditions'=>['status'=>1]]);
+
+        $this->set(compact('user', 'warehouses', 'depots', 'userGroups', 'administrativeLevels', 'taskForces'));
         $this->set('_serialize', ['user']);
     }
 
@@ -146,7 +149,11 @@ class UsersController extends AppController
         $warehouses = $this->Users->Warehouses->find('list', ['conditions' => ['status' => 1]]);
         $depots = $this->Users->Depots->find('list', ['conditions' => ['status' => 1]]);
         $userGroups = $this->Users->UserGroups->find('list', ['conditions' => ['status' => 1]]);
-        $this->set(compact('user', 'administrativeUnits', 'warehouses', 'depots', 'userGroups', 'administrativeLevels'));
+
+        $this->loadModel('TaskForces');
+        $taskForces = $this->TaskForces->find('list', ['conditions'=>['status'=>1]]);
+
+        $this->set(compact('user', 'administrativeUnits', 'warehouses', 'depots', 'userGroups', 'administrativeLevels', 'taskForces'));
         $this->set('_serialize', ['user']);
     }
 
@@ -188,5 +195,22 @@ class UsersController extends AppController
 
         $this->viewBuilder()->layout('ajax');
         $this->set(compact('dropArray'));
+    }
+
+    public function checkTaskForceLevel(){
+        $data = $this->request->data;
+        $this->loadModel('TaskForces');
+        $task_force_id = $data['task_force_id'];
+        $admin_level = $data['admin_level'];
+        $taskForceInfo = $this->TaskForces->get($task_force_id);
+
+        if($taskForceInfo['applicable_level']==$admin_level){
+            $result = 1;
+        }else{
+            $result = 0;
+        }
+        $this->response->body($result);
+        return $this->response;
+        $this->autoRender = false;
     }
 }

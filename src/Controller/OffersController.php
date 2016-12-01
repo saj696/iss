@@ -2,6 +2,7 @@
 namespace App\Controller;
 
 use App\Controller\AppController;
+use App\View\Helper\FunctionHelper;
 use App\View\Helper\SystemHelper;
 use Cake\Core\App;
 use Cake\View\View;
@@ -28,6 +29,13 @@ class OffersController extends AppController
      */
     public function index()
     {
+        App::import('Helper', 'FunctionHelper');
+        $FunctionHelper = new FunctionHelper(new View());
+        $sales_quantity = $FunctionHelper->sales_target_achievement('01-11-2016', '30-11-2016', 4, 1082401);
+
+        echo $sales_quantity;
+        exit;
+
         $offers = $this->Offers->find('all', [
             'conditions' => ['Offers.status !=' => 99]
         ]);
@@ -87,13 +95,21 @@ class OffersController extends AppController
         $awards = $this->Awards->find('all', ['conditions'=>['status'=>1]]);
 
         $this->loadModel('AccountHeads');
-        $accounts = $this->AccountHeads->find('all', ['conditions'=>['status'=>1]]);
+        $accounts = $this->AccountHeads->find('list', ['conditions'=>['status'=>1, 'parent'=>9]])->orWhere(['parent'=>10]);
 
         App::import('Helper', 'SystemHelper');
         $SystemHelper = new SystemHelper(new View());
         $items = $SystemHelper->get_item_unit_array();
 
-        $this->set(compact('offer', 'functionArray', 'awards', 'accounts', 'items'));
+        $this->loadModel('TaskForces');
+        $forces = $this->TaskForces->find('list', ['conditions'=>['status'=>1]]);
+        $recipients = [];
+        foreach($forces as $k=>$force){
+            $recipients[] = $force;
+        }
+        $recipients[sizeof($forces->toArray())] = 'Customer';
+
+        $this->set(compact('offer', 'functionArray', 'awards', 'accounts', 'items', 'recipients'));
         $this->set('_serialize', ['offer']);
     }
 

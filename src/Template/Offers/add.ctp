@@ -61,7 +61,7 @@ use Cake\Core\Configure;
                                                     </td>
                                                 </tr>
                                                 <tr>
-                                                    <td width="70%"><?= $this->Form->input('general_conditions', ['type'=>'textarea', 'placeholder'=>'Conditions', 'rows'=>6, 'class'=>'form-control condition noUniform', 'templates'=>['label'=>'', 'textarea' => '<div class="col-sm-12"><textarea class="textareaCls condition noUniform" name="{{name}}"{{attrs}}>{{value}}</textarea></div>']]);?></td>
+                                                    <td width="70%"><?= $this->Form->input('general_conditions', ['type'=>'textarea', 'placeholder'=>'Conditions', 'rows'=>6, 'class'=>'form-control condition noUniform', 'templates'=>['label'=>'', 'textarea' => '<div class="col-sm-12"><textarea class="textareaStyle condition noUniform" name="{{name}}"{{attrs}}>{{value}}</textarea></div>']]);?></td>
                                                     <td width="30%"><?= $this->Form->input('general_conditions', ['type'=>'textarea', 'placeholder'=>'Offers', 'style'=>'width:100%', 'rows'=>6, 'class'=>'form-control offers', 'templates'=>['label'=>'', 'textarea' => '<div class="col-sm-12"><textarea class="form-control" name="{{name}}"{{attrs}}>{{value}}</textarea></div>']]);?></td>
                                                 </tr>
                                             </table>
@@ -89,6 +89,9 @@ use Cake\Core\Configure;
                                 </li>
                                 <li class="">
                                     <a data-toggle="tab" href="#tab_5_4" aria-expanded="false">Accounts</a>
+                                </li>
+                                <li class="">
+                                    <a data-toggle="tab" href="#tab_5_5" aria-expanded="false">Recipients</a>
                                 </li>
                             </ul>
                             <div class="tab-content">
@@ -139,8 +142,22 @@ use Cake\Core\Configure;
                                         <tr><td colspan="3" class="text-center"><span class="label label-info">Account Heads</span></td></tr>
                                         <?php foreach($accounts as $account):?>
                                             <tr class="acc_tr">
-                                                <td width="2%"><input type="checkbox" class="acc_check common_check" name="acc_check" value="<?= $account->name?>"></td>
-                                                <td class="acc_td"><?= $account->name?></td>
+                                                <td width="2%"><input type="checkbox" class="acc_check common_check" name="acc_check" value="<?= $account?>"></td>
+                                                <td class="acc_td"><?= $account?></td>
+                                            </tr>
+                                        <?php endforeach;?>
+                                        <tr>
+                                            <td colspan="2" class="text-center"><span class="btn btn-circle default yellow-stripe send_to">Send</span></td>
+                                        </tr>
+                                    </table>
+                                </div>
+                                <div id="tab_5_5" class="tab-pane">
+                                    <table class="table table-bordered">
+                                        <tr><td colspan="3" class="text-center"><span class="label label-info">Recipients</span></td></tr>
+                                        <?php foreach($recipients as $recipient):?>
+                                            <tr class="acc_tr">
+                                                <td width="2%"><input type="checkbox" class="recipient_check common_check" name="recipient_check" value="<?= $recipient?>"></td>
+                                                <td class="recipient_td"><?= $recipient?></td>
                                             </tr>
                                         <?php endforeach;?>
                                         <tr>
@@ -163,10 +180,16 @@ use Cake\Core\Configure;
 </div>
 
 <style>
-    .textareaCls{
+    .textareaStyle{
         width:100%; border: 1px solid lightgrey; padding:7px 7px 6px 11px; font-size:14px; border-radius:4px;
     }
+    .nav > li > a {
+        display: block;
+        padding: 10px 6px;
+        position: relative;
+    }
 </style>
+
 <script>
     $(document).ready(function(){
         $(document).on('keyup', '.condition', function(){
@@ -183,12 +206,6 @@ use Cake\Core\Configure;
                     mainArr.push($(this).val());
                 }
             });
-
-//            $('.condition_check').each(function(){
-//                if($(this).prop('checked')){
-//                    $(this).closest('.condition_div').find('.condition').html('');
-//                }
-//            });
 
             mainArr.forEach(function(entry, k) {
                 $('.condition_check').each(function(){

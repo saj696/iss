@@ -19,13 +19,13 @@ use Cake\Core\Configure;
 
 <div class="row">
     <div class="col-md-12">
-        <div class="portlet box blue-hoki">
+        <div class="portlet box grey-cascade">
             <div class="portlet-title">
                 <div class="caption">
                     <i class="fa fa-plus-square-o fa-lg"></i><?= __('Add New User') ?>
                 </div>
                 <div class="tools">
-                    <?= $this->Html->link(__('Back'), ['action' => 'index'], ['class' => 'btn btn-sm btn-success']); ?>
+                    <?= $this->Html->link(__('Back'), ['action' => 'index'], ['class' => 'btn btn-sm grey-gallery']); ?>
                 </div>
             </div>
 
@@ -44,8 +44,9 @@ use Cake\Core\Configure;
                         echo $this->Form->input('picture_file', ['type'=>'file', 'label'=>'Photo']);
                         echo $this->Form->input('depot_id', ['options' => $depots, 'empty' => __('Select')]);
                         echo $this->Form->input('warehouse_id', ['options' => $warehouses, 'empty' => __('Select')]);
+                        echo $this->Form->input('task_force_id', ['options' => $taskForces, 'class'=>'form-control task_force',  'empty' => __('Select')]);
                         ?>
-                        <?= $this->Form->button(__('Submit'), ['class' => 'btn blue pull-right', 'style' => 'margin-top:20px']) ?>
+                        <?= $this->Form->button(__('Submit'), ['class' => 'btn yellow pull-right', 'style' => 'margin-top:20px']) ?>
                     </div>
                 </div>
                 <?= $this->Form->end() ?>
@@ -67,6 +68,23 @@ use Cake\Core\Configure;
                 success: function (data, status) {
                     obj.closest('.input').next().find('.col-sm-9').html('');
                     obj.closest('.input').next().find('.col-sm-9').html(data);
+                }
+            });
+        });
+
+        $(document).on('change', '.task_force', function () {
+            var obj = $(this);
+            var task_force_id = obj.val();
+            var admin_level = $('.level').val();
+            $.ajax({
+                type: 'POST',
+                url: '<?= $this->Url->build("/Users/checkTaskForceLevel")?>',
+                data: {task_force_id: task_force_id, admin_level:admin_level},
+                success: function (data, status) {
+                    if(data==0){
+                        obj.val('');
+                        toastr.error('Selected Task Force is not applicable for this level');
+                    }
                 }
             });
         });
