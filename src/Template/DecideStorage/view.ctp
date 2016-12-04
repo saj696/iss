@@ -19,13 +19,13 @@ $status = \Cake\Core\Configure::read('status_options');
 
 <div class="row">
     <div class="col-md-12">
-        <div class="portlet box blue-hoki">
+        <div class="portlet box grey-cascade">
             <div class="portlet-title">
                 <div class="caption">
                     <i class="fa fa-picture-o fa-lg"></i><?= __('Decide Storage') ?>
                 </div>
                 <div class="tools">
-                    <?= $this->Html->link(__('Back'), ['action' => 'index'], ['class' => 'btn btn-sm btn-success']); ?>
+                    <?= $this->Html->link(__('Back'), ['action' => 'index'], ['class' => 'btn btn-sm grey-gallery']); ?>
                 </div>
             </div>
 
@@ -51,7 +51,7 @@ $status = \Cake\Core\Configure::read('status_options');
                         <?php foreach($items as $key=>$item):?>
                             <tr>
                                 <td><?= $key+1?></td>
-                                <td><?= $itemArray[$item['item_id']]?></td>
+                                <td><?= $itemArray[$item['item_unit_id']]?></td>
                                 <td><?= $item['quantity']?></td>
                             </tr>
                         <?php endforeach;?>
@@ -68,7 +68,7 @@ $status = \Cake\Core\Configure::read('status_options');
                         </tr>
                         <?php foreach($requestWarehouseDetails as $detail):?>
                             <tr>
-                                <td><?= $itemArray[$detail['item_id']]?></td>
+                                <td><?= $itemArray[$detail['item_unit_id']]?></td>
                                 <td><?= $allWarehouses[$detail['warehouse_id']]?></td>
                                 <td><?= $detail['existing']?></td>
                             </tr>
@@ -96,7 +96,7 @@ $status = \Cake\Core\Configure::read('status_options');
                                 </tr>
                                 <?php foreach($myWarehouseDetails as $detail):?>
                                     <tr class="main_tr">
-                                        <td><?= $itemArray[$detail['item_id']]?></td>
+                                        <td><?= $itemArray[$detail['item_unit_id']]?></td>
                                         <td><?= $allWarehouses[$detail['warehouse_id']]?></td>
                                         <td><?= $detail['quantity']?></td>
                                         <td width="20%">
@@ -109,7 +109,7 @@ $status = \Cake\Core\Configure::read('status_options');
                             </tbody>
                         </table>
                         <div class="text-center" style="margin-bottom: 20px;">
-                            <?= $this->Form->button(__('Process'), ['class' => 'btn blue']) ?>
+                            <?= $this->Form->button(__('Process'), ['class' => 'btn btn-circle yellow']) ?>
                         </div>
                     </form>
                 </div>

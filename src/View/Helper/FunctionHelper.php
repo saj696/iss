@@ -45,7 +45,7 @@ class FunctionHelper extends Helper
         }
 
         $sales->select(['sales_total'=>'SUM(net_total)']);
-        $sales_total = $sales->first()['sales_total'];
+        $sales_total = $sales->first()['sales_total']?$sales->first()['sales_total']:0;
 
         //working with payment
         $payments = TableRegistry::get('payments')->find('all', ['conditions'=>[
@@ -64,9 +64,9 @@ class FunctionHelper extends Helper
         }
 
         $payments->select(['payment_total'=>'SUM(amount)']);
-        $payment_total = $payments->first()['payment_total'];
+        $payment_total = $payments->first()['payment_total']?$payments->first()['payment_total']:0;
         $percentage = $sales_total>0?round(($payment_total/$sales_total)*100, 2):0;
-        return $percentage;
+        return $percentage?round($percentage, 2):0;
     }
 
     public function sales_quantity($period_start, $period_end, $item, $item_unit, $level, $unit=null){
@@ -96,7 +96,7 @@ class FunctionHelper extends Helper
         }
 
         $sales->select(['sales_quantity'=>'SUM(invoiced_products.product_quantity)']);
-        $sales_quantity = $sales->first()['sales_quantity'];
+        $sales_quantity = $sales->first()['sales_quantity']?$sales->first()['sales_quantity']:0;
         return $sales_quantity;
     }
 
@@ -120,7 +120,7 @@ class FunctionHelper extends Helper
         }
 
         $sales->select(['sales_value'=>'SUM(invoices.net_total)']);
-        $sales_value = $sales->first()['sales_value'];
+        $sales_value = $sales->first()['sales_value']?$sales->first()['sales_value']:0;
         return $sales_value;
     }
 
@@ -144,7 +144,7 @@ class FunctionHelper extends Helper
         }
 
         $budget->select(['total_budget'=>'SUM(sales_budgets.sales_amount)']);
-        $total_budget = $budget->first()['total_budget'];
+        $total_budget = $budget->first()['total_budget']?$budget->first()['total_budget']:0;
 
         $salesBudgetConfiguration = TableRegistry::get('sales_budget_configurations')->find('all')->where(['status'=>1])->first();
         $sales_measure = $salesBudgetConfiguration['sales_measure'];
@@ -177,7 +177,7 @@ class FunctionHelper extends Helper
             }
         }
         $credit->select(['total_after_demurrage'=>'SUM(credit_notes.total_after_demurrage)']);
-        $total_after_demurrage = $credit->first()['total_after_demurrage'];
+        $total_after_demurrage = $credit->first()['total_after_demurrage']?$credit->first()['total_after_demurrage']:0;
         return round($total_after_demurrage, 2);
     }
 
@@ -279,8 +279,8 @@ class FunctionHelper extends Helper
         }
 
         $payments->select(['payment_total'=>'SUM(amount)']);
-        $payment_total = $payments->first()['payment_total'];
-        return $payment_total?$payment_total:0;
+        $payment_total = $payments->first()['payment_total']?$payments->first()['payment_total']:0;
+        return $payment_total;
     }
 
     public function sales_budget($period_start, $period_end, $level, $unit){

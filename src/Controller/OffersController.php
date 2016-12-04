@@ -31,10 +31,15 @@ class OffersController extends AppController
     {
         App::import('Helper', 'FunctionHelper');
         $FunctionHelper = new FunctionHelper(new View());
-        $sales_quantity = $FunctionHelper->sales_budget('01-11-2016', '30-11-2016', 4, 1082401);
-        $age = $FunctionHelper->invoice_quantity(3, 2, 1);
+        $sales_quantity = $FunctionHelper->credit_closing_percentage('01-11-2016', '30-11-2016','01-11-2016', '30-11-2016', 4, 1082401);
+        //$age = $FunctionHelper->invoice_quantity(3, 2, 1);
 
-        echo $age;
+
+        $string = 'bac>hhh+ioi%jkj';
+        $exploded = $this->multiExplode(['>', '+', '%'], $string);
+        echo '<pre>';
+        print_r($exploded);
+        echo '</pre>';
         exit;
 
         $offers = $this->Offers->find('all', [
@@ -74,6 +79,10 @@ class OffersController extends AppController
         if ($this->request->is('post')) {
 
             $data = $this->request->data;
+            echo '<pre>';
+            print_r($data);
+            echo '</pre>';
+            exit;
             $data['created_by'] = $user['id'];
             $data['created_date'] = $time;
             $offer = $this->Offers->patchEntity($offer, $data);
@@ -168,5 +177,11 @@ class OffersController extends AppController
             $this->Flash->error('The offer could not be deleted. Please, try again.');
         }
         return $this->redirect(['action' => 'index']);
+    }
+
+    function multiExplode ($delimiters,$string) {
+        $ready = str_replace($delimiters, $delimiters[0], $string);
+        $launch = explode($delimiters[0], $ready);
+        return $launch;
     }
 }

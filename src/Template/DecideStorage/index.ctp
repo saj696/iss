@@ -15,7 +15,7 @@ $status = \Cake\Core\Configure::read('status_options');
 
 <div class="row">
     <div class="col-md-12">
-        <div class="portlet box blue-hoki">
+        <div class="portlet box grey-cascade">
             <div class="portlet-title">
                 <div class="caption">
                     <i class="fa fa-list-alt fa-lg"></i><?= __('Request List') ?>
@@ -49,9 +49,9 @@ $status = \Cake\Core\Configure::read('status_options');
                                     if(sizeof($size>0)):
                                         foreach($items as $key=>$item):
                                             if($size==$key+1):
-                                                echo $itemArray[$item['item_id']]. '('.$item['quantity'].')';
+                                                echo $itemArray[$item['item_unit_id']]. '('.$item['quantity'].')';
                                             else:
-                                                echo $itemArray[$item['item_id']]. '('.$item['quantity'].') | ';
+                                                echo $itemArray[$item['item_unit_id']]. '('.$item['quantity'].') | ';
                                             endif;
                                         endforeach;
                                     endif;
@@ -60,9 +60,9 @@ $status = \Cake\Core\Configure::read('status_options');
                                 <td class="actions">
                                     <?php
                                     if($event->is_action_taken==0):
-                                        echo $this->Html->link(__('Decide'), ['action' => 'view', $event->id], ['class' => 'btn btn-sm btn-warning', 'style'=>'width:70px;']);
+                                        echo $this->Html->link(__('Decide'), ['action' => 'view', $event->id], ['class' => 'btn btn-circle default yellow-stripe', 'style'=>'width:70px;']);
                                     else:
-                                        echo $this->Html->link(__('Decide'), ['action' => 'view', $event->id], ['class' => 'btn btn-sm btn-warning', 'disabled', 'style'=>'width:70px;']);
+                                        echo $this->Html->link(__('Decide'), ['action' => 'view', $event->id], ['class' => 'btn btn-circle default yellow-stripe', 'disabled', 'style'=>'width:70px;']);
                                     endif;
                                     ?>
                                 </td>

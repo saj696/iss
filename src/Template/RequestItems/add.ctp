@@ -19,13 +19,13 @@ use Cake\Core\Configure;
 
 <div class="row">
     <div class="col-md-12">
-        <div class="portlet box blue-hoki">
+        <div class="portlet box grey-cascade">
             <div class="portlet-title">
                 <div class="caption">
                     <i class="fa fa-plus-square-o fa-lg"></i><?= __('New Request') ?>
                 </div>
                 <div class="tools">
-                    <?= $this->Html->link(__('Back'), ['action' => 'index'], ['class' => 'btn btn-sm btn-success']); ?>
+                    <?= $this->Html->link(__('Back'), ['action' => 'index'], ['class' => 'btn btn-sm grey-gallery']); ?>
                 </div>
             </div>
 
@@ -42,7 +42,7 @@ use Cake\Core\Configure;
                                         <th></th>
                                     </tr>
                                     <tr class="item_tr single_list">
-                                        <td style="width: 50%;"><?php echo $this->Form->input('details.0.item_id', ['options' => $dropArray, 'required'=>'required', 'style'=>'max-width: 100%', 'class'=>'form-control item', 'empty' => __('Select'), 'templates'=>['label' => '']]);?></td>
+                                        <td style="width: 50%;"><?php echo $this->Form->input('details.0.item_unit_id', ['options' => $dropArray, 'required'=>'required', 'style'=>'max-width: 100%', 'class'=>'form-control item', 'empty' => __('Select'), 'templates'=>['label' => '']]);?></td>
                                         <td><?php echo $this->Form->input('details.0.quantity', ['type' => 'text', 'style'=>'width: 100%', 'required'=>'required', 'class'=>'form-control quantity numbersOnly', 'templates'=>['label' => '']]);?></td>
                                         <td width="50px;"><span class="btn btn-sm btn-circle btn-danger remove pull-right">X</span></td>
                                     </tr>
@@ -52,7 +52,7 @@ use Cake\Core\Configure;
                     </div>
 
                     <div class="row col-md-offset-11">
-                        <input type="button" class="btn btn-circle btn-warning add_more" value="Add" />
+                        <input type="button" class="btn btn-circle yellow add_more" value="Add" />
                     </div>
 
                     <div class="row text-center">
@@ -64,8 +64,8 @@ use Cake\Core\Configure;
                     </div>
 
                     <div class="row text-center" style="margin-bottom: 20px;">
-                        <?= $this->Form->button(__('Forward'), ['class' => 'btn green', 'name'=>'forward', 'style' => 'margin-top:20px']) ?>
-                        <?= $this->Form->button(__('Submit'), ['class' => 'btn blue', 'name'=>'submit', 'style' => 'margin-top:20px']) ?>
+                        <?= $this->Form->button(__('Forward'), ['class' => 'btn btn-circle default red-stripe forward_btn', 'name'=>'forward', 'style' => 'margin-top:20px']) ?>
+                        <?= $this->Form->button(__('Submit'), ['class' => 'btn btn-circle default yellow-stripe', 'name'=>'submit', 'style' => 'margin-top:20px']) ?>
                     </div>
                 </div>
                 <?= $this->Form->end() ?>
@@ -110,7 +110,7 @@ use Cake\Core\Configure;
             var uniqueArr = uniqueArray(myArr);
 
             if(myArr.length != uniqueArr.length) {
-                alert('Duplicate item not acceptable!');
+                toastr.error('Duplicate item not acceptable!');
                 $(this).val('');
             }
         });
@@ -141,6 +141,16 @@ use Cake\Core\Configure;
                 });
             }else{
                 $('.recipient_id').html('<option value="">Select user</option>');
+            }
+        });
+
+        $(document).on('click', '.forward_btn', function(){
+            var recipient_id = $('.recipient_id').val();
+            if(!(recipient_id>0)){
+                $("form").submit(function(e){
+                    e.preventDefault();
+                });
+                toastr.error('Recipient needed to forward');
             }
         });
     });

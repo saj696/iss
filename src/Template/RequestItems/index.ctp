@@ -15,13 +15,13 @@ $status = \Cake\Core\Configure::read('status_options');
 
 <div class="row">
     <div class="col-md-12">
-        <div class="portlet box blue-hoki">
+        <div class="portlet box grey-cascade">
             <div class="portlet-title">
                 <div class="caption">
                     <i class="fa fa-list-alt fa-lg"></i><?= __('Request Item List') ?>
                 </div>
                 <div class="tools">
-                    <?= $this->Html->link(__('New Request'), ['action' => 'add'], ['class' => 'btn btn-sm btn-primary']); ?>
+                    <?= $this->Html->link(__('New Request'), ['action' => 'add'], ['class' => 'btn btn-sm grey-gallery']); ?>
                 </div>
             </div>
 
@@ -48,9 +48,9 @@ $status = \Cake\Core\Configure::read('status_options');
                                     if(sizeof($resource['transfer_items'])>0):
                                         foreach($resource['transfer_items'] as $key=>$item):
                                             if($size==$key+1):
-                                                echo $itemArray[$item['item_id']].' ('.$item['quantity'].')';
+                                                echo $itemArray[$item['item_unit_id']].' ('.$item['quantity'].')';
                                             else:
-                                                echo $itemArray[$item['item_id']].' ('.$item['quantity'].')'.' | ';
+                                                echo $itemArray[$item['item_unit_id']].' ('.$item['quantity'].')'.' | ';
                                             endif;
                                         endforeach;
                                     endif;
@@ -59,14 +59,14 @@ $status = \Cake\Core\Configure::read('status_options');
                                 <td><?= sizeof($resource['transfer_events'])>0?'Yes':'No' ?></td>
                                 <td class="actions">
                                     <?php
-                                    echo $this->Html->link(__('View'), ['action' => 'view', $resource->id], ['class' => 'btn btn-sm btn-info']);
+                                    echo $this->Html->link(__('View'), ['action' => 'view', $resource->id], ['class' => 'btn btn-circle default yellow-stripe']);
                                     if(sizeof($resource['transfer_events'])>0):
                                         ?>
-                                        <button class="btn btn-sm btn-danger">Forwarded</button>
+                                        <button class="btn btn-circle default red-stripe">Forwarded</button>
                                         <?php
                                     else:
                                         ?>
-                                        <button class="btn btn-sm btn-warning forward">Forward</button>
+                                        <button class="btn btn-circle default yellow-stripe forward">Forward</button>
                                         <div class="row popContainer" style="display: none;">
                                             <form action="RequestItems/edit">
                                                 <input type="hidden" name="id" value="<?= $resource->id?>" />

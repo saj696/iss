@@ -2,10 +2,13 @@
 namespace App\Controller;
 
 use App\Controller\AppController;
+use App\View\Helper\SystemHelper;
+use Cake\Core\App;
 use Cake\Core\Configure;
 use Cake\Datasource\ConnectionManager;
 use Cake\ORM\TableRegistry;
 use Cake\Collection\Collection;
+use Cake\View\View;
 
 /**
  * TransferItems Controller
@@ -38,13 +41,9 @@ class DecideStorageController extends AppController
             'contain' => ['TransferResources'=>['TransferItems']]
         ]);
 
-        $this->loadModel('Items');
-        $items = $this->Items->find('all', ['conditions' => ['status' => 1]]);
-
-        $itemArray = [];
-        foreach($items as $item) {
-            $itemArray[$item['id']] = $item['name'].' - '.$item['pack_size'].' '.Configure::read('pack_size_units')[$item['unit']];
-        }
+        App::import('Helper', 'SystemHelper');
+        $SystemHelper = new SystemHelper(new View());
+        $itemArray = $SystemHelper->get_item_unit_array();
 
         $this->loadModel('Warehouses');
         $warehouses = $this->Warehouses->find('list', ['conditions'=>['status'=>1]])->toArray();
@@ -78,18 +77,15 @@ class DecideStorageController extends AppController
         $this->loadModel('Items');
         $this->loadModel('Stocks');
 
-        $items = $this->Items->find('all', ['conditions' => ['status' => 1]]);
-        $itemArray = [];
-        foreach($items as $item) {
-            $itemArray[$item['id']] = $item['name'].' - '.$item['pack_size'].' '.Configure::read('pack_size_units')[$item['unit']];
-        }
+        App::import('Helper', 'SystemHelper');
+        $SystemHelper = new SystemHelper(new View());
+        $itemArray = $SystemHelper->get_item_unit_array();
 
         $event = $this->TransferEvents->get($id);
         $resource = $this->TransferResources->get($event['transfer_resource_id'], ['contain'=>['TransferItems']]);
         $items = $resource['transfer_items'];
         $orderNo = $resource['serial_no'];
         $requestDate = date('d-m-Y', $resource['created_date']);
-
 
         $requestUserInfo = $this->Users->get($event['created_by']);
         $warehouses = $this->Warehouses->find('list', ['conditions' => ['status' => 1]])->toArray();

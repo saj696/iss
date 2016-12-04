@@ -2,9 +2,12 @@
 namespace App\Controller;
 
 use App\Controller\AppController;
+use App\View\Helper\SystemHelper;
+use Cake\Core\App;
 use Cake\Core\Configure;
 use Cake\Datasource\ConnectionManager;
 use Cake\ORM\TableRegistry;
+use Cake\View\View;
 use Exception;
 
 /**
@@ -42,12 +45,9 @@ class RequestItemsController extends AppController
             'contain' => ['TransferResources']
         ]);
 
-        $this->loadModel('Items');
-        $items = $this->Items->find('all', ['conditions' => ['status' => 1]]);
-        $itemArray = [];
-        foreach($items as $item) {
-            $itemArray[$item['id']] = $item['name'].' - '.$item['pack_size'].' '.Configure::read('pack_size_units')[$item['unit']];
-        }
+        App::import('Helper', 'SystemHelper');
+        $SystemHelper = new SystemHelper(new View());
+        $itemArray = $SystemHelper->get_item_unit_array();
 
         $this->loadModel('Users');
         $users = $this->Users->find('list', ['conditions'=>['level_no'=>0, 'administrative_unit_id'=>1, 'user_group_id !='=>1,'status'=>1]]);
@@ -74,12 +74,9 @@ class RequestItemsController extends AppController
         $this->loadModel('Users');
         $this->loadModel('Stores');
 
-        $this->loadModel('Items');
-        $items = $this->Items->find('all', ['conditions' => ['status' => 1]]);
-        $itemArray = [];
-        foreach($items as $item) {
-            $itemArray[$item['id']] = $item['name'].' - '.$item['pack_size'].' '.Configure::read('pack_size_units')[$item['unit']];
-        }
+        App::import('Helper', 'SystemHelper');
+        $SystemHelper = new SystemHelper(new View());
+        $itemArray = $SystemHelper->get_item_unit_array();
 
         $stores = $this->Stores->find('list', ['conditions'=>['status !='=>99]])->toArray();
 
@@ -117,6 +114,8 @@ class RequestItemsController extends AppController
         $this->loadModel('TransferItems');
         $this->loadModel('TransferResources');
         $this->loadModel('TransferEvents');
+        $this->loadModel('ItemUnits');
+
         $requestItem = $this->TransferItems->newEntity();
 
         if ($this->request->is('post'))
@@ -144,8 +143,7 @@ class RequestItemsController extends AppController
                     $resource = $this->TransferResources->patchEntity($resource, $resourceData);
                     $result = $this->TransferResources->save($resource);
 
-                    if(isset($_POST['forward']))
-                    {
+                    if(isset($_POST['forward'])):
                         $event = $this->TransferEvents->newEntity();
                         $eventData['transfer_resource_id'] = $result['id'];
                         $eventData['recipient_id'] = $input['recipient_id'];
@@ -155,19 +153,21 @@ class RequestItemsController extends AppController
                         $eventData['created_date'] = $time;
                         $event = $this->TransferEvents->patchEntity($event, $eventData);
                         $this->TransferEvents->save($event);
-                    }
+                    endif;
 
-                    foreach($detailArray as $detail)
-                    {
+                    foreach($detailArray as $detail):
                         $transfer = $this->TransferItems->newEntity();
+                        $itemUnitInfo = $this->ItemUnits->get($detail['item_unit_id']);
                         $itemData['transfer_resource_id'] = $result['id'];
-                        $itemData['item_id'] = $detail['item_id'];
+                        $itemData['item_unit_id'] = $detail['item_unit_id'];
+                        $itemData['item_id'] = $itemUnitInfo['item_id'];
+                        $itemData['manufacture_unit_id'] = $itemUnitInfo['manufacture_unit_id'];
                         $itemData['quantity'] = $detail['quantity'];
                         $itemData['created_by'] = $user['id'];
                         $itemData['created_date'] = $time;
                         $transfer = $this->TransferItems->patchEntity($transfer, $itemData);
                         $this->TransferItems->save($transfer);
-                    }
+                    endforeach;
 
                     // Serials Table Insert/ update
                     $this->loadModel('Serials');
@@ -225,12 +225,9 @@ class RequestItemsController extends AppController
             }
         }
 
-        $this->loadModel('Items');
-        $items = $this->Items->find('all', ['conditions' => ['status' => 1]]);
-        $dropArray = [];
-        foreach($items as $item) {
-            $dropArray[$item['id']] = $item['name'].' - '.$item['pack_size'].' '.Configure::read('pack_size_units')[$item['unit']];
-        }
+        App::import('Helper', 'SystemHelper');
+        $SystemHelper = new SystemHelper(new View());
+        $dropArray = $SystemHelper->get_item_unit_array();
 
         $this->loadModel('UserGroups');
         $userGroups = $this->UserGroups->find('list', ['conditions'=>['status'=>1]]);
