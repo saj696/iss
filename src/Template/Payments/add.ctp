@@ -38,7 +38,7 @@ use Cake\Core\Configure;
                         <?php
                         echo $this->Form->input('parent_level',['options' => $parantsLevels, 'label'=>'Customers Parents Label','class'=> 'form-control level', 'empty'=>__('Select'), 'templates'=>['select' => '<div id="container_{{name}}" class="col-sm-9 levelContainer"><select name="{{name}}"{{attrs}} class="form-control">{{content}}</select></div>']]);
                         echo $this->Form->input('parent_unit', ['options' => [],'label'=>'Customer Parent Unit', 'empty' => __('Select'),'class'=> 'form-control unit','templates' => ['select' => '<div id="container_{{name}}" class="col-sm-9 unitContainer"><select name="{{name}}"{{attrs}} class="form-control">{{content}}</select></div>']]);
-                        echo $this->Form->input('customer', ['options' => [],'label'=>'Customer', 'empty' => __('Select'),'class'=> 'form-control customer', 'templates' => ['select' => '<div id="container_{{name}}" class="col-sm-9 customerContainer"><select name="{{name}}"{{attrs}} class="form-control">{{content}}</select></div>']]);
+                        echo $this->Form->input('customer_id', ['options' => [],'label'=>'Customer', 'empty' => __('Select'),'class'=> 'form-control customer', 'templates' => ['select' => '<div id="container_{{name}}" class="col-sm-9 customerContainer"><select name="{{name}}"{{attrs}} class="form-control">{{content}}</select></div>']]);
                         echo $this->Form->input('due_invoice', ['options' => [],'label'=>'Due Invoice', 'empty' => __('Select'),'class'=> 'form-control dueInvoice', 'templates' => ['select' => '<div id="container_{{name}}" class="col-sm-9 dueInvoiceContainer"><select name="{{name}}"{{attrs}} class="form-control">{{content}}</select></div>']]);
                         ?>
 
@@ -56,6 +56,7 @@ use Cake\Core\Configure;
                                 <th>Paid</th>
                                 <th>Due</th>
                                 <th>Current Payment</th>
+                                <th>Remove</th>
                             </tr>
                             </tbody>
                         </table>
@@ -65,22 +66,22 @@ use Cake\Core\Configure;
                 <div class="row">
                     <div class="col-md-6 col-md-offset-3">
                         <?php
-                            echo $this->Form->input('payments_medium',['options' =>Configure::read('payment_mediums'), 'class' => 'form-control payment', 'empty' => __('Select')]);
+                        echo $this->Form->input('medium',['options' =>Configure::read('payment_mediums'), 'class' => 'form-control payment', 'empty' => __('Select')]);
                         ?>
                         <div class="paymentsGroupOne ">
                             <?php
-                                echo $this->Form->input('reference_number');
-                                echo $this->Form->input('bank_branch');
-                                echo $this->Form->input('description');
+                            echo $this->Form->input('reference_number');
+                            echo $this->Form->input('bank_branch');
+                            echo $this->Form->input('description');
                             ?>
                         </div>
                         <div class="paymentsGroupTwo ">
                             <?php
-                                echo $this->Form->input('collection_serial_no');
-                                echo $this->Form->input('collection_date', ['type' => 'text' ,'class' => 'form-control datepicker' ]);
-                                echo $this->Form->input('amount',['type'=>'text','class'=>'form-control amount'])
+                            echo $this->Form->input('collection_serial_no');
+                            echo $this->Form->input('collection_date', ['type' => 'text' ,'class' => 'form-control datepicker' ]);
+                            echo $this->Form->input('amount',['type'=>'text','class'=>'form-control amount', 'required' => 'required'])
                             ?>
-                            <?= $this->Form->button(__('Submit'),['class'=>'btn blue pull-right','style'=>'margin-top:20px']) ?>
+                            <?= $this->Form->button(__('Submit'),['class'=>'btn blue pull-right submitCheck','style'=>'margin-top:20px']) ?>
                         </div>
                     </div>
                 </div>
@@ -129,10 +130,10 @@ use Cake\Core\Configure;
 
                     //   Append Unit Container
                     $.each(data, function(key, value) {
-                    $('.unitContainer select')
-                        .append($("<option></option>")
-                        .attr("value",key)
-                        .text(value));
+                        $('.unitContainer select')
+                            .append($("<option></option>")
+                                .attr("value",key)
+                                .text(value));
                     });
                 }
             });
@@ -226,6 +227,15 @@ use Cake\Core\Configure;
             }
         });
 
+        // Single row remove function
+        $(document).on('click','.remove', function(){
+            var obj = $(this);
+            var count = $(".main_tr").length;
+            if(count > 1){
+                obj.closest(".main_tr").remove();
+            }
+        });
+
         // Payments method selection function
         $(document).on('change', '.payment', function(){
             var obj = $(this);
@@ -244,17 +254,26 @@ use Cake\Core\Configure;
             }
         });
 
+        // Datepicker function
+        $(document).on('focus','.datepicker',function(){
+            $(this).removeClass('hasDatepicker').datepicker({
+                dateFormat: "dd-mm-yy"
+            });
+        });
+
         // Amount class onchange function
         $(document).on('keyup','.amount',function(){
             var obj = $(this);
-            var amount = obj.val();
+            var amount = parseFloat(obj.val());
+            amount = parseFloat(amount);
 
             $('.due_hidden').each(function(){
                 $(this).closest('.main_tr').find('.current_payment').val('');
             });
             $('.due_hidden').each(function(){
                 var due = ($(this).val());
-                console.log(due);
+                due = parseFloat(due);
+
                 if(amount>=due){
                     $(this).closest('.main_tr').find('.current_payment').val(due);
                 }else{
@@ -265,18 +284,21 @@ use Cake\Core\Configure;
                 }
                 amount -= due;
             });
+            if(amount>0)
+            {
+                alert('Amount big');
+                $('.due_hidden').each(function(){
+                    $(this).closest('.main_tr').find('.current_payment').val('');
+                });
+            }
         });
 
-        // Datepicker function
-        $(document).on('focus','.datepicker',function(){
-           $(this).removeClass('hasDatepicker').datepicker({
-               dateFormat: "dd-mm-yy"
-           });
+        // submit class onclick function
+        $(document).on("click",".submitCheck", function(){
+
         });
 
-    //End all funciton
+        //End all funciton
 
     });
-
-
 </script>

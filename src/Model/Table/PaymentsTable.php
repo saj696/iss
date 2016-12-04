@@ -24,6 +24,10 @@ class PaymentsTable extends Table
         $this->table('payments');
         $this->displayField('id');
         $this->primaryKey('id');
+
+        $this->hasMany('InvoicePayments', [
+            'foreignKey' => 'payment_id'
+        ]);
     }
 
     /**
@@ -37,9 +41,6 @@ class PaymentsTable extends Table
         $validator
             ->add('id', 'valid', ['rule' => 'numeric'])
             ->allowEmpty('id', 'create');
-            
-        $validator
-            ->allowEmpty('body');
 
         return $validator;
     }
