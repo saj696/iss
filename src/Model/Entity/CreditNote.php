@@ -4,19 +4,23 @@ namespace App\Model\Entity;
 use Cake\ORM\Entity;
 
 /**
- * ItemBonus Entity.
+ * CreditNote Entity.
  *
  * @property int $id
- * @property int $item_id
- * @property float $order_quantity
- * @property float $bonus_quantity
- * @property int $status
+ * @property int $customer_id
+ * @property int $parent_global_id
+ * @property \Cake\I18n\Time $date
+ * @property float $total_after_demurrage
+ * @property float $demurrage_percentage
+ * @property int $approval_status
+ * @property int $adjustment_status
  * @property int $created_by
  * @property int $created_date
  * @property int $updated_by
  * @property int $updated_date
+ * @property int $status
  */
-class ItemBonus extends Entity
+class CreditNote extends Entity
 {
 
     /**
@@ -30,6 +34,6 @@ class ItemBonus extends Entity
      */
     protected $_accessible = [
         '*' => true,
-        'id' => false,
+        'id' => true,
     ];
 }

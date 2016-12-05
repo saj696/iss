@@ -1,17 +1,16 @@
 <?php
 namespace App\Model\Table;
 
-use App\Model\Entity\ItemUnit;
+use App\Model\Entity\CreditNoteEvent;
 use Cake\ORM\Query;
 use Cake\ORM\RulesChecker;
 use Cake\ORM\Table;
 use Cake\Validation\Validator;
-use Cake\ORM\TableRegistry;
-use Cake\Core\Configure;
+
 /**
- * ItemUnits Model
+ * CreditNoteEvents Model
  */
-class ItemUnitsTable extends Table
+class CreditNoteEventsTable extends Table
 {
 
     /**
@@ -22,19 +21,23 @@ class ItemUnitsTable extends Table
      */
     public function initialize(array $config)
     {
-        $this->table('item_units');
+        $this->table('credit_note_events');
         $this->displayField('id');
         $this->primaryKey('id');
-
-        $this->belongsTo('Items', [
-            'foreignKey' => 'item_id',
+        $this->belongsTo('CreditNotes', [
+            'foreignKey' => 'credit_note_id',
             'joinType' => 'INNER'
         ]);
-        $this->belongsTo('Units', [
-            'foreignKey' => 'manufacture_unit_id',
+        $this->belongsTo('Recipients', [
+            'className'=>'Users',
+            'foreignKey' => 'recipient_id',
             'joinType' => 'INNER'
         ]);
-
+        $this->belongsTo('Senders', [
+            'className'=>'Users',
+            'foreignKey' => 'sender_id',
+            'joinType' => 'INNER'
+        ]);
     }
 
     /**
@@ -50,24 +53,9 @@ class ItemUnitsTable extends Table
             ->allowEmpty('id', 'create');
 
         $validator
-            ->add('status', 'valid', ['rule' => 'numeric'])
-            ->allowEmpty('status');
-
-        $validator
-            ->add('created_date', 'valid', ['rule' => 'numeric'])
-            ->allowEmpty('created_date');
-
-        $validator
-            ->add('updated_by', 'valid', ['rule' => 'numeric'])
-            ->allowEmpty('updated_by');
-
-        $validator
-            ->add('updated_date', 'valid', ['rule' => 'numeric'])
-            ->allowEmpty('updated_date');
-
-        $validator
-            ->add('created_by', 'valid', ['rule' => 'numeric'])
-            ->allowEmpty('created_by');
+            ->add('is_action_taken', 'valid', ['rule' => 'numeric'])
+            ->requirePresence('is_action_taken', 'create')
+            ->notEmpty('is_action_taken');
 
         return $validator;
     }
@@ -81,10 +69,9 @@ class ItemUnitsTable extends Table
      */
     public function buildRules(RulesChecker $rules)
     {
-        $rules->add($rules->existsIn(['item_id'], 'Items'));
-        $rules->add($rules->existsIn(['manufacture_unit_id'], 'Units'));
+        $rules->add($rules->existsIn(['credit_note_id'], 'CreditNotes'));
+        $rules->add($rules->existsIn(['recipient_id'], 'Recipients'));
+        $rules->add($rules->existsIn(['sender_id'], 'Senders'));
         return $rules;
     }
-
-
 }

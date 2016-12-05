@@ -4,23 +4,20 @@ namespace App\Model\Entity;
 use Cake\ORM\Entity;
 
 /**
- * Unit Entity.
+ * CreditNoteEvent Entity.
  *
  * @property int $id
- * @property int $unit_level
- * @property int $constituent_unit_id
- * @property string $unit_name
- * @property string $unit_display_name
- * @property float $unit_size
- * @property string $unit_type
- * @property float $converted_quantity
+ * @property int $credit_note_id
+ * @property int $recipient_id
+ * @property int $is_action_taken
+ * @property int $sender_id
+ * @property int $status
  * @property int $created_by
  * @property int $created_date
  * @property int $updated_by
  * @property int $updated_date
- * @property int $status
  */
-class Unit extends Entity
+class CreditNoteEvent extends Entity
 {
 
     /**
@@ -33,7 +30,6 @@ class Unit extends Entity
      * @var array
      */
     protected $_accessible = [
-        '*' => true,
-        'id' => false,
+        '*' => true
     ];
 }

@@ -4,25 +4,21 @@ namespace App\Model\Entity;
 use Cake\ORM\Entity;
 
 /**
- * Item Entity.
+ * CreditNoteItem Entity.
  *
  * @property int $id
- * @property int $category_id
- * @property string $name
- * @property string $code
- * @property float $pack_size
- * @property float $unit
- * @property float $box_size
- * @property float $cash_sales_price
- * @property float $credit_sales_price
- * @property float $retail_price
+ * @property string $invoice_id
+ * @property int $item_id
+ * @property int $manufacture_unit_id
+ * @property float $quantity
+ * @property float $net_total
  * @property int $status
  * @property int $created_by
  * @property int $created_date
  * @property int $updated_by
  * @property int $updated_date
  */
-class Item extends Entity
+class CreditNoteItem extends Entity
 {
 
     /**
