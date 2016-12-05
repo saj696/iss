@@ -30,14 +30,37 @@ class AccountHeadsController extends AppController
         ]);
         $accounts = ['cid' => [], 'parent' => []];
         foreach ($accountHeads as $accountHead) {
-            $accounts['cid'][$accountHead->id] = $accountHead;
-            $accounts['parent'][$accountHead->parent][] = $accountHead->id;
+            $accounts['cid'][$accountHead->code] = $accountHead;
+            $accounts['parent'][$accountHead->parent][] = $accountHead->code;
         }
+      // echo "<pre>";print_r($accounts);die();
         $html = $this->buildChartTree(0, $accounts);
         $this->set('html', $html);
 
         $this->set('accountHeads', $this->paginate($accountHeads) );
         $this->set('_serialize', ['accountHeads']);
+    }
+
+    public function buildChartTree($parent, $accounts)
+    {
+        $html = "";
+        if (isset($accounts['parent'][$parent])) {
+            //echo "<pre>";print_r($accounts['parent'][$parent]);die();
+            $html .= "<ul>";
+            foreach ($accounts['parent'][$parent] as $ca) {
+              //  echo "<pre>";print_r($ca);die();
+                if (!isset($accounts['parent'][$ca])) {
+                    $html .= "<li style='margin: 5px;'>" . "<label style='padding: 2px 8px 2px 8px;' class='btn btn-circle red'><a style='color:white;' href='" . 'AccountHeads/edit/'. $accounts['cid'][$ca]->id . "'>" . $accounts['cid'][$ca]->name . "</a></label>" . "</li>";
+                }
+                if (isset($accounts['parent'][$ca])) {
+                    $html .= "<li style='margin: 5px;'>" . "<label style='padding: 2px 8px 2px 8px;' class='btn btn-circle green'><a style='color:white;' href='" . 'AccountHeads/edit/'. $accounts['cid'][$ca]->id . "'>" . $accounts['cid'][$ca]->name . "</a></label>";
+                    $html .= $this->buildChartTree($ca, $accounts);
+                    $html .= "</li>";
+                }
+            }
+            $html .= "</ul>";
+        }
+        return $html;
     }
 
     /**
@@ -83,7 +106,7 @@ class AccountHeadsController extends AppController
                 $this->Flash->error('The account head could not be saved. Please, try again.');
             }
         }
-        $parents = $this->AccountHeads->find('list',['conditions'=>['status !=' => 99]]);
+        $parents = $this->AccountHeads->find('list', ['keyField' => 'code', 'keyValue' => 'name'],['conditions'=>['status !=' => 99]]);
         $this->set(compact('accountHead','parents'));
         $this->set('_serialize', ['accountHead']);
     }
@@ -118,7 +141,7 @@ class AccountHeadsController extends AppController
                 $this->Flash->error('The account head could not be saved. Please, try again.');
             }
         }
-        $parents = $this->AccountHeads->find('list',['conditions'=>['status !=' => 99]]);
+        $parents = $this->AccountHeads->find('list', ['keyField' => 'code', 'keyValue' => 'name'],['conditions'=>['status !=' => 99]]);
         $this->set(compact('accountHead', 'parents'));
         $this->set('_serialize', ['accountHead']);
     }
@@ -154,23 +177,5 @@ class AccountHeadsController extends AppController
     }
 
 
-    public function buildChartTree($parent, $accounts)
-    {
-        $html = "";
-        if (isset($accounts['parent'][$parent])) {
-            $html .= "<ul>";
-            foreach ($accounts['parent'][$parent] as $ca) {
-                if (!isset($accounts['parent'][$ca])) {
-                    $html .= "<li style='margin: 5px;'>" . "<label style='padding: 2px 8px 2px 8px;' class='btn btn-circle red'><a style='color:white;' href='" . 'AccountHeads/edit/'. $accounts['cid'][$ca]->id . "'>" . $accounts['cid'][$ca]->name . "</a></label>" . "</li>";
-                }
-                if (isset($accounts['parent'][$ca])) {
-                    $html .= "<li style='margin: 5px;'>" . "<label style='padding: 2px 8px 2px 8px;' class='btn btn-circle green'><a style='color:white;' href='" . 'AccountHeads/edit/'. $accounts['cid'][$ca]->id . "'>" . $accounts['cid'][$ca]->name . "</a></label>";
-                    $html .= $this->buildChartTree($ca, $accounts);
-                    $html .= "</li>";
-                }
-            }
-            $html .= "</ul>";
-        }
-        return $html;
-    }
+
 }

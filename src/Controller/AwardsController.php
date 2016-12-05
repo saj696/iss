@@ -76,7 +76,12 @@ public function index()
                 $this->Flash->error('The award could not be saved. Please, try again.');
             }
         }
-        $this->set(compact('award'));
+
+        $this->loadModel('account_heads');
+        $account_heads = $this->account_heads->find('list', ['keyField' => 'code', 'keyValue' => 'name'])
+            ->where(['parent' => 9])
+            ->toArray();
+        $this->set(compact('award','account_heads'));
         $this->set('_serialize', ['award']);
     }
 
@@ -111,7 +116,11 @@ public function index()
                 $this->Flash->error('The award could not be saved. Please, try again.');
             }
         }
-        $this->set(compact('award'));
+        $this->loadModel('account_heads');
+        $account_heads = $this->account_heads->find('list', ['keyField' => 'code', 'keyValue' => 'name'])
+            ->where(['parent' => 9])
+            ->toArray();
+        $this->set(compact('award','account_heads'));
         $this->set('_serialize', ['award']);
     }
 

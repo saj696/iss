@@ -36,7 +36,9 @@ use Cake\Core\Configure;
                 <div class="row">
                     <div class="col-md-6 col-md-offset-3">
                         <?php
-                        echo $this->Form->input('type',['options'=>configure::read('awards'), 'empty'=>__('Select')]);
+                        echo $this->Form->input('type',['options'=>configure::read('award_types'), 'empty'=>__('Select')]);
+                        echo $this->Form->input('account_code',['required' => 'required','options'=>$account_heads, 'empty'=>__('Select')]);
+
                         echo $this->Form->input('name',['type' =>'text','label' => 'Name']);
                         echo $this->Form->input('detail',['label' => 'Details']);
                         echo $this->Form->input('cash_equivalent');
