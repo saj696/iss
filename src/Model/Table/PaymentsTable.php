@@ -28,6 +28,11 @@ class PaymentsTable extends Table
         $this->hasMany('InvoicePayments', [
             'foreignKey' => 'payment_id'
         ]);
+
+        $this->belongsTo('Customers', [
+            'foreignKey' => 'customer_id'
+        ]);
+
     }
 
     /**

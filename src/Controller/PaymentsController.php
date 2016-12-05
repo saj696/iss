@@ -2,6 +2,7 @@
 namespace App\Controller;
 
 use App\Controller\AppController;
+use Cake\Datasource\ConnectionManager;
 use Cake\ORM\TableRegistry;
 
 /**
@@ -27,6 +28,7 @@ class PaymentsController extends AppController
     public function index()
     {
         $payments = $this->Payments->find('all', [
+            'contain' => ['Customers'],
             'conditions' =>['Payments.status !=' => 99]
         ]);
         $this->set('payments', $this->paginate($payments) );
@@ -60,98 +62,124 @@ class PaymentsController extends AppController
         $user=$this->Auth->user();
         $time=time();
         $payment = $this->Payments->newEntity();
-        if ($this->request->is('post'))
-        {
-            $data=$this->request->data;
-            $this->loadModel('InvoicePayments');
-            $this->loadModel('Customers');
-            $this->loadModel('Invoices');
-            $this->loadModel('InvoicedProducts');
-            $this->loadModel('InvoicedProductsPayments');
-            $data['created_by']=$user['id'];
-            $data['created_date']=$time;
-            $data['collection_date'] = strtotime($data['collection_date']);
+        if ($this->request->is('post')){
+            try {
+                $saveStatus = 0;
+                $conn = ConnectionManager::get('default');
+                $conn->transactional(function () use ($payment, $user, $time, &$saveStatus)
+                {
+                    $data=$this->request->data;
+                    $this->loadModel('InvoicePayments');
+                    $this->loadModel('Customers');
+                    $this->loadModel('Invoices');
+                    $this->loadModel('InvoicedProducts');
+                    $this->loadModel('InvoicedProductsPayments');
+                    $data['created_by']=$user['id'];
+                    $data['created_date']=$time;
+                    $data['collection_date'] = strtotime($data['collection_date']);
 
 //          insert payments table
-            $customerInfo = $this->Customers->find('all',['conditions'=> ['id' => $data['customer_id']], 'fields' =>['unit_global_id','customer_type']])->hydrate(false)->first();
-            $data['customer_type'] = $customerInfo['customer_type'];
-            $data['parent_global_id'] = $customerInfo['unit_global_id'];
-            $payment = $this->Payments->patchEntity($payment, $data);
-            $invoiceDatas = $this->Payments->save($payment);
-
+                    $customerInfo = $this->Customers->find('all',['conditions'=> ['id' => $data['customer_id']], 'fields' =>['unit_global_id','customer_type']])->hydrate(false)->first();
+                    $data['customer_type'] = $customerInfo['customer_type'];
+                    $data['parent_global_id'] = $customerInfo['unit_global_id'];
+                    $payment = $this->Payments->patchEntity($payment, $data);
+                    $invoiceDatas = $this->Payments->save($payment);
+                    $amount = $data['amount'];
 //          insert invoice payments table
-            foreach($invoiceDatas['invoice_details'] as $invoiceDataID => $invoiceDataDetails):
-                $invoicePayments = $this->InvoicePayments->newEntity();
-                $invoiceData['customer_type'] = $data['customer_type'];
-                $invoiceData['customer_id'] = $data['customer_id'];
-                $invoiceData['parent_global_id'] = $data['parent_global_id'];
-                $invoiceData['invoice_id'] = $invoiceDataID;
-                $invoiceData['invoice_date'] = $invoiceDataDetails['invoice_date'];
-                $invoicesUpdate = $this->Invoices->get($invoiceDataID);
-                $invoiceData['invoice_delivery_date'] = $invoicesUpdate['delivery_date'];
-                $invoiceData['payment_id'] = $invoiceDatas['id'];
-                $invoiceData['payment_collection_date'] = $invoiceDatas['collection_date'];
-                $invoiceData['invoice_wise_payment_amount'] = $invoiceDataDetails['current_payment'];
-                $invoiceData['created_by'] = $user['id'];
-                $invoiceData['created_date'] = $time;
-                $invoiceData['status'] = 1;
-                $invoicePayments = $this->InvoicePayments->patchEntity($invoicePayments, $invoiceData);
-                $this->InvoicePayments->save($invoicePayments);
+                    foreach($invoiceDatas['invoice_details'] as $invoiceDataID => $invoiceDataDetails):
+                        $invoicePayments = $this->InvoicePayments->newEntity();
+                        $invoiceData['customer_type'] = $data['customer_type'];
+                        $invoiceData['customer_id'] = $data['customer_id'];
+                        $invoiceData['parent_global_id'] = $data['parent_global_id'];
+                        $invoiceData['invoice_id'] = $invoiceDataID;
+                        $invoiceData['invoice_date'] = $invoiceDataDetails['invoice_date'];
+                        $invoicesUpdate = $this->Invoices->get($invoiceDataID);
+                        $invoiceData['invoice_delivery_date'] = $invoicesUpdate['delivery_date'];
+                        $invoiceData['payment_id'] = $invoiceDatas['id'];
+                        $invoiceData['payment_collection_date'] = $invoiceDatas['collection_date'];
+                        $invoiceData['invoice_wise_payment_amount'] = $invoiceDataDetails['current_payment'];
+                        $invoiceData['created_by'] = $user['id'];
+                        $invoiceData['created_date'] = $time;
+                        $invoiceData['status'] = 1;
+                        if($invoiceData['invoice_wise_payment_amount']):
+                            $invoicePayments = $this->InvoicePayments->patchEntity($invoicePayments, $invoiceData);
+                            $this->InvoicePayments->save($invoicePayments);
+                        endif;
 
 //              update invoices table due
-                $invoicesUpdate->due  = $invoicesUpdate['due'] - $invoiceData['invoice_wise_payment_amount'];
-                $this->Invoices->save($invoicesUpdate);
-
+                        $invoicesUpdate->due  = $invoicesUpdate['due'] - $invoiceData['invoice_wise_payment_amount'];
+                        $this->Invoices->save($invoicesUpdate);
 //              update invoiced products table product wise due
-                $invoicedProducts = $this->InvoicedProducts->find('all',['conditions' => ['invoice_id' => $invoiceDataID], 'fields' => ['id','due']])->hydrate(false)->toArray();
+                        $invoicedProducts = $this->InvoicedProducts->find('all',['conditions' => ['invoice_id' => $invoiceDataID], 'fields' => ['id','due']])->hydrate(false)->toArray();
 //              Create a key value pair array
-                $arangedArr=[];
-                foreach($invoicedProducts as $invoicedProduct):
-                    $arangedArr[$invoicedProduct['id']] = $invoicedProduct['due'];
-                endforeach;
+                        $arangedArr=[];
+                        foreach($invoicedProducts as $invoicedProduct):
+                            $arangedArr[$invoicedProduct['id']] = $invoicedProduct['due'];
+                        endforeach;
 //              Condition check for update
-                $amount = $data['amount'];
-                foreach($arangedArr as $id => $due):
-                    if($amount>0):
-                        if($amount>=$due):
-                            if($due>0):
-                                $due = $due - $amount;
-                                if($due<0):
-                                    $due = 0;
+                        $var = false;
+                        foreach($arangedArr as $id => $due):
+                            if($amount>0):
+                                if($amount>=$due):
+                                    if($due>0):
+                                        $var = $due - $amount;
+                                        if($var<0):
+                                            $var = 0;
+                                        else:
+                                            $var = $var;
+                                        endif;
+                                    else:
+                                        $var = 0;
+                                    endif;
                                 else:
-                                    $due = $due;
+                                    $var = $due - $amount;
                                 endif;
-                            else:
-                                $due = 0;
+                                $amount = $amount - $due;
                             endif;
-                        else:
-                            $due = $due - $amount;
-                        endif;
-                    endif;
-                    $amount = $amount - $due;
+                            if($var !== false){
+                                $invoicedProductsUpdate  = $this->InvoicedProducts->get($id);
+                                $itemID = $invoicedProductsUpdate['item_id'];
+                                $manufactureID = $invoicedProductsUpdate['manufacture_unit_id'];
+                                $tempOne = $invoicedProductsUpdate['due'];
+                                $invoicedProductsUpdate->due = $var;
+                                $tempTwo = $this->InvoicedProducts->save($invoicedProductsUpdate);
+                                $temp = $tempOne - $tempTwo['due'];
+                                $var=false;
 
-                    $invoicedProductsUpdate  = $this->InvoicedProducts->get($id);
-                    $tempOne = $invoicedProductsUpdate['due'];
-                    $invoicedProductsUpdate->due = $due;
-                    $tempTwo = $this->InvoicedProducts->save($invoicedProductsUpdate);
-                    $temp = $tempOne - $tempTwo['due'];
-//                  insert invoice product payments table
-                    $inProPay = $this->InvoicedProductsPayments->newEntity();
-                    $inProPayData['customer_type'] = $data['customer_type'];
-                    $inProPayData['customer_id'] = $data['customer_id'];
-                    $inProPayData['parent_global_id'] = $customerInfo['unit_global_id'];
-                    $inProPayData['invoice_id'] = $invoiceDataID;
-                    $inProPayData['invoice_delivery_date'] = $invoicesUpdate['delivery_date'];
-                    $inProPayData['invoice_payment_id'] = $invoicePayments['id'];
-                    $inProPayData['payment_collection_date'] = $invoiceData['payment_collection_date'];
-                    $inProPayData['item_wise_payment_amount'] = $temp;
-                    $inProPayData['status'] = 1;
-                    $inProPayData['created_by'] = $user['id'];;
-                    $inProPayData['created_date'] = $time;
-                    $inProPay = $this->InvoicedProductsPayments->patchEntity($inProPay, $inProPayData);
-                    $this->InvoicedProductsPayments->save($inProPay);
-                endforeach;
-            endforeach;
+//                              insert invoice product payments table
+                                if($temp):
+                                    $inProPay = $this->InvoicedProductsPayments->newEntity();
+                                    $inProPayData['customer_type'] = $data['customer_type'];
+                                    $inProPayData['customer_id'] = $data['customer_id'];
+                                    $inProPayData['parent_global_id'] = $customerInfo['unit_global_id'];
+                                    $inProPayData['invoice_id'] = $invoiceDataID;
+                                    $inProPayData['item_id'] = $itemID;
+                                    $inProPayData['manufacture_unit_id'] = $manufactureID;
+                                    $inProPayData['invoice_delivery_date'] = $invoicesUpdate['delivery_date'];
+                                    $inProPayData['invoice_payment_id'] = $invoicePayments['id'];
+                                    $inProPayData['payment_collection_date'] = $invoiceData['payment_collection_date'];
+                                    $inProPayData['item_wise_payment_amount'] = $temp;
+                                    $inProPayData['status'] = 1;
+                                    $inProPayData['created_by'] = $user['id'];;
+                                    $inProPayData['created_date'] = $time;
+                                    $inProPay = $this->InvoicedProductsPayments->patchEntity($inProPay, $inProPayData);
+                                    $this->InvoicedProductsPayments->save($inProPay);
+                                endif;
+                            }
+                        endforeach;
+                    endforeach;
+                });
+
+                $this->Flash->success('Payment Successful');
+                return $this->redirect(['action' => 'index']);
+            } catch (\Exception $e) {
+                echo '<pre>';
+                print_r($e);
+                echo '</pre>';
+                exit;
+                $this->Flash->error('Payment Unsuccessful');
+                return $this->redirect(['action' => 'index']);
+            }
         }
 //        Administrative levels
         $this->loadModel('AdministrativeLevels');

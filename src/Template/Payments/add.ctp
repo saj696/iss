@@ -78,7 +78,7 @@ use Cake\Core\Configure;
                         <div class="paymentsGroupTwo ">
                             <?php
                             echo $this->Form->input('collection_serial_no');
-                            echo $this->Form->input('collection_date', ['type' => 'text' ,'class' => 'form-control datepicker' ]);
+                            echo $this->Form->input('collection_date', ['type' => 'text' ,'class' => 'form-control datepicker','required'=>'required' ]);
                             echo $this->Form->input('amount',['type'=>'text','class'=>'form-control amount', 'required' => 'required'])
                             ?>
                             <?= $this->Form->button(__('Submit'),['class'=>'btn blue pull-right submitCheck','style'=>'margin-top:20px']) ?>

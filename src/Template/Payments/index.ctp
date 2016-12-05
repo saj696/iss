@@ -31,25 +31,19 @@ $status = \Cake\Core\Configure::read('status_options');
                         <thead>
                         <tr>
                             <th><?= __('Sl. No.') ?></th>
-                            <th><?= __('body') ?></th>
-                            <th><?= __('status') ?></th>
-                            <th><?= __('created_by') ?></th>
-                            <th><?= __('created_date') ?></th>
-                            <th><?= __('updated_by') ?></th>
-                            <th><?= __('updated_date') ?></th>
+                            <th><?= __('Customer Name') ?></th>
+                            <th><?= __('Payment Amount') ?></th>
+                            <th><?= __('Collection Date') ?></th>
                             <th><?= __('Actions') ?></th>
                         </tr>
                         </thead>
                         <tbody>
-                        <?php foreach ($payments as $key => $payment) {  ?>
+                        <?php foreach ($payments as $key => $payment) { ?>
                             <tr>
                                 <td><?= $this->Number->format($key+1) ?></td>
-                                <td><?= h($payment->body) ?></td>
-                                <td><?= __($status[$payment->status]) ?></td>
-                                <td><?= $this->Number->format($payment->created_by) ?></td>
-                                <td><?= $this->System->display_date($payment->created_date) ?></td>
-                                <td><?= $this->Number->format($payment->updated_by) ?></td>
-                                <td><?= $this->System->display_date($payment->updated_date) ?></td>
+                                <td><?= $payment->customer->name ?></td>
+                                <td><?= $payment->amount ?></td>
+                                <td><?= date('d-m-y',$payment->collection_date) ?></td>
                                 <td class="actions">
                                     <?php
                                     echo $this->Html->link(__('View'), ['action' => 'view', $payment->id],['class'=>'btn btn-sm btn-info']);
