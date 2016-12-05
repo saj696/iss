@@ -2,10 +2,13 @@
 namespace App\Controller;
 
 use App\Controller\AppController;
+use App\View\Helper\SystemHelper;
+use Cake\Core\App;
 use Cake\Core\Configure;
 use Cake\Datasource\ConnectionManager;
 use Cake\ORM\TableRegistry;
 use Cake\Collection\Collection;
+use Cake\View\View;
 
 /**
  * TransferItems Controller
@@ -41,11 +44,9 @@ class DeliverChalansController extends AppController
             'contain' => ['TransferResources'=>['TransferItems']]
         ]);
 
-        $items = $this->Items->find('all', ['conditions' => ['status' => 1]]);
-        $itemArray = [];
-        foreach($items as $item) {
-            $itemArray[$item['id']] = $item['name'].' - '.$item['pack_size'].' '.Configure::read('pack_size_units')[$item['unit']];
-        }
+        App::import('Helper', 'SystemHelper');
+        $SystemHelper = new SystemHelper(new View());
+        $itemArray = $SystemHelper->get_item_unit_array();
 
         $warehouses = $this->Warehouses->find('list', ['conditions'=>['status'=>1]])->toArray();
         $depots = $this->Depots->find('list', ['conditions'=>['status'=>1]])->toArray();
@@ -123,8 +124,12 @@ class DeliverChalansController extends AppController
                         if(sizeof($chalanReferenceEvent['transfer_resource']['transfer_items'])>0):
                             foreach($chalanReferenceEvent['transfer_resource']['transfer_items'] as $itemInfo):
                                 $item = $this->TransferItems->newEntity();
+                                $itemUnitInfo = $this->ItemUnits->get($itemInfo['item_unit_id']);
+
                                 $itemData['transfer_resource_id'] = $resourceResult['id'];
-                                $itemData['item_id'] = $itemInfo['item_id'];
+                                $itemData['item_id'] = $itemUnitInfo['item_id'];
+                                $itemData['manufacture_unit_id'] = $itemUnitInfo['manufacture_unit_id'];
+                                $itemData['item_unit_id'] = $itemInfo['item_unit_id'];
                                 $itemData['quantity'] = $itemInfo['quantity'];
                                 $itemData['warehouse_id'] = $chalanReferenceEvent['transfer_resource']['transfer_items'][0]['warehouse_id'];
                                 $itemData['created_by'] = $user['id'];

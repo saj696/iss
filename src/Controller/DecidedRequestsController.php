@@ -2,10 +2,13 @@
 namespace App\Controller;
 
 use App\Controller\AppController;
+use App\View\Helper\SystemHelper;
+use Cake\Core\App;
 use Cake\Core\Configure;
 use Cake\Datasource\ConnectionManager;
 use Cake\ORM\TableRegistry;
 use Cake\Collection\Collection;
+use Cake\View\View;
 
 /**
  * TransferItems Controller
@@ -41,11 +44,9 @@ class DecidedRequestsController extends AppController
             'contain' => ['TransferResources'=>['TransferItems']]
         ]);
 
-        $items = $this->Items->find('all', ['conditions' => ['status' => 1]]);
-        $itemArray = [];
-        foreach($items as $item) {
-            $itemArray[$item['id']] = $item['name'].' - '.$item['pack_size'].' '.Configure::read('pack_size_units')[$item['unit']];
-        }
+        App::import('Helper', 'SystemHelper');
+        $systemHelper = new SystemHelper(new View());
+        $itemArray = $systemHelper->get_item_unit_array();
 
         $warehouses = $this->Warehouses->find('list', ['conditions'=>['status'=>1]])->toArray();
         $depots = $this->Depots->find('list', ['conditions'=>['status'=>1]])->toArray();
@@ -76,11 +77,9 @@ class DecidedRequestsController extends AppController
             $this->loadModel('Items');
             $eventIds = $data['chalan_event'];
 
-            $items = $this->Items->find('all', ['conditions' => ['status' => 1]]);
-            $itemArray = [];
-            foreach($items as $item) {
-                $itemArray[$item['id']] = $item['name'].' - '.$item['pack_size'].' '.Configure::read('pack_size_units')[$item['unit']];
-            }
+            App::import('Helper', 'SystemHelper');
+            $systemHelper = new SystemHelper(new View());
+            $itemArray = $systemHelper->get_item_unit_array();
 
             $info = [];
             foreach($eventIds as $eventId):
@@ -88,7 +87,7 @@ class DecidedRequestsController extends AppController
                 $items = $event['transfer_resource']['transfer_items'];
                 foreach($items as $item):
                     $arr = [];
-                    $arr['item_id'] = $item['item_id'];
+                    $arr['item_unit_id'] = $item['item_unit_id'];
                     $arr['quantity'] = $item['quantity'];
                     $info[] = $arr;
                 endforeach;
@@ -99,7 +98,7 @@ class DecidedRequestsController extends AppController
                 $key = $item['item_id'];
                 if (!array_key_exists($key, $returnData)) {
                     $returnData[$key] = [
-                        'item_id' => $item['item_id'],
+                        'item_unit_id' => $item['item_unit_id'],
                         'quantity' => $item['quantity']
                     ];
                 } else {
@@ -267,6 +266,7 @@ class DecidedRequestsController extends AppController
         $this->loadModel('Items');
         $this->loadModel('Stocks');
         $this->loadModel('Serials');
+        $this->loadModel('ItemUnits');
 
         try {
             $saveStatus = 0;
@@ -326,8 +326,12 @@ class DecidedRequestsController extends AppController
                 if(sizeof($event['transfer_resource']['transfer_items'])>0):
                     foreach($event['transfer_resource']['transfer_items'] as $itemInfo):
                         $item = $this->TransferItems->newEntity();
+                        $itemUnitInfo = $this->ItemUnits->get($itemInfo['item_unit_id']);
+
                         $itemData['transfer_resource_id'] = $resourceResult['id'];
-                        $itemData['item_id'] = $itemInfo['item_id'];
+                        $itemData['item_id'] = $itemUnitInfo['item_id'];
+                        $itemData['manufacture_unit_id'] = $itemUnitInfo['manufacture_unit_id'];
+                        $itemData['item_unit_id'] = $itemInfo['item_unit_id'];
                         $itemData['quantity'] = $itemInfo['quantity'];
                         $itemData['warehouse_id'] = $itemInfo['warehouse_id'];
                         $itemData['created_by'] = $user['id'];
@@ -336,7 +340,7 @@ class DecidedRequestsController extends AppController
                         $this->TransferItems->save($item);
 
                         // Reduce Stocks
-                        $existingStock = $this->Stocks->find('all', ['conditions'=>['warehouse_id'=>$itemInfo['warehouse_id'], 'item_id'=>$itemInfo['item_id']]])->first();
+                        $existingStock = $this->Stocks->find('all', ['conditions'=>['warehouse_id'=>$itemInfo['warehouse_id'], 'item_id'=>$itemUnitInfo['item_id'], 'manufacture_unit_id'=>$itemUnitInfo['manufacture_unit_id']]])->first();
                         $stocks = TableRegistry::get('stocks');
                         $query = $stocks->query();
                         $query->update()->set(['quantity' => $existingStock['quantity']-$itemInfo['quantity']])->where(['id' => $existingStock['id']])->execute();
@@ -418,8 +422,12 @@ class DecidedRequestsController extends AppController
                     if(sizeof($data['detail'])>0):
                         foreach($data['detail'] as $item_id=>$quantity):
                             $item = $this->TransferItems->newEntity();
+                            $itemUnitInfo = $this->ItemUnits->get($item_id);
+
                             $itemData['transfer_resource_id'] = $resourceResult['id'];
-                            $itemData['item_id'] = $item_id;
+                            $itemData['item_id'] = $itemUnitInfo['item_id'];
+                            $itemData['manufacture_unit_id'] = $itemUnitInfo['manufacture_unit_id'];
+                            $itemData['item_unit_id'] = $item_id;
                             $itemData['quantity'] = $quantity;
                             $itemData['warehouse_id'] = $warehouse_id;
                             $itemData['created_by'] = $user['id'];

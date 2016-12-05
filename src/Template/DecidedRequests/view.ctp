@@ -51,7 +51,7 @@ $status = \Cake\Core\Configure::read('status_options');
                         <?php foreach($items as $key=>$item):?>
                             <tr>
                                 <td><?= $key+1?></td>
-                                <td><?= $itemArray[$item['item_id']]?></td>
+                                <td><?= $itemArray[$item['item_unit_id']]?></td>
                                 <td><?= $item['quantity']?></td>
                             </tr>
                         <?php endforeach;?>
@@ -68,7 +68,7 @@ $status = \Cake\Core\Configure::read('status_options');
                         </tr>
                         <?php foreach($requestWarehouseDetails as $detail):?>
                             <tr>
-                                <td><?= $itemArray[$detail['item_id']]?></td>
+                                <td><?= $itemArray[$detail['item_unit_id']]?></td>
                                 <td><?= $allWarehouses[$detail['warehouse_id']]?></td>
                                 <td><?= $detail['existing']?></td>
                             </tr>
@@ -96,12 +96,12 @@ $status = \Cake\Core\Configure::read('status_options');
                                 </tr>
                                 <?php foreach($myWarehouseDetails as $detail):?>
                                     <tr class="main_tr">
-                                        <td><?= $itemArray[$detail['item_id']]?></td>
+                                        <td><?= $itemArray[$detail['item_unit_id']]?></td>
                                         <td><?= $allWarehouses[$detail['warehouse_id']]?></td>
                                         <td class="existing_quantity"><?= $detail['quantity']?></td>
                                         <td width="20%">
                                             <input type="hidden" class="warehouse_id" value="<?= $detail['warehouse_id']?>">
-                                            <input type="text" name="decided[<?= $detail['warehouse_id']?>][<?= $detail['item_id']?>]" style="height: 25px;" class="form-control decided_quantity numbersOnly" value="" />
+                                            <input type="text" name="decided[<?= $detail['warehouse_id']?>][<?= $detail['item_unit_id']?>]" style="height: 25px;" class="form-control decided_quantity numbersOnly" value="" />
                                         </td>
                                     </tr>
                                 <?php endforeach;?>

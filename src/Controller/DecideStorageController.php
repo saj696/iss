@@ -138,7 +138,7 @@ class DecideStorageController extends AppController
                 $myDetail = [];
                 $stock = $this->Stocks->find('all', ['conditions' => ['status' => 1, 'warehouse_id'=>$warehouseId, 'item_id'=>$item['item_id']], 'fields'=>['quantity']])->first();
                 $myDetail['warehouse_id'] = $warehouseId;
-                $myDetail['item_id'] = $item['item_id'];
+                $myDetail['item_unit_id'] = $item['item_unit_id'];
                 $myDetail['quantity'] = isset($stock['quantity'])?$stock['quantity']:0;
                 $myWarehouseDetails[] = $myDetail;
             endforeach;
@@ -149,7 +149,7 @@ class DecideStorageController extends AppController
                 $requestDetail = [];
                 $stock = $this->Stocks->find('all', ['conditions' => ['status' => 1, 'warehouse_id'=>$warehouseId, 'item_id'=>$item['item_id']], 'fields'=>['quantity']])->first();
                 $requestDetail['warehouse_id'] = $warehouseId;
-                $requestDetail['item_id'] = $item['item_id'];
+                $requestDetail['item_unit_id'] = $item['item_unit_id'];
                 $requestDetail['required'] = $item['quantity'];
                 $requestDetail['existing'] = isset($stock['quantity'])?$stock['quantity']:0;
                 $requestWarehouseDetails[] = $requestDetail;
@@ -172,6 +172,7 @@ class DecideStorageController extends AppController
         $this->loadModel('TransferItems');
         $this->loadModel('TransferResources');
         $this->loadModel('TransferEvents');
+        $this->loadModel('ItemUnits');
 
         if ($this->request->is('post'))
         {
@@ -222,8 +223,11 @@ class DecideStorageController extends AppController
                         // Transfer items entry
                         foreach($detail as $item_id=>$quantity):
                             $item = $this->TransferItems->newEntity();
+                            $itemUnitInfo = $this->ItemUnits->get($item_id);
                             $itemData['transfer_resource_id'] = $result['id'];
-                            $itemData['item_id'] = $item_id;
+                            $itemData['item_unit_id'] = $item_id;
+                            $itemData['item_id'] = $itemUnitInfo['item_id'];
+                            $itemData['manufacture_unit_id'] = $itemUnitInfo['manufacture_unit_id'];
                             $itemData['quantity'] = $quantity;
                             $itemData['warehouse_id'] = $warehouse_id;
                             $itemData['created_by'] = $user['id'];
@@ -323,6 +327,10 @@ class DecideStorageController extends AppController
         $warehouse_id = $data['warehouse_id'];
         $event_id = $data['event_id'];
 
+        App::import('Helper', 'SystemHelper');
+        $SystemHelper = new SystemHelper(new View());
+        $itemArray = $SystemHelper->get_item_unit_array();
+
         $warehouseInfo = $this->Warehouses->get($warehouse_id);
         $eventDetail = $this->TransferEvents->get($event_id);
         $resource = $this->TransferResources->get($eventDetail['transfer_resource_id'], ['contain'=>['TransferItems']]);
@@ -330,11 +338,12 @@ class DecideStorageController extends AppController
 
         foreach($items as $item):
             $warehouseStockDetail = [];
-            $itemInfo = $this->Items->get($item['item_id']);
-            $stock = $this->Stocks->find('all', ['conditions' => ['status' => 1, 'warehouse_id'=>$warehouse_id, 'item_id'=>$item['item_id']], 'fields'=>['quantity']])->first();
+            $stock = $this->Stocks->find('all', ['conditions' => ['status' => 1, 'warehouse_id'=>$warehouse_id, 'item_id'=>$item['item_id'], 'manufacture_unit_id'=>$item['manufacture_unit_id']], 'fields'=>['quantity']])->first();
             $warehouseStockDetail['warehouse_id'] = $warehouse_id;
             $warehouseStockDetail['item_id'] = $item['item_id'];
-            $warehouseStockDetail['item_name'] = $itemInfo['name'].' - '.$itemInfo['pack_size'].' '.Configure::read('pack_size_units')[$itemInfo['unit']];
+            $warehouseStockDetail['item_unit_id'] = $item['item_unit_id'];
+            $warehouseStockDetail['manufacture_unit_id'] = $item['manufacture_unit_id'];
+            $warehouseStockDetail['item_name'] = $itemArray[$item['item_unit_id']];
             $warehouseStockDetail['existing'] = isset($stock['quantity'])?$stock['quantity']:0;
             $warehouseDetails[] = $warehouseStockDetail;
         endforeach;
@@ -352,12 +361,9 @@ class DecideStorageController extends AppController
             $this->loadModel('Warehouses');
             $warehouses = $this->Warehouses->find('list', ['conditions'=>['status'=>1]])->toArray();
 
-            $this->loadModel('Items');
-            $items = $this->Items->find('all', ['conditions' => ['status' => 1]]);
-            $itemArray = [];
-            foreach($items as $item) {
-                $itemArray[$item['id']] = $item['name'].' - '.$item['pack_size'].' '.Configure::read('pack_size_units')[$item['unit']];
-            }
+            App::import('Helper', 'SystemHelper');
+            $SystemHelper = new SystemHelper(new View());
+            $itemArray = $SystemHelper->get_item_unit_array();
 
             $this->viewBuilder()->layout('default');
             $this->set(compact('decidedArray', 'warehouses', 'itemArray', 'eventId'));

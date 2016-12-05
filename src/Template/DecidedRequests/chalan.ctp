@@ -19,13 +19,13 @@ $status = \Cake\Core\Configure::read('status_options');
 
 <div class="row">
     <div class="col-md-12">
-        <div class="portlet box blue-hoki">
+        <div class="portlet box grey-cascade">
             <div class="portlet-title">
                 <div class="caption">
                     <i class="fa fa-picture-o fa-lg"></i><?= __('Make Chalan') ?>
                 </div>
                 <div class="tools">
-                    <button class="btn btn-sm btn-warning">Print</button>
+                    <button class="btn btn-sm grey-gallery">Print</button>
                 </div>
             </div>
 
@@ -50,16 +50,16 @@ $status = \Cake\Core\Configure::read('status_options');
                                     <th>Quantity</th>
                                 </tr>
                                 <?php foreach($returnData as $detail):?>
-                                    <input type="hidden" name="detail[<?=$detail['item_id']?>]" value="<?= $detail['quantity']?>" />
+                                    <input type="hidden" name="detail[<?=$detail['item_unit_id']?>]" value="<?= $detail['quantity']?>" />
                                     <tr>
-                                        <td><?= $itemArray[$detail['item_id']]?></td>
+                                        <td><?= $itemArray[$detail['item_unit_id']]?></td>
                                         <td><?= $detail['quantity']>0?$detail['quantity']:0?></td>
                                     </tr>
                                 <?php endforeach;?>
                             </tbody>
                         </table>
                         <div class="text-center" style="margin-bottom: 20px;">
-                            <?= $this->Form->button(__('Forward'), ['class' => 'btn blue submitBtn', 'style'=>'font-size:13px; padding:6px 8px;']) ?>
+                            <?= $this->Form->button(__('Forward'), ['class' => 'btn btn-circle default yellow-stripe submitBtn', 'style'=>'font-size:13px; padding:6px 8px;']) ?>
                         </div>
                     </form>
                 </div>
@@ -67,9 +67,3 @@ $status = \Cake\Core\Configure::read('status_options');
         </div>
     </div>
 </div>
-
-<script>
-    $(document).ready(function(){
-
-    });
-</script>

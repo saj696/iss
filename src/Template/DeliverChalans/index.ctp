@@ -15,7 +15,7 @@ $status = \Cake\Core\Configure::read('status_options');
 
 <div class="row">
     <div class="col-md-12">
-        <div class="portlet box blue-hoki">
+        <div class="portlet box grey-cascade">
             <div class="portlet-title">
                 <div class="caption">
                     <i class="fa fa-list-alt fa-lg"></i><?= __('Chalan List') ?>
@@ -46,9 +46,9 @@ $status = \Cake\Core\Configure::read('status_options');
                                 <td class="actions" width="20%">
                                     <?php
                                     if($event['is_action_taken']==0):
-                                        echo $this->Html->link(__('Send Delivery'), ['action' => 'deliver', $event->id], ['class' => 'btn btn-sm btn-primary']);
+                                        echo $this->Html->link(__('Send Delivery'), ['action' => 'deliver', $event->id], ['class' => 'btn btn-circle default yellow-stripe']);
                                     else:
-                                        echo $this->Html->link(__('Send Delivery'), ['action' => 'deliver', $event->id], ['class' => 'btn btn-sm btn-primary', 'disabled']);
+                                        echo $this->Html->link(__('Send Delivery'), ['action' => 'deliver', $event->id], ['class' => 'btn btn-circle default yellow-stripe', 'disabled']);
                                     endif;
                                     ?>
                                 </td>
@@ -101,7 +101,7 @@ $status = \Cake\Core\Configure::read('status_options');
             if(uniqueArr.length>1) {
                 $(this).prop('checked', false);
                 $(this).closest('span').removeClass('checked');
-                alert('Multiple warehouse not allowed! Make chalan for a single warehouse.');
+                toastr.info('Multiple warehouse not allowed! Make chalan for a single warehouse.');
             }
         });
 

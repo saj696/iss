@@ -16,13 +16,13 @@ $status = \Cake\Core\Configure::read('status_options');
 <div class="row">
     <div class="col-md-12">
         <form class="form-horizontal" id="chalanForm" role="form" action="<?= $this->Url->build("/DecidedRequests/chalan")?>" method="post">
-        <div class="portlet box blue-hoki">
+        <div class="portlet box grey-cascade">
             <div class="portlet-title">
                 <div class="caption">
                     <i class="fa fa-list-alt fa-lg"></i><?= __('Decided Request List') ?>
                 </div>
                 <div class="pull-right">
-                    <button type="submit" style="margin-top: 6px;" class="btn btn-sm btn-warning">Make chalan</button>
+                    <button type="submit" style="margin-top: 6px;" class="btn btn-sm grey-gallery">Make chalan</button>
                 </div>
             </div>
 

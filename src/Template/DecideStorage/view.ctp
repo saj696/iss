@@ -102,7 +102,7 @@ $status = \Cake\Core\Configure::read('status_options');
                                         <td width="20%">
                                             <input type="hidden" class="existing_quantity" value="<?= $detail['quantity']?>">
                                             <input type="hidden" class="warehouse_id" value="<?= $detail['warehouse_id']?>">
-                                            <input type="text" name="decided[<?= $detail['warehouse_id']?>][<?= $detail['item_id']?>]" style="height: 25px;" class="form-control decided_quantity numbersOnly" value="" />
+                                            <input type="text" name="decided[<?= $detail['warehouse_id']?>][<?= $detail['item_unit_id']?>]" style="height: 25px;" class="form-control decided_quantity numbersOnly" value="" />
                                         </td>
                                     </tr>
                                 <?php endforeach;?>
@@ -130,7 +130,7 @@ $status = \Cake\Core\Configure::read('status_options');
             var existingQty = parseInt(obj.closest('.main_tr').find('.existing_quantity').val());
             if(inputQty>existingQty) {
                 obj.val(0);
-                alert('try less!');
+                toastr.info('try less!');
             }
         });
 
@@ -148,7 +148,7 @@ $status = \Cake\Core\Configure::read('status_options');
             var uniqueArrAfterSelection = uniqueArray(uniqueArr);
 
             if(uniqueArr.length != uniqueArrAfterSelection.length){
-                alert('Duplicate Warehouse!');
+                toastr.info('Duplicate Warehouse!');
             } else {
                 if(warehouse_id>0) {
                     var event_id = $('.event_id').val();

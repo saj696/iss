@@ -19,13 +19,13 @@ $status = \Cake\Core\Configure::read('status_options');
 
 <div class="row">
     <div class="col-md-12">
-        <div class="portlet box blue-hoki">
+        <div class="portlet box grey-cascade">
             <div class="portlet-title">
                 <div class="caption">
                     <i class="fa fa-picture-o fa-lg"></i><?= __('Process') ?>
                 </div>
                 <div class="tools">
-                    <?= $this->Html->link(__('Back'), ['action' => 'view/'.$eventId], ['class' => 'btn btn-sm btn-success']); ?>
+                    <?= $this->Html->link(__('Back'), ['action' => 'view/'.$eventId], ['class' => 'btn btn-sm grey-gallery']); ?>
                 </div>
             </div>
 
@@ -36,7 +36,7 @@ $status = \Cake\Core\Configure::read('status_options');
                     <?php foreach($decidedArray as $warehouseId=>$itemDetail):?>
                         <table class="table table-bordered">
                             <tbody>
-                                <tr><td colspan="6" class="text-center"><label class="label label-success"><?= $warehouses[$warehouseId]?></label></td></tr>
+                                <tr><td colspan="6" class="text-center"><label class="label label-info"><?= $warehouses[$warehouseId]?></label></td></tr>
                                 <tr>
                                     <th>Item</th>
                                     <th>Quantity</th>
@@ -57,7 +57,7 @@ $status = \Cake\Core\Configure::read('status_options');
                         </table>
                     <?php endforeach;?>
                     <div class="text-center" style="margin-bottom: 20px;">
-                        <?= $this->Form->button(__('Save'), ['class' => 'btn blue submitBtn', 'style'=>'font-size:13px; padding:6px 8px;']) ?>
+                        <?= $this->Form->button(__('Save'), ['class' => 'btn btn-circle yellow submitBtn']) ?>
                     </div>
                     </form>
                 </div>
