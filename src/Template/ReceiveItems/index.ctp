@@ -17,7 +17,7 @@ $user = $this->request->Session()->read('Auth')['User'];
 
 <div class="row">
     <div class="col-md-12">
-        <div class="portlet box blue-hoki">
+        <div class="portlet box grey-cascade">
             <div class="portlet-title">
                 <div class="caption">
                     <i class="fa fa-list-alt fa-lg"></i><?= __('Receive Items List') ?>
@@ -50,9 +50,9 @@ $user = $this->request->Session()->read('Auth')['User'];
                                     if(sizeof($size>0)):
                                         foreach($items as $key=>$item):
                                             if($size==$key+1):
-                                                echo $itemArray[$item['item_id']]. ' ('.$item['quantity'].')';
+                                                echo $itemArray[$item['item_unit_id']];
                                             else:
-                                                echo $itemArray[$item['item_id']]. ' ('.$item['quantity'].') | ';
+                                                echo $itemArray[$item['item_unit_id']].' | ';
                                             endif;
                                         endforeach;
                                     endif;
@@ -62,15 +62,15 @@ $user = $this->request->Session()->read('Auth')['User'];
                                     <?php
                                     if($user['user_group_id'] == Configure::read('depot_in_charge_ug')):
                                         if($event['is_action_taken']==0):
-                                            echo $this->Html->link(__('Receive'), ['action' => 'distribute', $event->id], ['class' => 'btn btn-sm btn-success']);
+                                            echo $this->Html->link(__('Receive'), ['action' => 'distribute', $event->id], ['class' => 'btn btn-circle default yellow-stripe']);
                                         else:
-                                            echo $this->Html->link(__('Receive'), ['action' => 'distribute', $event->id], ['disabled', 'class' => 'btn btn-sm btn-success']);
+                                            echo $this->Html->link(__('Receive'), ['action' => 'distribute', $event->id], ['disabled', 'class' => 'btn btn-circle default yellow-stripe']);
                                         endif;
                                     elseif($user['user_group_id'] == Configure::read('warehouse_in_charge_ug')):
                                         if($event['is_action_taken']==0):
-                                            echo $this->Html->link(__('Receive'), ['action' => 'receive', $event->id], ['class' => 'btn btn-sm btn-success']);
+                                            echo $this->Html->link(__('Receive'), ['action' => 'receive', $event->id], ['class' => 'btn btn-circle default yellow-stripe']);
                                         else:
-                                            echo $this->Html->link(__('Receive'), ['action' => 'receive', $event->id], ['disabled', 'class' => 'btn btn-sm btn-success']);
+                                            echo $this->Html->link(__('Receive'), ['action' => 'receive', $event->id], ['disabled', 'class' => 'btn btn-circle default yellow-stripe']);
                                         endif;
                                     endif;
                                     ?>

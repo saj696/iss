@@ -31,16 +31,13 @@ class OffersController extends AppController
     {
         App::import('Helper', 'FunctionHelper');
         $FunctionHelper = new FunctionHelper(new View());
-        $sales_quantity = $FunctionHelper->credit_closing_percentage('01-11-2016', '30-11-2016','01-11-2016', '30-11-2016', 4, 1082401);
+        $sales_quantity = $FunctionHelper->credit_closing_percentage('01-11-2016', '30-11-2016','01-11-2016', '30-11-2016', 4, 'Kushtia Territory');
         //$age = $FunctionHelper->invoice_quantity(3, 2, 1);
 
-
-        $string = 'bac>hhh+ioi%jkj';
-        $exploded = $this->multiExplode(['>', '+', '%'], $string);
-        echo '<pre>';
-        print_r($exploded);
-        echo '</pre>';
-        exit;
+//        echo '<pre>';
+//        print_r($sales_quantity);
+//        echo '</pre>';
+//        exit;
 
         $offers = $this->Offers->find('all', [
             'conditions' => ['Offers.status !=' => 99]

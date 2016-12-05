@@ -2,10 +2,13 @@
 namespace App\Controller;
 
 use App\Controller\AppController;
+use App\View\Helper\SystemHelper;
+use Cake\Core\App;
 use Cake\Core\Configure;
 use Cake\Datasource\ConnectionManager;
 use Cake\ORM\TableRegistry;
 use Cake\Collection\Collection;
+use Cake\View\View;
 
 /**
  * TransferItems Controller
@@ -41,11 +44,9 @@ class ReceiveItemsController extends AppController
             'contain' => ['TransferResources'=>['TransferItems']]
         ]);
 
-        $items = $this->Items->find('all', ['conditions' => ['status' => 1]]);
-        $itemArray = [];
-        foreach($items as $item) {
-            $itemArray[$item['id']] = $item['name'].' - '.$item['pack_size'].' '.Configure::read('pack_size_units')[$item['unit']];
-        }
+        App::import('Helper', 'SystemHelper');
+        $SystemHelper = new SystemHelper(new View());
+        $itemArray = $SystemHelper->get_item_unit_array();
 
         $warehouses = $this->Warehouses->find('list', ['conditions'=>['status'=>1]])->toArray();
         $depots = $this->Depots->find('list', ['conditions'=>['status'=>1]])->toArray();
@@ -72,6 +73,7 @@ class ReceiveItemsController extends AppController
         $this->loadModel('TransferEvents');
         $this->loadModel('Stocks');
         $this->loadModel('Depots');
+        $this->loadModel('ItemUnits');
 
         try {
             $saveStatus = 0;
@@ -95,7 +97,7 @@ class ReceiveItemsController extends AppController
 
                     if(sizeof($event['transfer_resource']['transfer_items'])>0):
                         foreach($event['transfer_resource']['transfer_items'] as $itemInfo):
-                            $existingStock = $this->Stocks->find('all', ['conditions'=>['warehouse_id'=>$depotWarehouses[0], 'item_id'=>$itemInfo['item_id']]])->first();
+                            $existingStock = $this->Stocks->find('all', ['conditions'=>['warehouse_id'=>$depotWarehouses[0], 'item_id'=>$itemInfo['item_id'], 'manufacture_unit_id'=>$itemInfo['manufacture_unit_id']]])->first();
                             if($existingStock){
                                 $stocks = TableRegistry::get('stocks');
                                 $query = $stocks->query();
@@ -104,6 +106,7 @@ class ReceiveItemsController extends AppController
                                 $stock = $this->Stocks->newEntity();
                                 $stockData['warehouse_id'] = $depotWarehouses[0];
                                 $stockData['item_id'] = $itemInfo['item_id'];
+                                $stockData['manufacture_unit_id'] = $itemInfo['manufacture_unit_id'];
                                 $stockData['quantity'] = $itemInfo['quantity'];
                                 $stockData['approved_quantity'] = 0;
                                 $stockData['created_by'] = $user['id'];
@@ -150,7 +153,7 @@ class ReceiveItemsController extends AppController
 
                 if(sizeof($event['transfer_resource']['transfer_items'])>0):
                     foreach($event['transfer_resource']['transfer_items'] as $itemInfo):
-                        $existingStock = $this->Stocks->find('all', ['conditions'=>['warehouse_id'=>$user['warehouse_id'], 'item_id'=>$itemInfo['item_id']]])->first();
+                        $existingStock = $this->Stocks->find('all', ['conditions'=>['warehouse_id'=>$user['warehouse_id'], 'item_id'=>$itemInfo['item_id'], 'manufacture_unit_id'=>$itemInfo['manufacture_unit_id']]])->first();
                         if($existingStock) {
                             $stocks = TableRegistry::get('stocks');
                             $query = $stocks->query();
@@ -159,6 +162,7 @@ class ReceiveItemsController extends AppController
                             $stock = $this->Stocks->newEntity();
                             $stockData['warehouse_id'] = $user['warehouse_id'];
                             $stockData['item_id'] = $itemInfo['item_id'];
+                            $stockData['manufacture_unit_id'] = $itemInfo['manufacture_unit_id'];
                             $stockData['quantity'] = $itemInfo['quantity'];
                             $stockData['approved_quantity'] = 0;
                             $stockData['created_by'] = $user['id'];

@@ -54,7 +54,7 @@ use Cake\Core\Configure;
                 <div class="row text-center">
                     <div class="col-md-11" style="margin: 2% 0 2% 0">
                         <?php
-                        echo $this->Form->input('item', ['label'=>'', 'empty'=>'Select', 'options'=>$itemArray, 'class'=>'select2me form-control item', 'templates'=>['label' =>'', 'select' => '<div id="container_{{name}}" class="col-sm-7 col-md-offset-3"><select name="{{name}}"{{attrs}} class="form-control">{{content}}</select></div>']]);
+                        echo $this->Form->input('item_unit_id', ['label'=>'', 'empty'=>'Select', 'options'=>$itemArray, 'class'=>'select2me form-control item', 'templates'=>['label' =>'', 'select' => '<div id="container_{{name}}" class="col-sm-7 col-md-offset-3"><select name="{{name}}"{{attrs}} class="form-control">{{content}}</select></div>']]);
                         ?>
                     </div>
                 </div>
@@ -173,32 +173,32 @@ use Cake\Core\Configure;
 
         $(document).on('change', '.item', function () {
             var obj = $(this);
-            var item_id = obj.val();
+            var item_unit_id = obj.val();
             var invoice_type = $('.invoice_type').val();
 
             var myArr = [];
-            $( ".itemId" ).each(function( index ) {
+            $( ".itemUnitId" ).each(function( index ) {
                 myArr.push($(this).val());
             });
 
             var uniqueArr = uniqueArray(myArr);
-            uniqueArr.push(item_id);
+            uniqueArr.push(item_unit_id);
             var uniqueArrAfterSelection = uniqueArray(uniqueArr);
 
             if(uniqueArr.length != uniqueArrAfterSelection.length){
-                alert('Duplicate Item Not Allowed!');
+                toastr.info('Duplicate Item Not Allowed!');
             }else{
-                if(item_id>0 && invoice_type>0){
+                if(item_unit_id>0 && invoice_type>0){
                     $.ajax({
                         type: 'POST',
                         url: '<?= $this->Url->build("/Pos/loadItem")?>',
-                        data: {item_id: item_id, invoice_type:invoice_type},
+                        data: {item_unit_id: item_unit_id, invoice_type:invoice_type},
                         success: function (data, status) {
                             $('.appendTr').append(data);
                         }
                     });
                 } else {
-                    alert('Select Item & Invoice Type and try again!');
+                    toastr.info('Select Item & Invoice Type and try again!');
                 }
             }
         });
@@ -207,7 +207,7 @@ use Cake\Core\Configure;
             var invoice_type = $(this).val();
             var available_credit = parseInt($('.available_credit').val());
             if(available_credit==0 && invoice_type==2){
-                alert('Available credit is 0');
+                toastr.info('Available credit is 0');
                 $(this).val(1);
             }
         });

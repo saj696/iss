@@ -191,12 +191,11 @@ class PosController extends AppController
             $administrativeLevels[$administrativeLevelsDatum['level_no']] = $administrativeLevelsDatum['level_name'];
         }
         $customers = $this->Pos->Customers->find('list', ['conditions' => ['status' => 1]]);
-        $this->loadModel('Items');
-        $items = $this->Items->find('all', ['conditions' => ['status' => 1]]);
-        $itemArray = [];
-        foreach($items as $item) {
-            $itemArray[$item['id']] = $item['name'].' - '.$item['pack_size'].' '.Configure::read('pack_size_units')[$item['unit']].' ('.$item['code'].')';
-        }
+
+        App::import('Helper', 'SystemHelper');
+        $SystemHelper = new SystemHelper(new View());
+        $itemArray = $SystemHelper->get_item_unit_array();
+
         $this->set(compact('po', 'customers', 'administrativeLevels', 'itemArray'));
         $this->set('_serialize', ['po']);
     }
@@ -310,27 +309,28 @@ class PosController extends AppController
     public function loadItem()
     {
         $data = $this->request->data;
-        $item_id = $data['item_id'];
-        $invoice_type = $data['invoice_type'];
+        $this->loadModel('ItemUnits');
+        $this->loadModel('Prices');
 
-        $this->loadModel('Items');
-        $item = $this->Items->find('all', ['conditions' => ['id' => $item_id, 'status' => 1]])->first()->toArray();
+        $item_unit_id = $data['item_unit_id'];
+        $invoice_type = $data['invoice_type'];
+        $itemPrices = $this->Prices->find('all', ['conditions'=>['item_unit_id'=>$item_unit_id]])->first();
 
         if ($invoice_type == 1) {
-            $unit_price = $item['cash_sales_price'];
+            $unit_price = $itemPrices['cash_sales_price'];
         } elseif ($invoice_type == 2) {
-            $unit_price = $item['credit_sales_price'];
+            $unit_price = $itemPrices['credit_sales_price'];
         } else {
             $unit_price = 0;
         }
 
-//       App::import('Helper', 'SystemHelper');
-//       $SystemHelper = new SystemHelper(new View());
-//       $offers = $SystemHelper->item_offers($item_id);
+        App::import('Helper', 'SystemHelper');
+        $SystemHelper = new SystemHelper(new View());
+        $itemArray = $SystemHelper->get_item_unit_array();
 
-        $itemName = $item['name'] . ' - ' . $item['pack_size'] . ' ' . Configure::read('pack_size_units')[$item['unit']] . ' (' . $item['code'] . ')';
+        $itemName = $itemArray[$item_unit_id];
         $this->viewBuilder()->layout('ajax');
-        $this->set(compact('itemName', 'item_id', 'unit_price'));
+        $this->set(compact('itemName', 'item_unit_id', 'unit_price'));
     }
 
     public function forward($id)

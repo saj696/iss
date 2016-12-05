@@ -40,7 +40,8 @@ class FunctionHelper extends Helper
             }
         }else{
             if($unit){
-                $sales->where(['customer_unit_global_id'=>$unit]);
+                $adminUnitInfo = TableRegistry::get('administrative_units')->find('all', ['conditions'=>['unit_name'=>$unit]])->first();
+                $sales->where(['customer_unit_global_id'=>$adminUnitInfo['global_id']]);
             }
         }
 
@@ -59,7 +60,8 @@ class FunctionHelper extends Helper
             }
         }else{
             if($unit){
-                $payments->where(['parent_global_id'=>$unit]);
+                $adminUnitInfo = TableRegistry::get('administrative_units')->find('all', ['conditions'=>['unit_name'=>$unit]])->first();
+                $payments->where(['parent_global_id'=>$adminUnitInfo['global_id']]);
             }
         }
 
@@ -91,7 +93,8 @@ class FunctionHelper extends Helper
             }
         }else{
             if($unit){
-                $sales->where(['invoices.customer_unit_global_id'=>$unit]);
+                $adminUnitInfo = TableRegistry::get('administrative_units')->find('all', ['conditions'=>['unit_name'=>$unit]])->first();
+                $sales->where(['invoices.customer_unit_global_id'=>$adminUnitInfo['global_id']]);
             }
         }
 
@@ -115,7 +118,8 @@ class FunctionHelper extends Helper
             }
         }else{
             if($unit){
-                $sales->where(['invoices.customer_unit_global_id'=>$unit]);
+                $adminUnitInfo = TableRegistry::get('administrative_units')->find('all', ['conditions'=>['unit_name'=>$unit]])->first();
+                $sales->where(['invoices.customer_unit_global_id'=>$adminUnitInfo['global_id']]);
             }
         }
 
@@ -139,7 +143,8 @@ class FunctionHelper extends Helper
             }
         }else{
             if($unit){
-                $budget->where(['sales_budgets.administrative_unit_global_id'=>$unit]);
+                $adminUnitInfo = TableRegistry::get('administrative_units')->find('all', ['conditions'=>['unit_name'=>$unit]])->first();
+                $budget->where(['sales_budgets.administrative_unit_global_id'=>$adminUnitInfo['global_id']]);
             }
         }
 
@@ -173,7 +178,8 @@ class FunctionHelper extends Helper
             }
         }else{
             if($unit){
-                $credit->where(['credit_notes.parent_global_id'=>$unit]);
+                $adminUnitInfo = TableRegistry::get('administrative_units')->find('all', ['conditions'=>['unit_name'=>$unit]])->first();
+                $credit->where(['credit_notes.parent_global_id'=>$adminUnitInfo['global_id']]);
             }
         }
         $credit->select(['total_after_demurrage'=>'SUM(credit_notes.total_after_demurrage)']);
@@ -204,7 +210,8 @@ class FunctionHelper extends Helper
             }
         }else{
             if($unit){
-                $sales->where(['invoices.customer_unit_global_id'=>$unit]);
+                $adminUnitInfo = TableRegistry::get('administrative_units')->find('all', ['conditions'=>['unit_name'=>$unit]])->first();
+                $sales->where(['invoices.customer_unit_global_id'=>$adminUnitInfo['global_id']]);
             }
         }
 
@@ -229,7 +236,8 @@ class FunctionHelper extends Helper
             }
         }else{
             if($unit){
-                $sales->where(['invoices.customer_unit_global_id'=>$unit]);
+                $adminUnitInfo = TableRegistry::get('administrative_units')->find('all', ['conditions'=>['unit_name'=>$unit]])->first();
+                $sales->where(['invoices.customer_unit_global_id'=>$adminUnitInfo['global_id']]);
             }
         }
 
@@ -253,7 +261,8 @@ class FunctionHelper extends Helper
             }
         }else{
             if($unit){
-                $sales->where(['invoices.customer_unit_global_id'=>$unit]);
+                $adminUnitInfo = TableRegistry::get('administrative_units')->find('all', ['conditions'=>['unit_name'=>$unit]])->first();
+                $sales->where(['invoices.customer_unit_global_id'=>$adminUnitInfo['global_id']]);
             }
         }
 
@@ -274,7 +283,8 @@ class FunctionHelper extends Helper
             }
         }else{
             if($unit){
-                $payments->where(['parent_global_id'=>$unit]);
+                $adminUnitInfo = TableRegistry::get('administrative_units')->find('all', ['conditions'=>['unit_name'=>$unit]])->first();
+                $payments->where(['parent_global_id'=>$adminUnitInfo['global_id']]);
             }
         }
 
@@ -298,7 +308,8 @@ class FunctionHelper extends Helper
             }
         }else{
             if($unit){
-                $budget->where(['sales_budgets.administrative_unit_global_id'=>$unit]);
+                $adminUnitInfo = TableRegistry::get('administrative_units')->find('all', ['conditions'=>['unit_name'=>$unit]])->first();
+                $budget->where(['sales_budgets.administrative_unit_global_id'=>$adminUnitInfo['global_id']]);
             }
         }
 
@@ -327,9 +338,8 @@ class FunctionHelper extends Helper
         return $payment_info['collection_date'];
     }
 
-    public function invoice_quantity($item, $item_unit, $invoice){
+    public function invoice_quantity($item, $item_unit){
         $sales = TableRegistry::get('invoices')->find('all');
-        $sales->where(['invoices.id'=>$invoice]);
         $sales->innerJoin('invoiced_products', 'invoices.id=invoiced_products.invoice_id');
         if($item>0){
             $sales->where(['invoiced_products.item_id', $item]);
