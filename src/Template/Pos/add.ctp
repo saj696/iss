@@ -218,14 +218,24 @@ use Cake\Core\Configure;
             var item_cash_discount = parseFloat($(this).closest('.itemTr').find('.item_cash_discount').val());
             var item_net_total = item_quantity*unit_price-item_cash_discount;
 
-            $(this).closest('.itemTr').find('.item_net_total').val(item_net_total);
+            if(item_net_total){
+                $(this).closest('.itemTr').find('.item_net_total').val(item_net_total);
+            }else{
+                $(this).closest('.itemTr').find('.item_net_total').val(0);
+            }
 
             var total_amount = 0;
             $( ".item_net_total" ).each(function( index ) {
                 total_amount = total_amount + parseFloat($(this).val());
             });
-            $('.total_amount').html(total_amount);
-            $('.total_amount_hidden').val(total_amount);
+
+            if(total_amount){
+                $('.total_amount').html(total_amount);
+                $('.total_amount_hidden').val(total_amount);
+            }else{
+                $('.total_amount').html(0);
+                $('.total_amount_hidden').val(0);
+            }
         });
     });
 

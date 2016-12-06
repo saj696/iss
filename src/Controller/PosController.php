@@ -81,6 +81,7 @@ class PosController extends AppController
                     $this->loadModel('PoEvents');
                     $this->loadModel('Users');
                     $this->loadModel('Depots');
+                    $this->loadModel('ItemUnits');
 
                     $poData['customer_level_no'] = $data['customer_level_no'];
                     $customerUnitInfo = $this->AdministrativeUnits->get($data['customer_unit']);
@@ -110,10 +111,13 @@ class PosController extends AppController
                     $result = $this->Pos->save($po);
 
                     // PO Products table insert
-                    foreach($data['detail'] as $item_id=>$itemDetail):
+                    foreach($data['detail'] as $item_unit_id=>$itemDetail):
                         $poProducts = $this->PoProducts->newEntity();
+                        $itemUnitInfo = $this->ItemUnits->get($item_unit_id);
                         $poProductData['po_id'] = $result['id'];
-                        $poProductData['product_id'] = $item_id;
+                        $poProductData['item_unit_id'] = $item_unit_id;
+                        $poProductData['item_id'] = $itemUnitInfo['item_id'];
+                        $poProductData['manufacture_unit_id'] = $itemUnitInfo['manufacture_unit_id'];
                         $poProductData['product_quantity'] = $itemDetail['item_quantity'];
                         $poProductData['bonus_quantity'] = $itemDetail['item_bonus'];
                         $poProductData['instant_discount'] = $itemDetail['item_cash_discount'];

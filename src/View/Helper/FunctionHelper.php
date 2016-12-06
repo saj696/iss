@@ -3,11 +3,13 @@ namespace App\View\Helper;
 
 use App\Model\Table\AdministrativeUnitsTable;
 use App\Model\Table\ItemUnitsTable;
+use Cake\Core\App;
 use Cake\View\Helper;
 use Cake\View\View;
 use Cake\Core\Configure;
 use Cake\I18n\Time;
 use Cake\ORM\TableRegistry;
+use App\View\Helper\SystemHelper;
 
 /**
  * Function helper
@@ -19,7 +21,9 @@ class FunctionHelper extends Helper
      * Default configuration.
      *
      * @var array
+     *
      */
+
     protected $_defaultConfig = [];
 
     public function credit_closing_percentage($period_start, $period_end, $payment_start, $payment_end, $level, $unit=null){
@@ -71,9 +75,18 @@ class FunctionHelper extends Helper
         return $percentage?round($percentage, 2):0;
     }
 
-    public function sales_quantity($period_start, $period_end, $item, $item_unit, $level, $unit=null){
+    public function sales_quantity($period_start, $period_end, $item, $level, $unit=null){
         if(!is_int($period_start)){$period_start = strtotime($period_start);}
         if(!is_int($period_end)){$period_end = strtotime($period_end);}
+
+        App::import('Helper', 'SystemHelper');
+        $SystemHelper = new SystemHelper(new View());
+        $itemArray = array_flip($SystemHelper->get_item_unit_array());
+        $itemNameArray = json_decode($item, true);
+        $item_unit_ids = [];
+        foreach($itemNameArray as $itemName){
+            $item_unit_ids[] = $itemArray[$itemName];
+        }
 
         $sales = TableRegistry::get('invoices')->find('all', ['conditions'=>[
             'invoices.invoice_date >='=>$period_start,
@@ -81,12 +94,10 @@ class FunctionHelper extends Helper
         ]]);
 
         $sales->innerJoin('invoiced_products', 'invoices.id=invoiced_products.invoice_id');
-        if($item>0){
-            $sales->where(['invoiced_products.item_id', $item]);
+        if(sizeof($item_unit_ids)>0){
+            $sales->where(['invoiced_products.item_unit_id IN'=> $item_unit_ids]);
         }
-        if($item_unit>0){
-            $sales->where(['invoiced_products.manufacture_unit_id', $item_unit]);
-        }
+
         if($level==Configure::read('max_level_no')+1){
             if($unit){
                 $sales->where(['invoices.customer_id'=>$unit]);
@@ -154,7 +165,7 @@ class FunctionHelper extends Helper
         $salesBudgetConfiguration = TableRegistry::get('sales_budget_configurations')->find('all')->where(['status'=>1])->first();
         $sales_measure = $salesBudgetConfiguration['sales_measure'];
         if($sales_measure==1){
-            $sales_quantity = self::sales_quantity($period_start, $period_end, null, null, $level, $unit=null);
+            $sales_quantity = self::sales_quantity($period_start, $period_end, null, $level, $unit=null);
             $achievement = $total_budget>0?round(($sales_quantity/$total_budget)*100, 2):0;
         }else{
             $sales_value = self::sales_value($period_start, $period_end, $level, $unit=null);
@@ -187,9 +198,18 @@ class FunctionHelper extends Helper
         return round($total_after_demurrage, 2);
     }
 
-    public function cash_sales_quantity($period_start, $period_end, $item, $item_unit, $level, $unit=null){
+    public function cash_sales_quantity($period_start, $period_end, $item, $level, $unit=null){
         if(!is_int($period_start)){$period_start = strtotime($period_start);}
         if(!is_int($period_end)){$period_end = strtotime($period_end);}
+
+        App::import('Helper', 'SystemHelper');
+        $SystemHelper = new SystemHelper(new View());
+        $itemArray = array_flip($SystemHelper->get_item_unit_array());
+        $itemNameArray = json_decode($item, true);
+        $item_unit_ids = [];
+        foreach($itemNameArray as $itemName){
+            $item_unit_ids[] = $itemArray[$itemName];
+        }
 
         $sales = TableRegistry::get('invoices')->find('all', ['conditions'=>[
             'invoices.invoice_date >='=>$period_start,
@@ -198,12 +218,10 @@ class FunctionHelper extends Helper
         ]]);
 
         $sales->innerJoin('invoiced_products', 'invoices.id=invoiced_products.invoice_id');
-        if($item>0){
-            $sales->where(['invoiced_products.item_id', $item]);
+        if(sizeof($item_unit_ids)>0){
+            $sales->where(['invoiced_products.item_unit_id IN'=>$item_unit_ids]);
         }
-        if($item_unit>0){
-            $sales->where(['invoiced_products.manufacture_unit_id', $item_unit]);
-        }
+
         if($level==Configure::read('max_level_no')+1){
             if($unit){
                 $sales->where(['invoices.customer_id'=>$unit]);
@@ -338,14 +356,20 @@ class FunctionHelper extends Helper
         return $payment_info['collection_date'];
     }
 
-    public function invoice_quantity($item, $item_unit){
+    public function invoice_quantity($item){
+        App::import('Helper', 'SystemHelper');
+        $SystemHelper = new SystemHelper(new View());
+        $itemArray = array_flip($SystemHelper->get_item_unit_array());
+        $itemNameArray = json_decode($item, true);
+        $item_unit_ids = [];
+        foreach($itemNameArray as $itemName){
+            $item_unit_ids[] = $itemArray[$itemName];
+        }
+
         $sales = TableRegistry::get('invoices')->find('all');
         $sales->innerJoin('invoiced_products', 'invoices.id=invoiced_products.invoice_id');
-        if($item>0){
-            $sales->where(['invoiced_products.item_id', $item]);
-        }
-        if($item_unit>0){
-            $sales->where(['invoiced_products.manufacture_unit_id', $item_unit]);
+        if(sizeof($item_unit_ids)>0){
+            $sales->where(['invoiced_products.item_id IN'=>$item_unit_ids]);
         }
         $sales->select(['sales_quantity'=>'SUM(invoiced_products.product_quantity)']);
         $sales_quantity = $sales->first()['sales_quantity']?$sales->first()['sales_quantity']:0;

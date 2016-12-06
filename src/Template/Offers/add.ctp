@@ -29,8 +29,20 @@ use Cake\Core\Configure;
                 </div>
             </div>
 
-            <div class="portlet-body main_div">
+            <div class="portlet-body main_div" style="margin-bottom: 20px;">
                 <?= $this->Form->create($offer, ['class' => 'form-horizontal', 'role' => 'form']) ?>
+                <div class="row">
+                    <div class="col-md-7 col-md-offset-2">
+                        <?php
+                        echo $this->Form->input('program_name', ['templates'=>['label' =>'<label {{attrs}} class="col-sm-5 control-label text-right" >{{text}}</label>','input' => '<div class="col-sm-7 container_{{name}}"> <input {{attrs}} class="form-control" type="{{type}}" name="{{name}}"></div>']]);
+                        echo $this->Form->input('program_period_start', ['label'=>'Period Start', 'type'=>'text', 'class'=>'form-control datepicker', 'templates'=>['label' => '<label {{attrs}} class="col-sm-5 control-label text-right" >{{text}}</label>','input' => '<div class="col-sm-7 container_{{name}}"> <input {{attrs}} class="form-control" type="{{type}}" name="{{name}}"></div>']]);
+                        echo $this->Form->input('program_period_end', ['label'=>'Period End', 'type'=>'text', 'class'=>'form-control datepicker', 'templates'=>['label'=>'<label {{attrs}} class="col-sm-5 control-label text-right" >{{text}}</label>','input' => '<div class="col-sm-7 container_{{name}}"> <input {{attrs}} class="form-control" type="{{type}}" name="{{name}}"></div>']]);
+                        echo $this->Form->input('offer_payment_mode', ['empty'=>'Select', 'options'=>Configure::read('offer_payment_mode'), 'templates'=>['label' =>'<label {{attrs}} class="col-sm-5 control-label text-right" >{{text}}</label>', 'select' => '<div id="container_{{name}}" class="col-sm-7"><select name="{{name}}"{{attrs}} class="form-control">{{content}}</select></div>']]);
+                        echo $this->Form->input('invoicing', ['default'=>1, 'type' => 'radio', 'class'=>'radio-inline form-control', 'options' => Configure::read('special_offer_invoicing'), 'templates'=>['inputContainer' => '<div class="form-group input {{required}}">{{content}}</div>', 'label' =>'<label {{attrs}} class="col-sm-5 control-label text-right" >{{text}}</label>', 'input' => '<div class="col-sm-7 container_{{name}}"> <input {{attrs}} class="form-control" type="{{type}}" name="{{name}}"></div>']]);
+                        ?>
+                    </div>
+                </div>
+
                 <div class="row">
                     <div class="col-md-7">
                         <div class="general condition_div">
@@ -60,9 +72,9 @@ use Cake\Core\Configure;
                                                         <span class="pull-right"><input type="checkbox" style="height: 14px; border: 1px solid lightgrey" class="form-control condition_check noUniform" name="general_check" value="1"></span>
                                                     </td>
                                                 </tr>
-                                                <tr>
-                                                    <td width="70%"><?= $this->Form->input('general_conditions', ['type'=>'textarea', 'placeholder'=>'Conditions', 'rows'=>6, 'class'=>'form-control condition noUniform', 'templates'=>['label'=>'', 'textarea' => '<div class="col-sm-12"><textarea class="textareaStyle condition noUniform" name="{{name}}"{{attrs}}>{{value}}</textarea></div>']]);?></td>
-                                                    <td width="30%"><?= $this->Form->input('general_conditions', ['type'=>'textarea', 'placeholder'=>'Offers', 'style'=>'width:100%', 'rows'=>6, 'class'=>'form-control offers', 'templates'=>['label'=>'', 'textarea' => '<div class="col-sm-12"><textarea class="form-control" name="{{name}}"{{attrs}}>{{value}}</textarea></div>']]);?></td>
+                                                <tr class="ctr">
+                                                    <td width="70%"><?= $this->Form->input('specific.0.conditions', ['type'=>'textarea', 'placeholder'=>'Conditions', 'rows'=>6, 'templates'=>['label'=>'', 'textarea' => '<div class="col-sm-12"><textarea class="multi form-control textareaStyle condition spec_condition noUniform" name="{{name}}"{{attrs}}>{{value}}</textarea></div>']]);?></td>
+                                                    <td width="30%"><?= $this->Form->input('specific.0.offers', ['type'=>'textarea', 'placeholder'=>'Offers', 'style'=>'width:100%', 'rows'=>6, 'templates'=>['label'=>'', 'textarea' => '<div class="col-sm-12"><textarea class="multi form-control" name="{{name}}"{{attrs}}>{{value}}</textarea></div>']]);?></td>
                                                 </tr>
                                             </table>
                                         </div>
@@ -192,9 +204,14 @@ use Cake\Core\Configure;
 
 <script>
     $(document).ready(function(){
-        $(document).on('keyup', '.condition', function(){
-//            var str = $('textarea.condition').val();
-//            toastr.info('credit_closing_percentage (period, payment)');
+        $(document).on("keyup", ".numbersOnly", function(event) {
+            this.value = this.value.replace(/[^0-9\.]/g,'');
+        });
+
+        $(document).on("focus",".datepicker", function() {
+            $(this).removeClass('hasDatepicker').datepicker({
+                dateFormat: 'dd-mm-yy'
+            });
         });
 
         $(document).on('click', '.send_to', function(){
@@ -227,7 +244,6 @@ use Cake\Core\Configure;
                 this.id = this.id.replace(/\d+/, index+1);
                 this.value = '';
             }).end();
-            $.uniform.update();
             $('.moreTable').append(html);
         });
 

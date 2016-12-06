@@ -30,6 +30,9 @@ $status = \Cake\Core\Configure::read('status_options');
                         <thead>
                         <tr>
                             <th><?= __('Sl. No.') ?></th>
+                            <th><?= __('Program Name')?></th>
+                            <th><?= __('Start Date')?></th>
+                            <th><?= __('End Date')?></th>
                             <th><?= __('Actions') ?></th>
                         </tr>
                         </thead>
@@ -37,6 +40,9 @@ $status = \Cake\Core\Configure::read('status_options');
                         <?php foreach ($offers as $key => $offer) { ?>
                             <tr>
                                 <td><?= $this->Number->format($key + 1) ?></td>
+                                <td><?= $offer->program_name?></td>
+                                <td><?= date('d-m-Y', $offer->program_period_start)?></td>
+                                <td><?= date('d-m-Y', $offer->program_period_end)?></td>
                                 <td class="actions">
                                     <?php
                                     echo $this->Html->link(__('View'), ['action' => 'view', $offer->id], ['class' => 'btn btn-sm btn-info']);

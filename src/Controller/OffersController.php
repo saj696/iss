@@ -29,15 +29,10 @@ class OffersController extends AppController
      */
     public function index()
     {
-        App::import('Helper', 'FunctionHelper');
-        $FunctionHelper = new FunctionHelper(new View());
-        $sales_quantity = $FunctionHelper->credit_closing_percentage('01-11-2016', '30-11-2016','01-11-2016', '30-11-2016', 4, 'Kushtia Territory');
-        //$age = $FunctionHelper->invoice_quantity(3, 2, 1);
 
-//        echo '<pre>';
-//        print_r($sales_quantity);
-//        echo '</pre>';
-//        exit;
+//        App::import('Helper', 'FunctionHelper');
+//        $FunctionHelper = new FunctionHelper(new View());
+//        $sales_quantity = $FunctionHelper->sales_quantity('01-11-2016', '30-11-2016', '["Krishan G (Hepta)--122- gm"]', 4, 'Kushtia Territory');;
 
         $offers = $this->Offers->find('all', [
             'conditions' => ['Offers.status !=' => 99]
@@ -75,11 +70,14 @@ class OffersController extends AppController
         $offer = $this->Offers->newEntity();
         if ($this->request->is('post')) {
 
-            $data = $this->request->data;
-            echo '<pre>';
-            print_r($data);
-            echo '</pre>';
-            exit;
+            $input = $this->request->data;
+            $data['program_name'] = $input['program_name'];
+            $data['offer_payment_mode'] = $input['offer_payment_mode'];
+            $data['invoicing'] = $input['invoicing'];
+            $data['program_period_start'] = strtotime($input['program_period_start']);
+            $data['program_period_end'] = strtotime($input['program_period_end']);
+            $data['general_conditions'] = json_encode($input['general_conditions']);
+            $data['specific_conditions'] = json_encode($input['specific']);
             $data['created_by'] = $user['id'];
             $data['created_date'] = $time;
             $offer = $this->Offers->patchEntity($offer, $data);
