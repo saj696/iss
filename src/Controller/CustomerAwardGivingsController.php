@@ -224,8 +224,8 @@ class CustomerAwardGivingsController extends AppController
             $data = $this->request->data;
             // echo "<pre>";print_r($data);die();
             $customer_awards = TableRegistry::get('customer_awards')->find('all',
-                [ 'contain' => [ 'Awards','CustomerOffers'],
-                    'conditions' => ['customer_id' => $data['customer_id'],'award_account_code'=>$data['award_account_code'],'action_status'=>Configure::read('customer_award_status.pending')]
+                ['contain' => ['Awards', 'CustomerOffers'],
+                    'conditions' => ['customer_id' => $data['customer_id'], 'award_account_code' => $data['award_account_code'], 'action_status !=' => Configure::read('customer_award_status.delivered')]
                 ])
                 ->hydrate(false)
                 ->toArray();
@@ -237,37 +237,38 @@ class CustomerAwardGivingsController extends AppController
         }
     }
 
-    public function deliverAward($id=null){
+    public function deliverAward($id = null)
+    {
         $user = $this->Auth->user();
-        $time= time();
+        $time = time();
 
         $customer_awards = TableRegistry::get('customer_awards');
 
         $query = $customer_awards->query();
-       $val= $query->update()
-            ->set(['action_status' => Configure::read('customer_award_status.delivered'),'updated_by'=>$user['id'],'updated_date'=>$time])
+        $val = $query->update()
+            ->set(['action_status' => Configure::read('customer_award_status.delivered'), 'remaining_amount' => 0, 'updated_by' => $user['id'], 'updated_date' => $time])
             ->where(['id' => $id])
             ->execute();
 
         if ($val) {
-            $customer_awards= $customer_awards->get($id);
+            $customer_awards = $customer_awards->get($id);
 
 
-            $customer_award_givings =  $this->CustomerAwardGivings->newEntity();
-            $data=[];
-            $data['customer_award_id']=$customer_awards->id;
-            $data['customer_id']=$customer_awards->customer_id;
-            $data['parent_global_id']=$customer_awards->parent_global_id;
-            $data['award_account_code']=$customer_awards->award_account_code;
-            $data['award_id']=$customer_awards->award_id;
-            $data['amount']=$customer_awards->amount;
-            $data['giving_mode']= Configure::read('customer_award_giving_status.delivered');
-            $data['award_giving_date']=$time;
-            $data['status']=1;
-            $data['created_by']=$user['id'];
-            $data['created_date']=$time;
+            $customer_award_givings = $this->CustomerAwardGivings->newEntity();
+            $data = [];
+            $data['customer_award_id'] = $customer_awards->id;
+            $data['customer_id'] = $customer_awards->customer_id;
+            $data['parent_global_id'] = $customer_awards->parent_global_id;
+            $data['award_account_code'] = $customer_awards->award_account_code;
+            $data['award_id'] = $customer_awards->award_id;
+            $data['amount'] = $customer_awards->amount;
+            $data['giving_mode'] = Configure::read('customer_award_giving_status.delivered');
+            $data['award_giving_date'] = $time;
+            $data['status'] = 1;
+            $data['created_by'] = $user['id'];
+            $data['created_date'] = $time;
             $customer_award_givings = $this->CustomerAwardGivings->patchEntity($customer_award_givings, $data);
-          //  echo "<pre>";print_r($customer_award_givings);die();
+            //  echo "<pre>";print_r($customer_award_givings);die();
             if ($this->CustomerAwardGivings->save($customer_award_givings)) {
                 $this->Flash->success('The customer award giving has been saved.');
                 return $this->redirect(['action' => 'index']);
@@ -281,5 +282,68 @@ class CustomerAwardGivingsController extends AppController
             $this->Flash->error('The customer award giving could not be deleted. Please, try again.');
         }
         return $this->redirect(['action' => 'index']);
+    }
+
+    public function adjustment()
+    {
+        if ($this->request->is(['patch', 'post', 'put'])) {
+            $data = $this->request->data;
+            //  echo "<pre>";print_r($data);die();
+            $user = $this->Auth->user();
+            $time = time();
+
+            $customer_awards = TableRegistry::get('customer_awards')->get($data['id']);
+//            pr($customer_awards);die();
+
+            if($data['amount'] > $customer_awards->remaining_amount){
+                $this->Flash->error('Given amount is large then remaining amount. Please, try again.');
+                return $this->redirect(['action' => 'index']);
+            }
+
+
+            $remaining_amount=$customer_awards->remaining_amount - $data['amount'];
+            if ($remaining_amount > 0) {
+                $status = Configure::read('customer_award_status.partially-adjusted');
+            } else {
+                $status = Configure::read('customer_award_status.fully_adjusted');
+            }
+
+
+            $query = TableRegistry::get('customer_awards')->query();
+            $err = $query->update()
+                ->set(['action_status' => $status, 'remaining_amount' =>$remaining_amount, 'updated_by' => $user['id'], 'updated_date' => $time])
+                ->where(['id' => $data['id']])
+                ->execute();
+
+            if ($err) {
+                $customer_award_givings = $this->CustomerAwardGivings->newEntity();
+                $val = [];
+                $val['customer_award_id'] = $customer_awards->id;
+                $val['customer_id'] = $customer_awards->customer_id;
+                $val['parent_global_id'] = $customer_awards->parent_global_id;
+                $val['award_account_code'] = $customer_awards->award_account_code;
+                $val['award_id'] = $customer_awards->award_id;
+                $val['amount'] = $data['amount'];
+                $val['giving_mode'] = Configure::read('customer_award_giving_status.adjustment');
+                $val['award_giving_date'] = $time;
+                $val['status'] = 1;
+                $val['created_by'] = $user['id'];
+                $val['created_date'] = $time;
+                $customer_award_givings = $this->CustomerAwardGivings->patchEntity($customer_award_givings, $val);
+                //  echo "<pre>";print_r($customer_award_givings);die();
+                if ($this->CustomerAwardGivings->save($customer_award_givings)) {
+                    $this->Flash->success('The customer award adjustment has been saved.');
+                    return $this->redirect(['action' => 'index']);
+                } else {
+                    $this->Flash->error('The customer award adjustment could not be saved. Please, try again.');
+                }
+
+//            echo "<pre>";print_r($customer_awards);die();
+//            $this->Flash->success('The customer award giving has been deleted.');
+            } else {
+                $this->Flash->error('The customer award adjustment could not be deleted. Please, try again.');
+            }
+            return $this->redirect(['action' => 'index']);
+        }
     }
 }
