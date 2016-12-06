@@ -92,6 +92,7 @@ class PaymentsController extends AppController
                         $invoiceData['customer_id'] = $data['customer_id'];
                         $invoiceData['parent_global_id'] = $data['parent_global_id'];
                         $invoiceData['invoice_id'] = $invoiceDataID;
+                        $invoiceData['payment_account'] = $data['payment_account'];
                         $invoiceData['invoice_date'] = $invoiceDataDetails['invoice_date'];
                         $invoicesUpdate = $this->Invoices->get($invoiceDataID);
                         $invoiceData['invoice_delivery_date'] = $invoicesUpdate['delivery_date'];
@@ -189,7 +190,15 @@ class PaymentsController extends AppController
         {
             $parantsLevels[$parentData['level_no']] = $parentData['level_name'];
         }
-        $this->set(compact('payment','parantsLevels'));
+//    Account Head table
+        $this->loadModel('AccountHeads');
+        $paymentAccounts = [];
+        $paymentDatas = $this->AccountHeads->find('all',['fields' =>['name','code'],'conditions' => ['account_selector' => 2] ])->hydrate(false)->toArray();
+        foreach($paymentDatas as $paymentData):
+            $paymentAccounts[$paymentData['code']] = $paymentData['name'];
+        endforeach;
+
+        $this->set(compact('payment','parantsLevels','paymentAccounts'));
         $this->set('_serialize', ['payment']);
 
     }
