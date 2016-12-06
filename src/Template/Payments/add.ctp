@@ -36,7 +36,7 @@ use Cake\Core\Configure;
                 <div class="row">
                     <div class="col-md-6 col-md-offset-3">
                         <?php
-                        echo $this->Form->input('parent_level',['options' => $parantsLevels, 'label'=>'Customers Parents Label','class'=> 'form-control level', 'empty'=>__('Select'), 'templates'=>['select' => '<div id="container_{{name}}" class="col-sm-9 levelContainer"><select name="{{name}}"{{attrs}} class="form-control">{{content}}</select></div>']]);
+                        echo $this->Form->input('parent_level',['options' => $parantsLevels, 'label'=>'Customers Parents Level','class'=> 'form-control level', 'empty'=>__('Select'), 'templates'=>['select' => '<div id="container_{{name}}" class="col-sm-9 levelContainer"><select name="{{name}}"{{attrs}} class="form-control">{{content}}</select></div>']]);
                         echo $this->Form->input('parent_unit', ['options' => [],'label'=>'Customer Parent Unit', 'empty' => __('Select'),'class'=> 'form-control unit','templates' => ['select' => '<div id="container_{{name}}" class="col-sm-9 unitContainer"><select name="{{name}}"{{attrs}} class="form-control">{{content}}</select></div>']]);
                         echo $this->Form->input('customer_id', ['options' => [],'label'=>'Customer', 'empty' => __('Select'),'class'=> 'form-control customer', 'templates' => ['select' => '<div id="container_{{name}}" class="col-sm-9 customerContainer"><select name="{{name}}"{{attrs}} class="form-control">{{content}}</select></div>']]);
                         echo $this->Form->input('due_invoice', ['options' => [],'label'=>'Due Invoice', 'empty' => __('Select'),'class'=> 'form-control dueInvoice', 'templates' => ['select' => '<div id="container_{{name}}" class="col-sm-9 dueInvoiceContainer"><select name="{{name}}"{{attrs}} class="form-control">{{content}}</select></div>']]);
@@ -66,17 +66,13 @@ use Cake\Core\Configure;
                 <div class="row">
                     <div class="col-md-6 col-md-offset-3">
                         <?php
-                        echo $this->Form->input('medium',['options' =>Configure::read('payment_mediums'), 'class' => 'form-control payment', 'empty' => __('Select')]);
+                        echo $this->Form->input('payment_account',['options' =>$paymentAccounts, 'label' =>'Payment Account','class' => 'form-control payment', 'empty' => __('Select')]);
                         ?>
-                        <div class="paymentsGroupOne ">
+                        <div class="paymentsGroups">
                             <?php
                             echo $this->Form->input('reference_number');
                             echo $this->Form->input('bank_branch');
                             echo $this->Form->input('description');
-                            ?>
-                        </div>
-                        <div class="paymentsGroupTwo ">
-                            <?php
                             echo $this->Form->input('collection_serial_no');
                             echo $this->Form->input('collection_date', ['type' => 'text' ,'class' => 'form-control datepicker','required'=>'required' ]);
                             echo $this->Form->input('amount',['type'=>'text','class'=>'form-control amount', 'required' => 'required'])
@@ -96,8 +92,7 @@ use Cake\Core\Configure;
     $(document).ready(function(){
 
         //default condition
-        $('.paymentsGroupOne').addClass('hidden');
-        $('.paymentsGroupTwo').addClass('hidden');
+        $('.paymentsGroups').addClass('hidden');
 
         // Parent Level Onchange function
         $(document).on('change', '.level', function () {
@@ -241,16 +236,10 @@ use Cake\Core\Configure;
             var obj = $(this);
             var payment = obj.val();
             if(payment == ''){
-                $('.paymentsGroupOne').addClass('hidden');
-                $('.paymentsGroupTwo').addClass('hidden');
-            }
-            else if(payment == 1 || payment == 2){
-                $('.paymentsGroupOne').addClass('hidden');
-                $('.paymentsGroupTwo').removeClass('hidden');
+                $('.paymentsGroups').addClass('hidden');
             }
             else{
-                $('.paymentsGroupOne').removeClass('hidden');
-                $('.paymentsGroupTwo').removeClass('hidden');
+                $('.paymentsGroups').removeClass('hidden');
             }
         });
 

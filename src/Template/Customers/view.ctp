@@ -33,110 +33,110 @@ $status = \Cake\Core\Configure::read('status_options');
             <div class="portlet-body">
                 <div class="table-scrollable">
                     <table class="table table-bordered table-hover">
-                                                                                                        <tr>
-                                    <th><?= __('Administrative Unit') ?></th>
-                                    <td><?= $customer->has('administrative_unit') ? $this->Html->link($customer->administrative_unit->unit_name, ['controller' => 'AdministrativeUnits', 'action' => 'view', $customer->administrative_unit->id]) : '' ?></td>
-                                </tr>
-                                                                                                        <tr>
-                                    <th><?= __('Code') ?></th>
-                                    <td><?= h($customer->code) ?></td>
-                                </tr>
-                                                                                                        <tr>
-                                    <th><?= __('Name') ?></th>
-                                    <td><?= h($customer->name) ?></td>
-                                </tr>
-                                                                                                        <tr>
-                                    <th><?= __('Proprietor') ?></th>
-                                    <td><?= h($customer->proprietor) ?></td>
-                                </tr>
-                                                                                                        <tr>
-                                    <th><?= __('Contact Person') ?></th>
-                                    <td><?= h($customer->contact_person) ?></td>
-                                </tr>
-                                                                                                        <tr>
-                                    <th><?= __('Mobile') ?></th>
-                                    <td><?= h($customer->mobile) ?></td>
-                                </tr>
-                                                                                                        <tr>
-                                    <th><?= __('Telephone') ?></th>
-                                    <td><?= h($customer->telephone) ?></td>
-                                </tr>
-                                                                                                        <tr>
-                                    <th><?= __('Email') ?></th>
-                                    <td><?= h($customer->email) ?></td>
-                                </tr>
-                                                                                                                                                                                                                
-                                                            <tr>
-                                    <th><?= __('Business Type') ?></th>
-                                    <td><?= $this->Number->format($customer->business_type) ?></td>
-                                </tr>
-                                                    
-                                                            <tr>
-                                    <th><?= __('Credit Limit') ?></th>
-                                    <td><?= $this->Number->format($customer->credit_limit) ?></td>
-                                </tr>
-                                                    
-                                                            <tr>
-                                    <th><?= __('Credit Invoice Days') ?></th>
-                                    <td><?= $this->Number->format($customer->credit_invoice_days) ?></td>
-                                </tr>
-                                                    
-                                                            <tr>
-                                    <th><?= __('Cash Invoice Days') ?></th>
-                                    <td><?= $this->Number->format($customer->cash_invoice_days) ?></td>
-                                </tr>
-                                                    
-                                                            <tr>
-                                    <th><?= __('Approved By') ?></th>
-                                    <td><?= $this->Number->format($customer->approved_by) ?></td>
-                                </tr>
-                                                    
-                                                            <tr>
-                                    <th><?= __('Approval Date') ?></th>
-                                    <td><?= $this->Number->format($customer->approval_date) ?></td>
-                                </tr>
-                                                    
-                                                            <tr>
-                                    <th><?= __('Is Mango') ?></th>
-                                    <td><?= $this->Number->format($customer->is_mango) ?></td>
-                                </tr>
-                                                    
-                                                            <tr>
-                                    <th><?= __('Is Potato') ?></th>
-                                    <td><?= $this->Number->format($customer->is_potato) ?></td>
-                                </tr>
-                                                    
-                                                            <tr>
-                                    <th><?= __('Customer Type') ?></th>
-                                    <td><?= $this->Number->format($customer->customer_type) ?></td>
-                                </tr>
-                                                    
-                            
-                                <tr>
-                                    <th><?= __('Status') ?></th>
-                                    <td><?= __($status[$customer->status]) ?></td>
-                                </tr>
-                                                            
-                                                            <tr>
-                                    <th><?= __('Created By') ?></th>
-                                    <td><?= $this->Number->format($customer->created_by) ?></td>
-                                </tr>
-                                                    
-                                                            <tr>
-                                    <th><?= __('Created Date') ?></th>
-                                    <td><?= $this->Number->format($customer->created_date) ?></td>
-                                </tr>
-                                                    
-                                                            <tr>
-                                    <th><?= __('Updated By') ?></th>
-                                    <td><?= $this->Number->format($customer->updated_by) ?></td>
-                                </tr>
-                                                    
-                                                            <tr>
-                                    <th><?= __('Updated Date') ?></th>
-                                    <td><?= $this->Number->format($customer->updated_date) ?></td>
-                                </tr>
-                                                                                                                    </table>
+                        <tr>
+                            <th><?= __('Administrative Unit') ?></th>
+                            <td><?= $customer->has('administrative_unit') ? $this->Html->link($customer->administrative_unit->unit_name, ['controller' => 'AdministrativeUnits', 'action' => 'view', $customer->administrative_unit->id]) : '' ?></td>
+                        </tr>
+                        <tr>
+                            <th><?= __('Code') ?></th>
+                            <td><?= h($customer->code) ?></td>
+                        </tr>
+                        <tr>
+                            <th><?= __('Name') ?></th>
+                            <td><?= h($customer->name) ?></td>
+                        </tr>
+                        <tr>
+                            <th><?= __('Proprietor') ?></th>
+                            <td><?= h($customer->proprietor) ?></td>
+                        </tr>
+                        <tr>
+                            <th><?= __('Contact Person') ?></th>
+                            <td><?= h($customer->contact_person) ?></td>
+                        </tr>
+                        <tr>
+                            <th><?= __('Mobile') ?></th>
+                            <td><?= h($customer->mobile) ?></td>
+                        </tr>
+                        <tr>
+                            <th><?= __('Telephone') ?></th>
+                            <td><?= h($customer->telephone) ?></td>
+                        </tr>
+                        <tr>
+                            <th><?= __('Email') ?></th>
+                            <td><?= h($customer->email) ?></td>
+                        </tr>
+
+                        <tr>
+                            <th><?= __('Business Type') ?></th>
+                            <td><?= $this->Number->format($customer->business_type) ?></td>
+                        </tr>
+
+                        <tr>
+                            <th><?= __('Credit Limit') ?></th>
+                            <td><?= $this->Number->format($customer->credit_limit) ?></td>
+                        </tr>
+
+                        <tr>
+                            <th><?= __('Credit Invoice Days') ?></th>
+                            <td><?= $this->Number->format($customer->credit_invoice_days) ?></td>
+                        </tr>
+
+                        <tr>
+                            <th><?= __('Cash Invoice Days') ?></th>
+                            <td><?= $this->Number->format($customer->cash_invoice_days) ?></td>
+                        </tr>
+
+                        <tr>
+                            <th><?= __('Approved By') ?></th>
+                            <td><?= $this->Number->format($customer->approved_by) ?></td>
+                        </tr>
+
+                        <tr>
+                            <th><?= __('Approval Date') ?></th>
+                            <td><?= $this->Number->format($customer->approval_date) ?></td>
+                        </tr>
+
+                        <tr>
+                            <th><?= __('Is Mango') ?></th>
+                            <td><?= $this->Number->format($customer->is_mango) ?></td>
+                        </tr>
+
+                        <tr>
+                            <th><?= __('Is Potato') ?></th>
+                            <td><?= $this->Number->format($customer->is_potato) ?></td>
+                        </tr>
+
+                        <tr>
+                            <th><?= __('Customer Type') ?></th>
+                            <td><?= $this->Number->format($customer->customer_type) ?></td>
+                        </tr>
+
+
+                        <tr>
+                            <th><?= __('Status') ?></th>
+                            <td><?= __($status[$customer->status]) ?></td>
+                        </tr>
+
+                        <tr>
+                            <th><?= __('Created By') ?></th>
+                            <td><?= $this->Number->format($customer->created_by) ?></td>
+                        </tr>
+
+                        <tr>
+                            <th><?= __('Created Date') ?></th>
+                            <td><?= $this->Number->format($customer->created_date) ?></td>
+                        </tr>
+
+                        <tr>
+                            <th><?= __('Updated By') ?></th>
+                            <td><?= $this->Number->format($customer->updated_by) ?></td>
+                        </tr>
+
+                        <tr>
+                            <th><?= __('Updated Date') ?></th>
+                            <td><?= $this->Number->format($customer->updated_date) ?></td>
+                        </tr>
+                    </table>
                 </div>
             </div>
         </div>

@@ -43,13 +43,9 @@ use Cake\Core\Configure;
                         echo $this->Form->input('address', ['rows'=>1]);
                         echo $this->Form->input('proprietor');
                         echo $this->Form->input('contact_person');
-//                        echo $this->Form->input('business_type');
                         echo $this->Form->input('mobile');
                         echo $this->Form->input('telephone');
                         echo $this->Form->input('email');
-//                        echo $this->Form->input('credit_limit');
-//                        echo $this->Form->input('credit_invoice_days');
-//                        echo $this->Form->input('cash_invoice_days');
                         echo $this->Form->input('is_mango', ['type'=>'checkbox', 'value'=>1]);
                         echo $this->Form->input('is_potato', ['type'=>'checkbox', 'value'=>1]);
                         echo $this->Form->input('customer_type', ['options'=>Configure::read('customer_types')]);
@@ -62,17 +58,7 @@ use Cake\Core\Configure;
                         echo $this->Form->input('picture_file', ['type'=>'file', 'label'=>'Photo']);
                         echo $this->Form->input('nid_file', ['type'=>'file', 'label'=>'NID']);
                         echo $this->Form->input('signature_file', ['type'=>'file', 'label'=>'Signature']);
-
-//                        echo $this->Form->input('distributor_paper_file', ['type'=>'file', 'label'=>'Distributor Paper']);
-//                        echo $this->Form->input('appointment_form_file', ['type'=>'file', 'label'=>'Appointment Form']);
-//                        echo $this->Form->input('appraisal_form_file', ['type'=>'file', 'label'=>'Appraisal Form']);
-
                         echo $this->Form->input('customer_status', ['options'=>Configure::read('customer_status')]);
-//                        echo $this->Form->input('check_and_other_documents', ['default'=>1, 'type'=>'radio', 'class'=>'radio-inline form-control', 'options' => [1=>'Yes', 2=>'No'], 'templates'=>['inputContainer' => '<div class="form-group input {{required}}">{{content}}</div>', 'label' =>'<label {{attrs}} class="col-sm-3 control-label text-right" >{{text}}</label>', 'input' => '<div class="col-sm-7 container_{{name}}"> <input {{attrs}} class="form-control" type="{{type}}" name="{{name}}"></div>']]);
-//                        echo $this->Form->input('cds',['type'=> 'text']);
-//                        echo $this->Form->input('dl_no',['type'=> 'text']);
-//                        echo $this->Form->input('file_code',['type'=> 'text']);
-//                        echo $this->Form->input('file_open', ['default'=>1, 'type'=>'radio', 'class'=>'radio-inline form-control', 'options' => [1=>'Yes', 2=>'No'], 'templates'=>['inputContainer' => '<div class="form-group input {{required}}">{{content}}</div>', 'label' =>'<label {{attrs}} class="col-sm-3 control-label text-right" >{{text}}</label>', 'input' => '<div class="col-sm-7 container_{{name}}"> <input {{attrs}} class="form-control" type="{{type}}" name="{{name}}"></div>']]);
                         ?>
                         <?= $this->Form->button(__('Submit'), ['class' => 'btn blue pull-right', 'style' => 'margin-top:20px']) ?>
                     </div>

@@ -85,11 +85,11 @@ class CustomersTable extends Table
         $validator
             ->requirePresence('contact_person','create')
             ->notEmpty('contact_person');
-            
+
 //        $validator
 //            ->add('business_type', 'valid', ['rule' => 'numeric'])
 //            ->allowEmpty('business_type');
-            
+
         $validator
             ->allowEmpty('mobile');
             
@@ -99,11 +99,11 @@ class CustomersTable extends Table
         $validator
             ->add('email', 'valid', ['rule' => 'email'])
             ->allowEmpty('email');
-            
+
 //        $validator
 //            ->add('credit_limit', 'valid', ['rule' => 'numeric'])
 //            ->allowEmpty('credit_limit');
-            
+
 //        $validator
 //            ->add('credit_invoice_days', 'valid', ['rule' => 'numeric'])
 //            ->allowEmpty('credit_invoice_days');
