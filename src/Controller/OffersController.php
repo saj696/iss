@@ -37,6 +37,27 @@ class OffersController extends AppController
         $offers = $this->Offers->find('all', [
             'conditions' => ['Offers.status !=' => 99]
         ]);
+
+        $general = json_decode($offers->toArray()[0]['general_conditions'], true).'||'.'abc(x)&&bbn(y)';
+
+        $arr = str_split($general);
+        $func = [];
+        $func_counter = 0;
+
+        foreach($arr as $a){
+            if(preg_match('/[a-z\s_(),]/i',$a)){
+                @$func[$func_counter] .= $a;
+                if($a==')'){
+                    $func_counter++;
+                }
+            }
+        }
+
+        echo '<pre>';
+        print_r($func);
+        echo '</pre>';
+        exit;
+
         $this->set('offers', $this->paginate($offers));
         $this->set('_serialize', ['offers']);
     }
@@ -93,7 +114,7 @@ class OffersController extends AppController
         $functions = $this->OfferFunctions->find('all', ['conditions'=>['status'=>1]]);
         $functionArray = [];
         foreach($functions as $function){
-            $functionArray[$function->id] = $function->function_name.' ('.$function->arguments.')';
+            $functionArray[$function->id] = $function->function_name.'('.$function->arguments.')';
         }
 
         $this->loadModel('Awards');

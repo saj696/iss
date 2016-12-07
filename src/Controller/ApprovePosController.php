@@ -85,6 +85,8 @@ class ApprovePosController extends AppController
         $this->loadModel('Invoices');
         $this->loadModel('InvoicedProducts');
         $this->loadModel('InvoiceCycleConfigurations');
+        $this->loadModel('Prices');
+        $this->loadModel('ItemUnits');
 
         $event = $this->PoEvents->get($id, [
             'contain' => ['Pos'=>['PoProducts', 'Customers']]
@@ -133,8 +135,9 @@ class ApprovePosController extends AppController
                     $invoice = $this->Invoices->patchEntity($invoice, $invoiceData);
                     $result = $this->Invoices->save($invoice);
                     // Invoiced Products table insert
-                    foreach($data['detail'] as $item_id=>$itemDetail):
+                    foreach($data['detail'] as $item_unit_id=>$itemDetail):
                         $invoicedProducts = $this->InvoicedProducts->newEntity();
+                        $itemUnitInfo = $this->ItemUnits->get($item_unit_id);
                         $invoicedProductsData['invoice_id'] = $result['id'];
                         $invoicedProductsData['customer_level_no'] = $data['customer_level_no'];
                         $invoicedProductsData['customer_unit_global_id'] = $customerUnitInfo['global_id'];
@@ -147,7 +150,9 @@ class ApprovePosController extends AppController
                         $invoicedProductsData['depot_unit_global_id'] = $invoiceData['depot_unit_global_id'];
                         $invoicedProductsData['depot_id'] = $user['depot_id'];
 
-                        $invoicedProductsData['product_id'] = $item_id;
+                        $invoicedProductsData['item_unit_id'] = $item_unit_id;
+                        $invoicedProductsData['item_id'] = $itemUnitInfo['item_id'];
+                        $invoicedProductsData['manufacture_unit_id'] = $itemUnitInfo['manufacture_unit_id'];
                         $invoicedProductsData['product_quantity'] = $itemDetail['item_quantity'];
                         $invoicedProductsData['bonus_quantity'] = $itemDetail['item_bonus'];
                         $invoicedProductsData['instant_discount'] = $itemDetail['item_cash_discount'];
@@ -172,7 +177,7 @@ class ApprovePosController extends AppController
                     if($invoiceCycleInfo['invoice_approved_at']==array_flip(Configure::read('invoice_approved_at'))['Not Needed']){
                         $poEvent = $this->PoEvents->newEntity();
                         $poEventData['reference_type'] = array_flip(Configure::read('po_event_reference_type'))['invoice'];
-                        $poEventData['reference_id'] = $data['po_id'];
+                        $poEventData['reference_id'] = $result['id'];
                         $poEventData['recipient_id'] = $user['id'];
                         $poEventData['event_type'] = array_flip(Configure::read('po_event_types'))['make_chalan'];
                         $poEventData['created_by'] = $user['id'];
@@ -250,18 +255,19 @@ class ApprovePosController extends AppController
         $customerAdministrativeUnitInfo = $this->AdministrativeUnits->find('all', ['conditions'=>['global_id'=>$event['po']['customer_unit_global_id']]])->first();
         $customerAdministrativeUnit = $customerAdministrativeUnitInfo['id'];
 
-        $items = $this->Items->find('all', ['conditions' => ['status' => 1]]);
-        $itemArray = [];
-        $itemUnitPriceArray = [];
-        foreach($items as $item) {
-            $itemArray[$item['id']] = $item['name'].' - '.$item['pack_size'].' '.Configure::read('pack_size_units')[$item['unit']].' ('.$item['code'].')';
+        App::import('Helper', 'SystemHelper');
+        $SystemHelper = new SystemHelper(new View());
+        $itemArray = $SystemHelper->get_item_unit_array();
 
+        foreach($itemArray as $item_unit_id=>$itemName){
+            $priceInfo = $this->Prices->find('all', ['conditions'=>['item_unit_id'=>$item_unit_id]])->first();
             if($event['po']['invoice_type']==1):
-                $itemUnitPriceArray[$item['id']] = $item['cash_sales_price'];
+                $itemUnitPriceArray[$item_unit_id] = $priceInfo['cash_sales_price'];
             elseif($event['po']['invoice_type']==2):
-                $itemUnitPriceArray[$item['id']] = $item['credit_sales_price'];
+                $itemUnitPriceArray[$item_unit_id] = $priceInfo['credit_sales_price'];
             endif;
         }
+
         $this->set(compact('itemUnitPriceArray', 'event', 'customers', 'administrativeLevels', 'itemArray', 'administrativeUnits', 'customerAdministrativeUnit'));
         $this->set('_serialize', ['event']);
     }
@@ -340,29 +346,30 @@ class ApprovePosController extends AppController
         return $this->response;
     }
 
-   public function loadItem()
-   {
-       $data = $this->request->data;
-       $item_id = $data['item_id'];
-       $invoice_type = $data['invoice_type'];
+    public function loadItem()
+    {
+        $data = $this->request->data;
+        $this->loadModel('ItemUnits');
+        $this->loadModel('Prices');
 
-       $this->loadModel('Items');
-       $item = $this->Items->find('all', ['conditions' => ['id'=>$item_id, 'status' => 1]])->first()->toArray();
+        $item_unit_id = $data['item_unit_id'];
+        $invoice_type = $data['invoice_type'];
+        $itemPrices = $this->Prices->find('all', ['conditions'=>['item_unit_id'=>$item_unit_id]])->first();
 
-       if($invoice_type==1) {
-           $unit_price = $item['cash_sales_price'];
-       } elseif($invoice_type==2) {
-           $unit_price = $item['credit_sales_price'];
-       } else {
-           $unit_price = 0;
-       }
+        if ($invoice_type == 1) {
+            $unit_price = $itemPrices['cash_sales_price'];
+        } elseif ($invoice_type == 2) {
+            $unit_price = $itemPrices['credit_sales_price'];
+        } else {
+            $unit_price = 0;
+        }
 
-//       App::import('Helper', 'SystemHelper');
-//       $SystemHelper = new SystemHelper(new View());
-//       $offers = $SystemHelper->item_offers($item_id);
+        App::import('Helper', 'SystemHelper');
+        $SystemHelper = new SystemHelper(new View());
+        $itemArray = $SystemHelper->get_item_unit_array();
 
-       $itemName = $item['name'].' - '.$item['pack_size'].' '.Configure::read('pack_size_units')[$item['unit']].' ('.$item['code'].')';
-       $this->viewBuilder()->layout('ajax');
-       $this->set(compact('itemName', 'item_id', 'unit_price'));
-   }
+        $itemName = $itemArray[$item_unit_id];
+        $this->viewBuilder()->layout('ajax');
+        $this->set(compact('itemName', 'item_unit_id', 'unit_price'));
+    }
 }

@@ -75,15 +75,15 @@ use Cake\Core\Configure;
                             $total_amount = 0;
                             if(sizeof($event['po']['po_products'])>0):
                                 foreach($event['po']['po_products'] as $item):
-                                    $total_amount+=$item['product_quantity']*$itemUnitPriceArray[$item['product_id']];
+                                    $total_amount+=$item['product_quantity']*$itemUnitPriceArray[$item['item_unit_id']];
                                     ?>
                                     <tr class="itemTr">
-                                        <td><?= $itemArray[$item['product_id']]?></td>
-                                        <td><input type="text" name="detail[<?= $item['product_id']?>][item_quantity]" class="form-control item_quantity" value="<?= $item['product_quantity']?>" /><input type="hidden" class="itemId" name="itemId[]" value="<?=$item['product_id']?>?>"></td>
-                                        <td><input type="text" name="detail[<?= $item['product_id']?>][unit_price]" class="form-control unit_price" readonly value="<?= $itemUnitPriceArray[$item['product_id']]?>" /></td>
-                                        <td><input type="text" name="detail[<?= $item['product_id']?>][item_bonus]" class="form-control item_bonus" readonly value="0" /></td>
-                                        <td><input type="text" name="detail[<?= $item['product_id']?>][item_cash_discount]" class="form-control item_cash_discount" readonly value="0" /></td>
-                                        <td><input type="text" name="detail[<?= $item['product_id']?>][item_net_total]" class="form-control item_net_total" readonly value="<?= $item['product_quantity']*$itemUnitPriceArray[$item['product_id']]?>" /></td>
+                                        <td><?= $itemArray[$item['item_unit_id']]?></td>
+                                        <td><input type="text" name="detail[<?= $item['item_unit_id']?>][item_quantity]" class="form-control item_quantity" value="<?= $item['product_quantity']?>" /><input type="hidden" class="itemId" name="itemId[]" value="<?=$item['item_unit_id']?>?>"></td>
+                                        <td><input type="text" name="detail[<?= $item['item_unit_id']?>][unit_price]" class="form-control unit_price" readonly value="<?= $itemUnitPriceArray[$item['item_unit_id']]?>" /></td>
+                                        <td><input type="text" name="detail[<?= $item['item_unit_id']?>][item_bonus]" class="form-control item_bonus" readonly value="0" /></td>
+                                        <td><input type="text" name="detail[<?= $item['item_unit_id']?>][item_cash_discount]" class="form-control item_cash_discount" readonly value="0" /></td>
+                                        <td><input type="text" name="detail[<?= $item['item_unit_id']?>][item_net_total]" class="form-control item_net_total" readonly value="<?= $item['product_quantity']*$itemUnitPriceArray[$item['item_unit_id']]?>" /></td>
                                     </tr>
                                 <?php
                                 endforeach;
@@ -191,7 +191,7 @@ use Cake\Core\Configure;
 
         $(document).on('change', '.item', function () {
             var obj = $(this);
-            var item_id = obj.val();
+            var item_unit_id = obj.val();
             var invoice_type = $('.invoice_type').val();
 
             var myArr = [];
@@ -200,23 +200,23 @@ use Cake\Core\Configure;
             });
 
             var uniqueArr = uniqueArray(myArr);
-            uniqueArr.push(item_id);
+            uniqueArr.push(item_unit_id);
             var uniqueArrAfterSelection = uniqueArray(uniqueArr);
 
             if(uniqueArr.length != uniqueArrAfterSelection.length){
-                alert('Duplicate Item Not Allowed!');
+                toastr.info('Duplicate Item Not Allowed!');
             }else{
-                if(item_id>0 && invoice_type>0){
+                if(item_unit_id>0 && invoice_type>0){
                     $.ajax({
                         type: 'POST',
                         url: '<?= $this->Url->build("/ApprovePos/loadItem")?>',
-                        data: {item_id: item_id, invoice_type:invoice_type},
+                        data: {item_unit_id: item_unit_id, invoice_type:invoice_type},
                         success: function (data, status) {
                             $('.appendTr').append(data);
                         }
                     });
                 } else {
-                    alert('Select Item & Invoice Type and try again!');
+                    toastr.info('Select Item & Invoice Type and try again!');
                 }
             }
         });
@@ -225,7 +225,7 @@ use Cake\Core\Configure;
             var invoice_type = $(this).val();
             var available_credit = parseInt($('.available_credit').val());
             if(available_credit==0 && invoice_type==2){
-                alert('Available credit is 0');
+                toastr.info('Available credit is 0');
                 $(this).val(1);
             }
         });

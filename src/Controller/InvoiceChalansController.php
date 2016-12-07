@@ -2,9 +2,12 @@
 namespace App\Controller;
 
 use App\Controller\AppController;
+use App\View\Helper\SystemHelper;
+use Cake\Core\App;
 use Cake\Core\Configure;
 use Cake\Datasource\ConnectionManager;
 use Cake\ORM\TableRegistry;
+use Cake\View\View;
 
 /**
  * InvoiceChalans Controller
@@ -71,6 +74,7 @@ class InvoiceChalansController extends AppController
         $this->loadModel('Stocks');
         $this->loadModel('PoEvents');
         $this->loadModel('Users');
+        $this->loadModel('ItemUnits');
 
         try {
             $saveStatus = 0;
@@ -93,10 +97,13 @@ class InvoiceChalansController extends AppController
                         $invoiceChalan = $this->InvoiceChalans->patchEntity($invoiceChalan, $invoiceChalanData);
                         $chalanResult = $this->InvoiceChalans->save($invoiceChalan);
                         // Chalan detail delivery
-                        foreach($detail as $item_id=>$quantity){
+                        foreach($detail as $item_unit_id=>$quantity){
                             $chalanDetail = $this->InvoiceChalanDetails->newEntity();
+                            $itemUnitInfo = $this->ItemUnits->get($item_unit_id);
                             $chalanDetailData['invoice_chalan_id'] = $chalanResult['id'];
-                            $chalanDetailData['product_id'] = $item_id;
+                            $chalanDetailData['item_unit_id'] = $item_unit_id;
+                            $chalanDetailData['item_id'] = $itemUnitInfo['item_id'];
+                            $chalanDetailData['manufacture_unit_id'] = $itemUnitInfo['manufacture_unit_id'];
                             $chalanDetailData['quantity'] = $quantity;
                             $chalanDetail = $this->InvoiceChalanDetails->patchEntity($chalanDetail, $chalanDetailData);
                             $this->InvoiceChalanDetails->save($chalanDetail);
@@ -111,8 +118,9 @@ class InvoiceChalansController extends AppController
                         $depotInfo = $this->Depots->get($user['depot_id']);
                         $warehouses = json_decode($depotInfo['warehouses'], true);
                         $warehouse_id = $warehouses[0]; // We are supporting single warehouse in a depot now.
-                        foreach($detail as $item_id=>$quantity) {
-                            $stockInfo = $this->Stocks->find('all', ['conditions'=>['status !='=>99, 'warehouse_id'=>$warehouse_id, 'item_id'=>$item_id]])->first();
+                        foreach($detail as $item_unit_id=>$quantity) {
+                            $itemUnitInfo = $this->ItemUnits->get($item_unit_id);
+                            $stockInfo = $this->Stocks->find('all', ['conditions'=>['status !='=>99, 'warehouse_id'=>$warehouse_id, 'item_id'=>$itemUnitInfo['item_id'], 'manufacture_unit_id'=>$itemUnitInfo['manufacture_unit_id']]])->first();
 
                             if($stockInfo && ($stockInfo->quantity > $quantity)) {
                                 $newStockQuantity = $stockInfo->quantity - $quantity;
@@ -135,10 +143,13 @@ class InvoiceChalansController extends AppController
                         $invoiceChalan = $this->InvoiceChalans->patchEntity($invoiceChalan, $invoiceChalanData);
                         $chalanResult = $this->InvoiceChalans->save($invoiceChalan);
                         // Chalan detail delivery
-                        foreach($detail as $item_id=>$quantity){
+                        foreach($detail as $item_unit_id=>$quantity){
                             $chalanDetail = $this->InvoiceChalanDetails->newEntity();
+                            $itemUnitInfo = $this->ItemUnits->get($item_unit_id);
                             $chalanDetailData['invoice_chalan_id'] = $chalanResult['id'];
-                            $chalanDetailData['product_id'] = $item_id;
+                            $chalanDetailData['item_unit_id'] = $item_unit_id;
+                            $chalanDetailData['item_id'] = $itemUnitInfo['item_id'];
+                            $chalanDetailData['manufacture_unit_id'] = $itemUnitInfo['manufacture_unit_id'];
                             $chalanDetailData['quantity'] = $quantity;
                             $chalanDetail = $this->InvoiceChalanDetails->patchEntity($chalanDetail, $chalanDetailData);
                             $this->InvoiceChalanDetails->save($chalanDetail);
@@ -260,12 +271,9 @@ class InvoiceChalansController extends AppController
                 $invoices[] = $this->Invoices->find('all', ['contain'=>['InvoicedProducts', 'Customers'], 'conditions'=>['Invoices.status !='=>99, 'Invoices.id'=>$id]])->first();
             endforeach;
 
-            $this->loadModel('Items');
-            $items = $this->Items->find('all', ['conditions' => ['status' => 1]]);
-            $itemArray = [];
-            foreach($items as $item) {
-                $itemArray[$item['id']] = $item['name'].' - '.$item['pack_size'].' '.Configure::read('pack_size_units')[$item['unit']].' ('.$item['code'].')';
-            }
+            App::import('Helper', 'SystemHelper');
+            $SystemHelper = new SystemHelper(new View());
+            $itemArray = $SystemHelper->get_item_unit_array();
 
             $this->set(compact('invoices', 'itemArray', 'invoiceIds', 'eventIds'));
             $this->set('_serialize', ['invoices']);
@@ -285,11 +293,9 @@ class InvoiceChalansController extends AppController
         $eventIds = $data['eventIds'];
 
         if(sizeof($invoiceIds)>0){
-            $items = $this->Items->find('all', ['conditions' => ['status' => 1]]);
-            $itemArray = [];
-            foreach($items as $item) {
-                $itemArray[$item['id']] = $item['name'].' - '.$item['pack_size'].' '.Configure::read('pack_size_units')[$item['unit']];
-            }
+            App::import('Helper', 'SystemHelper');
+            $SystemHelper = new SystemHelper(new View());
+            $itemArray = $SystemHelper->get_item_unit_array();
 
             $invoices = [];
             foreach($invoiceIds as $id):
@@ -300,7 +306,7 @@ class InvoiceChalansController extends AppController
             foreach($invoices as $invoice) {
                 foreach($invoice['invoiced_products'] as $itemDetail){
                     $arr = [];
-                    $arr['product_id'] = $itemDetail['product_id'];
+                    $arr['item_unit_id'] = $itemDetail['item_unit_id'];
                     $arr['product_quantity'] = $itemDetail['product_quantity'];
                     $info[] = $arr;
                 }
@@ -308,10 +314,10 @@ class InvoiceChalansController extends AppController
 
             $returnData = [];
             foreach ($info as $key=>$item) {
-                $key = $item['product_id'];
+                $key = $item['item_unit_id'];
                 if (!array_key_exists($key, $returnData)) {
                     $returnData[$key] = [
-                        'product_id' => $item['product_id'],
+                        'item_unit_id' => $item['item_unit_id'],
                         'product_quantity' => $item['product_quantity']
                     ];
                 } else {

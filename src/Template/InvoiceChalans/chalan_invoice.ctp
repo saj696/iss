@@ -54,7 +54,7 @@ $status = \Cake\Core\Configure::read('status_options');
                                     </tr>
                                     <?php foreach($invoice['invoiced_products'] as $detail):?>
                                         <tr>
-                                            <td><?= $itemArray[$detail['product_id']]?></td>
+                                            <td><?= $itemArray[$detail['item_unit_id']]?></td>
                                             <td class="text-center"><?= $detail['product_quantity']?></td>
                                             <td class="text-center"><?= $detail['net_total']?></td>
                                         </tr>
