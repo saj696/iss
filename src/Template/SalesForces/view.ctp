@@ -33,42 +33,42 @@ $status = \Cake\Core\Configure::read('status_options');
             <div class="portlet-body">
                 <div class="table-scrollable">
                     <table class="table table-bordered table-hover">
-                                                                                                        <tr>
-                                    <th><?= __('Name') ?></th>
-                                    <td><?= h($salesForce->name) ?></td>
-                                </tr>
-                                                                                                                                                                                                                
-                                                            <tr>
-                                    <th><?= __('Applicable Level') ?></th>
-                                    <td><?= $this->Number->format($salesForce->applicable_level) ?></td>
-                                </tr>
-                                                    
-                            
-                                <tr>
-                                    <th><?= __('Status') ?></th>
-                                    <td><?= __($status[$salesForce->status]) ?></td>
-                                </tr>
-                                                            
-                                                            <tr>
-                                    <th><?= __('Created By') ?></th>
-                                    <td><?= $this->Number->format($salesForce->created_by) ?></td>
-                                </tr>
-                                                    
-                                                            <tr>
-                                    <th><?= __('Created Date') ?></th>
-                                    <td><?= $this->Number->format($salesForce->created_date) ?></td>
-                                </tr>
-                                                    
-                                                            <tr>
-                                    <th><?= __('Updated By') ?></th>
-                                    <td><?= $this->Number->format($salesForce->updated_by) ?></td>
-                                </tr>
-                                                    
-                                                            <tr>
-                                    <th><?= __('Updated Date') ?></th>
-                                    <td><?= $this->Number->format($salesForce->updated_date) ?></td>
-                                </tr>
-                                                                                                                    </table>
+                        <tr>
+                            <th><?= __('Name') ?></th>
+                            <td><?= h($salesForce->name) ?></td>
+                        </tr>
+
+                        <tr>
+                            <th><?= __('Applicable Level') ?></th>
+                            <td><?= $this->Number->format($salesForce->applicable_level) ?></td>
+                        </tr>
+
+
+                        <tr>
+                            <th><?= __('Status') ?></th>
+                            <td><?= __($status[$salesForce->status]) ?></td>
+                        </tr>
+
+                        <tr>
+                            <th><?= __('Created By') ?></th>
+                            <td><?= $this->Number->format($salesForce->created_by) ?></td>
+                        </tr>
+
+                        <tr>
+                            <th><?= __('Created Date') ?></th>
+                            <td><?= $this->Number->format($salesForce->created_date) ?></td>
+                        </tr>
+
+                        <tr>
+                            <th><?= __('Updated By') ?></th>
+                            <td><?= $this->Number->format($salesForce->updated_by) ?></td>
+                        </tr>
+
+                        <tr>
+                            <th><?= __('Updated Date') ?></th>
+                            <td><?= $this->Number->format($salesForce->updated_date) ?></td>
+                        </tr>
+                    </table>
                 </div>
             </div>
         </div>

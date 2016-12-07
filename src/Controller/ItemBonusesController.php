@@ -72,18 +72,18 @@ class ItemBonusesController extends AppController
                 $conn->transactional(function () use ($user, $time, &$saveStatus) {
                     $data = $this->request->data;
                     $detailArray = $data['details'];
-
                     foreach ($detailArray as $detail) {
                         $itemBonus = $this->ItemBonuses->newEntity();
                         $data['item_id'] = $detail['item_id'];
                         $data['manufacture_unit_id'] = $detail['manufacture_unit_id'];
                         $data['invoice_type'] = $detail['invoice_type'];
-                        $data['order_quantity'] = $detail['order_quantity'];
+                        $data['order_quantity_from'] = $detail['order_quantity_from'];
+                        $data['order_quantity_to'] = $detail['order_quantity_to'];
                         $data['bonus_quantity'] = $detail['bonus_quantity'];
                         $data['created_by'] = $user['id'];
                         $data['created_date'] = $time;
                         $itemBonus = $this->ItemBonuses->patchEntity($itemBonus, $data);
-                        $this->ItemBonuses->save($itemBonus);
+                        $var = $this->ItemBonuses->save($itemBonus);
                     }
                 });
 
