@@ -4,17 +4,17 @@ namespace App\Controller;
 use App\Controller\AppController;
 
 /**
- * TaskForces Controller
+ * SalesForces Controller
  *
- * @property \App\Model\Table\TaskForcesTable $TaskForces
+ * @property \App\Model\Table\SalesForcesTable $SalesForces
  */
-class TaskForcesController extends AppController
+class SalesForcesController extends AppController
 {
 
     public $paginate = [
         'limit' => 15,
         'order' => [
-            'TaskForces.id' => 'desc'
+            'SalesForces.id' => 'desc'
         ]
     ];
 
@@ -25,8 +25,8 @@ class TaskForcesController extends AppController
      */
     public function index()
     {
-        $taskForces = $this->TaskForces->find('all', [
-            'conditions' => ['TaskForces.status !=' => 99]
+        $salesForces = $this->SalesForces->find('all', [
+            'conditions' => ['SalesForces.status !=' => 99]
         ]);
 
         $this->loadModel('AdministrativeLevels');
@@ -37,10 +37,10 @@ class TaskForcesController extends AppController
             $administrativeLevels[$administrativeLevelsDatum['level_no']] = $administrativeLevelsDatum['level_name'];
         }
 
-        $taskForces = $this->paginate($taskForces);
+        $salesForces = $this->paginate($salesForces);
 
-        $this->set(compact('taskForces', 'administrativeLevels'));
-        $this->set('_serialize', ['taskForces']);
+        $this->set(compact('salesForces', 'administrativeLevels'));
+        $this->set('_serialize', ['salesForces']);
     }
 
     /**
@@ -53,11 +53,11 @@ class TaskForcesController extends AppController
     public function view($id = null)
     {
         $user = $this->Auth->user();
-        $taskForce = $this->TaskForces->get($id, [
+        $salesForce = $this->SalesForces->get($id, [
             'contain' => []
         ]);
-        $this->set('taskForce', $taskForce);
-        $this->set('_serialize', ['taskForce']);
+        $this->set('salesForce', $salesForce);
+        $this->set('_serialize', ['salesForce']);
     }
 
     /**
@@ -69,14 +69,14 @@ class TaskForcesController extends AppController
     {
         $user = $this->Auth->user();
         $time = time();
-        $taskForce = $this->TaskForces->newEntity();
+        $salesForce = $this->SalesForces->newEntity();
         if ($this->request->is('post')) {
 
             $data = $this->request->data;
             $data['created_by'] = $user['id'];
             $data['created_date'] = $time;
-            $taskForce = $this->TaskForces->patchEntity($taskForce, $data);
-            if ($this->TaskForces->save($taskForce)) {
+            $salesForce = $this->SalesForces->patchEntity($salesForce, $data);
+            if ($this->SalesForces->save($salesForce)) {
                 $this->Flash->success('The task force has been saved.');
                 return $this->redirect(['action' => 'index']);
             } else {
@@ -92,8 +92,8 @@ class TaskForcesController extends AppController
             $administrativeLevels[$administrativeLevelsDatum['level_no']] = $administrativeLevelsDatum['level_name'];
         }
 
-        $this->set(compact('taskForce', 'administrativeLevels'));
-        $this->set('_serialize', ['taskForce']);
+        $this->set(compact('salesForce', 'administrativeLevels'));
+        $this->set('_serialize', ['salesForce']);
     }
 
     /**
@@ -107,15 +107,15 @@ class TaskForcesController extends AppController
     {
         $user = $this->Auth->user();
         $time = time();
-        $taskForce = $this->TaskForces->get($id, [
+        $salesForce = $this->SalesForces->get($id, [
             'contain' => []
         ]);
         if ($this->request->is(['patch', 'post', 'put'])) {
             $data = $this->request->data;
             $data['updated_by'] = $user['id'];
             $data['updated_date'] = $time;
-            $taskForce = $this->TaskForces->patchEntity($taskForce, $data);
-            if ($this->TaskForces->save($taskForce)) {
+            $salesForce = $this->SalesForces->patchEntity($salesForce, $data);
+            if ($this->SalesForces->save($salesForce)) {
                 $this->Flash->success('The task force has been saved.');
                 return $this->redirect(['action' => 'index']);
             } else {
@@ -131,8 +131,8 @@ class TaskForcesController extends AppController
             $administrativeLevels[$administrativeLevelsDatum['level_no']] = $administrativeLevelsDatum['level_name'];
         }
 
-        $this->set(compact('taskForce', 'administrativeLevels'));
-        $this->set('_serialize', ['taskForce']);
+        $this->set(compact('salesForce', 'administrativeLevels'));
+        $this->set('_serialize', ['salesForce']);
     }
 
     /**
@@ -145,15 +145,15 @@ class TaskForcesController extends AppController
     public function delete($id = null)
     {
 
-        $taskForce = $this->TaskForces->get($id);
+        $salesForce = $this->SalesForces->get($id);
 
         $user = $this->Auth->user();
         $data = $this->request->data;
         $data['updated_by'] = $user['id'];
         $data['updated_date'] = time();
         $data['status'] = 99;
-        $taskForce = $this->TaskForces->patchEntity($taskForce, $data);
-        if ($this->TaskForces->save($taskForce)) {
+        $salesForce = $this->SalesForces->patchEntity($salesForce, $data);
+        if ($this->SalesForces->save($salesForce)) {
             $this->Flash->success('The task force has been deleted.');
         } else {
             $this->Flash->error('The task force could not be deleted. Please, try again.');

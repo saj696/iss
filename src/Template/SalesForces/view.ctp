@@ -10,10 +10,10 @@ $status = \Cake\Core\Configure::read('status_options');
             <i class="fa fa-angle-right"></i>
         </li>
         <li>
-            <?= $this->Html->link(__('Task Forces'), ['action' => 'index']) ?>
+            <?= $this->Html->link(__('Sale Forces'), ['action' => 'index']) ?>
             <i class="fa fa-angle-right"></i>
         </li>
-        <li><?= __('View Task Force') ?></li>
+        <li><?= __('View Sale Force') ?></li>
     </ul>
 </div>
 
@@ -24,7 +24,7 @@ $status = \Cake\Core\Configure::read('status_options');
         <div class="portlet box blue-hoki">
             <div class="portlet-title">
                 <div class="caption">
-                    <i class="fa fa-picture-o fa-lg"></i><?= __('Task Force Details') ?>
+                    <i class="fa fa-picture-o fa-lg"></i><?= __('Sale Force Details') ?>
                 </div>
                 <div class="tools">
                     <?= $this->Html->link(__('Back'), ['action' => 'index'],['class'=>'btn btn-sm btn-success']); ?>
@@ -35,38 +35,38 @@ $status = \Cake\Core\Configure::read('status_options');
                     <table class="table table-bordered table-hover">
                                                                                                         <tr>
                                     <th><?= __('Name') ?></th>
-                                    <td><?= h($taskForce->name) ?></td>
+                                    <td><?= h($salesForce->name) ?></td>
                                 </tr>
                                                                                                                                                                                                                 
                                                             <tr>
                                     <th><?= __('Applicable Level') ?></th>
-                                    <td><?= $this->Number->format($taskForce->applicable_level) ?></td>
+                                    <td><?= $this->Number->format($salesForce->applicable_level) ?></td>
                                 </tr>
                                                     
                             
                                 <tr>
                                     <th><?= __('Status') ?></th>
-                                    <td><?= __($status[$taskForce->status]) ?></td>
+                                    <td><?= __($status[$salesForce->status]) ?></td>
                                 </tr>
                                                             
                                                             <tr>
                                     <th><?= __('Created By') ?></th>
-                                    <td><?= $this->Number->format($taskForce->created_by) ?></td>
+                                    <td><?= $this->Number->format($salesForce->created_by) ?></td>
                                 </tr>
                                                     
                                                             <tr>
                                     <th><?= __('Created Date') ?></th>
-                                    <td><?= $this->Number->format($taskForce->created_date) ?></td>
+                                    <td><?= $this->Number->format($salesForce->created_date) ?></td>
                                 </tr>
                                                     
                                                             <tr>
                                     <th><?= __('Updated By') ?></th>
-                                    <td><?= $this->Number->format($taskForce->updated_by) ?></td>
+                                    <td><?= $this->Number->format($salesForce->updated_by) ?></td>
                                 </tr>
                                                     
                                                             <tr>
                                     <th><?= __('Updated Date') ?></th>
-                                    <td><?= $this->Number->format($taskForce->updated_date) ?></td>
+                                    <td><?= $this->Number->format($salesForce->updated_date) ?></td>
                                 </tr>
                                                                                                                     </table>
                 </div>

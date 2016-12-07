@@ -1,7 +1,7 @@
 <?php
 namespace App\Model\Table;
 
-use App\Model\Entity\TaskForce;
+use App\Model\Entity\SalesForce;
 use Cake\ORM\Query;
 use Cake\ORM\RulesChecker;
 use Cake\ORM\Table;
@@ -10,7 +10,7 @@ use Cake\Validation\Validator;
 /**
  * TaskForces Model
  */
-class TaskForcesTable extends Table
+class SalesForcesTable extends Table
 {
 
     /**
@@ -21,7 +21,7 @@ class TaskForcesTable extends Table
      */
     public function initialize(array $config)
     {
-        $this->table('task_forces');
+        $this->table('sales_forces');
         $this->displayField('name');
         $this->primaryKey('id');
     }

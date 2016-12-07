@@ -4,7 +4,7 @@ namespace App\Model\Entity;
 use Cake\ORM\Entity;
 
 /**
- * TaskForce Entity.
+ * SalesForce Entity.
  *
  * @property int $id
  * @property string $name
@@ -15,7 +15,7 @@ use Cake\ORM\Entity;
  * @property int $updated_by
  * @property int $updated_date
  */
-class TaskForce extends Entity
+class SalesForce extends Entity
 {
 
     /**
