@@ -2,8 +2,10 @@
 namespace App\Controller;
 
 use App\Controller\AppController;
+use App\View\Helper\SystemHelper;
 use Cake\Core\Configure;
 use Cake\Datasource\ConnectionManager;
+
 
 /**
  * ItemBonuses Controller
@@ -29,7 +31,7 @@ class ItemBonusesController extends AppController
     {
         $itemBonuses = $this->ItemBonuses->find('all', [
             'conditions' => ['ItemBonuses.status !=' => 99],
-            'contain' => ['Items']
+            'contain' => ['Items','Units']
         ]);
         $this->set('itemBonuses', $this->paginate($itemBonuses));
         $this->set('_serialize', ['itemBonuses']);
@@ -67,14 +69,15 @@ class ItemBonusesController extends AppController
             try {
                 $saveStatus = 0;
                 $conn = ConnectionManager::get('default');
-                $conn->transactional(function () use ($user, $time, &$saveStatus)
-                {
+                $conn->transactional(function () use ($user, $time, &$saveStatus) {
                     $data = $this->request->data;
                     $detailArray = $data['details'];
 
-                    foreach($detailArray as $detail) {
+                    foreach ($detailArray as $detail) {
                         $itemBonus = $this->ItemBonuses->newEntity();
                         $data['item_id'] = $detail['item_id'];
+                        $data['manufacture_unit_id'] = $detail['manufacture_unit_id'];
+                        $data['invoice_type'] = $detail['invoice_type'];
                         $data['order_quantity'] = $detail['order_quantity'];
                         $data['bonus_quantity'] = $detail['bonus_quantity'];
                         $data['created_by'] = $user['id'];
@@ -96,13 +99,13 @@ class ItemBonusesController extends AppController
             }
         }
 
-        $items = $this->ItemBonuses->Items->find('all', ['conditions' => ['status' => 1]]);
-        $dropArray = [];
-        foreach($items as $item) {
-            $dropArray[$item['id']] = $item['name'].' - '.$item['pack_size'].' '.Configure::read('pack_size_units')[$item['unit']];
-        }
+        $items = $this->ItemBonuses->Items->find('list', ['conditions' => ['status' => 1]]);
+        $units = $this->ItemBonuses->Units->find('list', [
+            'keyField' => 'id',
+            'valueField' => 'unit_display_name',
+            'conditions' => ['status' => 1]]);
 
-        $this->set(compact('itemBonus', 'items', 'dropArray'));
+        $this->set(compact('itemBonus', 'items', 'units'));
         $this->set('_serialize', ['itemBonus']);
     }
 
@@ -135,13 +138,12 @@ class ItemBonusesController extends AppController
             }
         }
 
-        $items = $this->ItemBonuses->Items->find('all', ['conditions' => ['status' => 1]]);
-        $dropArray = [];
-        foreach($items as $item) {
-            $dropArray[$item['id']] = $item['name'].' - '.$item['pack_size'].' '.Configure::read('pack_size_units')[$item['unit']];
-        }
-
-        $this->set(compact('itemBonus', 'items', 'dropArray'));
+        $items = $this->ItemBonuses->Items->find('list', ['conditions' => ['status' => 1]]);
+        $units = $this->ItemBonuses->Units->find('list', [
+            'keyField' => 'id',
+            'valueField' => 'unit_display_name',
+            'conditions' => ['status' => 1]]);
+        $this->set(compact('itemBonus', 'items','units'));
         $this->set('_serialize', ['itemBonus']);
     }
 

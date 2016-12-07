@@ -1,5 +1,6 @@
 <?php
 $status = \Cake\Core\Configure::read('status_options');
+$invoice_type = \Cake\Core\Configure::read('invoice_type');
 ?>
 
 <div class="page-bar">
@@ -31,8 +32,10 @@ $status = \Cake\Core\Configure::read('status_options');
                         <tr>
                             <th><?= __('Sl. No.') ?></th>
                             <th><?= __('Item') ?></th>
+                            <th><?= __('Unit') ?></th>
                             <th><?= __('Order Quantity') ?></th>
                             <th><?= __('Bonus Quantity') ?></th>
+                            <th><?= __('Invoice Type') ?></th>
                             <th><?= __('Status') ?></th>
                             <th><?= __('Actions') ?></th>
                         </tr>
@@ -41,9 +44,18 @@ $status = \Cake\Core\Configure::read('status_options');
                         <?php foreach ($itemBonuses as $key => $itemBonus) { ?>
                             <tr>
                                 <td><?= $this->Number->format($key + 1) ?></td>
-                                <td><?= $itemBonus->item->name.' - '.$itemBonus->item->pack_size.' '.\Cake\Core\Configure::read('pack_size_units')[$itemBonus->item->unit] ?></td>
+                                <td><?= $itemBonus->has('item') ?
+                                        $this->Html->link($itemBonus->item
+                                            ->name, ['controller' => 'Items',
+                                            'action' => 'view', $itemBonus->item
+                                                ->id]) : '' ?></td>
+                                <td><?=
+                                    $itemBonus->has('unit') ? $this->Html->link(__($itemBonus->unit->unit_display_name)
+                                        , ['controller' => 'Units', 'action' => 'view', $itemBonus->unit->id])
+                                        : '' ?></td>
                                 <td><?= $this->Number->format($itemBonus->order_quantity) ?></td>
                                 <td><?= $this->Number->format($itemBonus->bonus_quantity) ?></td>
+                                <td><?= __($invoice_type[$itemBonus->invoice_type]) ?></td>
                                 <td><?= __($status[$itemBonus->status]) ?></td>
                                 <td class="actions">
                                     <?php
@@ -53,7 +65,7 @@ $status = \Cake\Core\Configure::read('status_options');
                                     ?>
                                 </td>
                             </tr>
-                        <?php
+                            <?php
                         }
                         ?>
                         </tbody>
