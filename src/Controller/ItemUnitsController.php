@@ -3,7 +3,11 @@ namespace App\Controller;
 
 use App\Controller\AppController;
 use Cake\Core\Configure;
+use Cake\Core\App;
+use Cake\Datasource\ConnectionManager;
 use Cake\ORM\TableRegistry;
+use App\View\Helper\SystemHelper;
+use Cake\View\View;
 
 
 /**
@@ -21,7 +25,6 @@ class ItemUnitsController extends AppController
         ]
     ];
 
-
     /**
      * Index method
      *
@@ -30,7 +33,8 @@ class ItemUnitsController extends AppController
     public function index()
     {
         $itemUnits = $this->ItemUnits->find('all', [
-            'conditions' => ['ItemUnits.status !=' => 99]
+            'conditions' => ['ItemUnits.status !=' => 99],
+            'contain' => ['Units', 'Items']
         ]);
         $this->set('itemUnits', $this->paginate($itemUnits));
         $this->set('_serialize', ['itemUnits']);
@@ -47,7 +51,7 @@ class ItemUnitsController extends AppController
     {
         $user = $this->Auth->user();
         $itemUnit = $this->ItemUnits->get($id, [
-            'contain' => []
+            'contain' => ['Items', 'Units']
         ]);
         $this->set('itemUnit', $itemUnit);
         $this->set('_serialize', ['itemUnit']);
@@ -60,41 +64,61 @@ class ItemUnitsController extends AppController
      */
     public function add()
     {
+
         $user = $this->Auth->user();
         $time = time();
         $itemUnit = $this->ItemUnits->newEntity();
+
+        //$conn = ConnectionManager::get('default');
         if ($this->request->is('post')) {
+
             $data = $this->request->data;
-            $data['created_by'] = $user['id'];
-            $data['created_date'] = $time;
-            $data['status'] = 1;
-            $itemUnit = $this->ItemUnits->patchEntity($itemUnit, $data);
-            if ($this->ItemUnits->save($itemUnit)) {
-                $this->Flash->success('The item unit has been saved.');
-                return $this->redirect(['action' => 'index']);
-            } else {
-                $this->Flash->error('The item unit could not be saved. Please, try again.');
-            }
+            foreach ($data['ItemUnits'] as $items):
+                $itemUnit = $this->ItemUnits->newEntity();
+                $item_unit_data['item_id'] = $items['item_id'];
+
+                $get_item_name =
+                    $this->ItemUnits->Items->find('all', ['conditions' => ['id' =>
+                        $item_unit_data['item_id']]])->hydrate(false)->select('name')->first();
+
+                $item_unit_data['item_name'] = $get_item_name['name'];
+                $item_unit_data['manufacture_unit_id'] = $items['manufacture_unit_id'];
+                $get_unit_info =
+                    $this->ItemUnits->Units->find('all', ['conditions' => ['id' =>
+                        $item_unit_data['manufacture_unit_id']]])->first();
+
+                $item_unit_data['unit_name'] = $get_unit_info['unit_name'];
+                $item_unit_data['unit_size'] = $get_unit_info['unit_size'];
+                $item_unit_data['unit_display_name'] = $get_unit_info['unit_display_name'];
+                $item_unit_data['converted_quantity'] = $get_unit_info['converted_quantity'];
+                $item_unit_data['code'] = $this->generateCode($items['item_id'], $items['manufacture_unit_id']);
+                $item_unit_data['created_by'] = $user['id'];
+                $item_unit_data['created_date'] = $time;
+                $itemUnit = $this->ItemUnits->patchEntity($itemUnit, $item_unit_data);
+                if ($this->ItemUnits->save($itemUnit)) {
+                    $this->Flash->success('Item and Unit mapping has been saved.');
+                } else {
+                    $errors = $itemUnit->errors();
+                    foreach ($errors as $error):
+                        foreach ($error as $er):
+                            $this->Flash->error($er);
+                        endforeach;
+                    endforeach;
+
+                }
+            endforeach;
+
+            return $this->redirect(['action' => 'index']);
+
         }
 
-        $this->set(compact('itemUnit', 'constituentLevel'));
+        $units = $this->ItemUnits->Units->find('list', [
+            'keyField' => 'id',
+            'valueField' => 'unit_display_name',
+            'conditions' => ['status' => 1]]);
+        $items = $this->ItemUnits->Items->find('list', ['conditions' => ['status' => 1]]);
+        $this->set(compact('itemUnit', 'items', 'units'));
         $this->set('_serialize', ['itemUnit']);
-    }
-
-
-    public function ajax()
-    {
-        $data = $this->request->data;
-        $unit_level = $data['level'];
-
-        $constituent_unit = TableRegistry::get('item_units')->find('all', ['conditions' => ['unit_level' => $unit_level - 1], 'fields' => ['id', 'unit_name', 'unit_level', 'unit_size']])->hydrate(false)->toArray();
-        $unit_level = Configure::read("unit_levels");
-        $dropArray = [];
-        foreach ($constituent_unit as $unit):
-            $dropArray[$unit['id']] = __($unit_level[$unit['unit_level']]) . '__' . $unit['unit_name'] . '__' . $unit['unit_size'];
-        endforeach;
-        $this->viewBuilder()->layout('ajax');
-        $this->set(compact('dropArray'));
     }
 
     /**
@@ -113,8 +137,22 @@ class ItemUnitsController extends AppController
         ]);
         if ($this->request->is(['patch', 'post', 'put'])) {
             $data = $this->request->data;
-            $data['updated_by'] = $user['id'];
-            $data['updated_date'] = $time;
+            $data['update_by'] = $user['id'];
+            $data['update_date'] = $time;
+            $get_item_name =
+                $this->ItemUnits->Items->find('all', ['conditions' => ['id' =>
+                    $data['item_id']]])->hydrate(false)->select('name')->first();
+
+            $data['item_name'] = $get_item_name['name'];
+            $get_unit_info =
+                $this->ItemUnits->Units->find('all', ['conditions' => ['id' =>
+                    $data['manufacture_unit_id']]])->first();
+            $data['code'] = $this->generateCode($data['item_id'], $data['manufacture_unit_id']);
+            $data['unit_name'] = $get_unit_info['unit_name'];
+            $data['unit_size'] = $get_unit_info['unit_size'];
+            $data['unit_display_name'] = $get_unit_info['unit_display_name'];
+            $data['converted_quantity'] = $get_unit_info['converted_quantity'];
+
             $itemUnit = $this->ItemUnits->patchEntity($itemUnit, $data);
             if ($this->ItemUnits->save($itemUnit)) {
                 $this->Flash->success('The item unit has been saved.');
@@ -123,7 +161,13 @@ class ItemUnitsController extends AppController
                 $this->Flash->error('The item unit could not be saved. Please, try again.');
             }
         }
-        $this->set(compact('itemUnit', 'constituentLevel'));
+        $item_unit_level = Configure::read('unit_levels');
+        $units = $this->ItemUnits->Units->find('list', [
+            'keyField' => 'id',
+            'valueField' => 'unit_display_name',
+            'conditions' => ['status' => 1]]);
+        $items = $this->ItemUnits->Items->find('list', ['conditions' => ['status' => 1]]);
+        $this->set(compact('itemUnit', 'items', 'units'));
         $this->set('_serialize', ['itemUnit']);
     }
 
@@ -152,4 +196,17 @@ class ItemUnitsController extends AppController
         }
         return $this->redirect(['action' => 'index']);
     }
+
+    public function generateCode($item_id, $manufacture_unit_id)
+    {
+        $this->autoRender = false;
+        $itemPadding = Configure::read('item_generation_padding');
+        $category = $this->ItemUnits->Items->find('all', ['conditions' => ['id' => $item_id]])->first();
+        $itemPrefix = TableRegistry::get('categories')->find('all', ['conditions' => ['id' => $category['category_id']], 'fields' => ['prefix']])->first()->toArray();
+        App::import('Helper', 'SystemHelper');
+        $SystemHelper = new SystemHelper(new View());
+        $itemCode = $SystemHelper->generate_code($itemPrefix['prefix'], 'item', $itemPadding, $item_id, $manufacture_unit_id);
+        return $itemCode;
+    }
+
 }

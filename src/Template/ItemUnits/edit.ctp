@@ -37,14 +37,16 @@ use Cake\Core\Configure;
                 <div class="row">
                     <div class="col-md-6 col-md-offset-3">
                         <?php
-                        echo $this->Form->input('unit_level', ['options' => Configure::read('unit_levels')]);
-                        echo $this->Form->input('constituent_unit_id');
-                        echo $this->Form->input('unit_name');
-                        echo $this->Form->input('unit_size');
-                        echo $this->Form->input('unit_type', ['options' => Configure::read('pack_size_units')]);
+                        echo $this->Form->input('item_id', ['options' => $items, 'class' => 'form-control items', 'empty' => __('Select')]);
+                        echo $this->Form->input('manufacture_unit_id', ['label' => 'Unit','class'=>'form-control units', 'options' => $units, 'empty' => __('Select')]);
+                        echo $this->Form->input('code', ['label' => 'Code', 'class' => 'form-control codeItem', 'readonly' => true]);
+                        echo $this->Form->input('unit_name', ['label' => 'Unit Name', 'disabled' => true]);
+                        echo $this->Form->input('unit_size', ['label' => 'Unit Size', 'disabled' => true]);
+                        echo $this->Form->input('unit_display_name', ['label' => 'Unit Display Name', 'disabled' => true]);
+                        echo $this->Form->input('converted_quantity', ['label' => 'Converted Quantity', 'disabled' => true]);
                         echo $this->Form->input('status', ['options' => Configure::read('status_options')]);
                         ?>
-                        <?= $this->Form->button(__('Submit'), ['class' => 'btn blue center-block', 'style' => 'margin-top:20px']) ?>
+                        <?= $this->Form->button(__('Submit'), ['class' => 'btn blue pull-right', 'style' => 'margin-top:20px']) ?>
                     </div>
                 </div>
                 <?= $this->Form->end() ?>
@@ -56,33 +58,8 @@ use Cake\Core\Configure;
 
 <script>
     $(document).ready(function () {
-
-        $("#constituent-unit-id").hide();
-        $('label[for=constituent-unit-id], input#constituent-unit-id').hide();
-
-        $(document).on("change", "#unit-level", function () {
-            var obj = $(this);
-            var level = parseInt(obj.val());
-            $("#constituent-unit-id").show();
-            $('label[for=constituent-unit-id], input#constituent-unit-id').show();
-            $.ajax({
-                type: 'POST',
-                url: '<?= $this->Url->build("/ItemUnits/ajax")?>',
-                data: {level: level},
-                success: function (data, status) {
-                    if (level == 1) {
-                        obj.closest('.input').next().find('#constituent-unit-id').html('');
-                        obj.closest('.input').next().find('#constituent-unit-id').html('<option value="">Select</option>');
-                        obj.closest('.input').next().find('#constituent-unit-id').removeAttr('required');
-                    }
-                    else {
-                        obj.closest('.input').next().find('.col-sm-9').html('');
-                        obj.closest('.input').next().find('.col-sm-9').html(data);
-                    }
-                }
-            });
-
-
+        $(document).on("keyup", ".numbersOnly", function (event) {
+            this.value = this.value.replace(/[^0-9\.]/g, '');
         });
     });
 </script>

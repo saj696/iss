@@ -1,8 +1,6 @@
 <?php
 $status = \Cake\Core\Configure::read('status_options');
-$unit_type = \Cake\Core\Configure::read('pack_size_units');
-$unit_levels = \Cake\Core\Configure::read('unit_levels');
-
+$unit_level = \Cake\Core\Configure::read('unit_levels');
 ?>
 
 <div class="page-bar">
@@ -34,12 +32,14 @@ $unit_levels = \Cake\Core\Configure::read('unit_levels');
                         <thead>
                         <tr>
                             <th><?= __('Sl. No.') ?></th>
-                            <th><?= __('Unit Level') ?></th>
-
+                            <th><?= __('Item') ?></th>
+                            <th><?= __('Code') ?></th>
+<!--                            <th>--><?//= __('Unit') ?><!--</th>-->
                             <th><?= __('Unit Name') ?></th>
                             <th><?= __('Unit Size') ?></th>
-                            <th><?= __('Unit Type') ?></th>
+                            <th><?= __('Unit Display Name') ?></th>
                             <th><?= __('Converted Quantity') ?></th>
+                            <th><?= __('Status') ?></th>
                             <th><?= __('Actions') ?></th>
                         </tr>
                         </thead>
@@ -47,11 +47,18 @@ $unit_levels = \Cake\Core\Configure::read('unit_levels');
                         <?php foreach ($itemUnits as $key => $itemUnit) { ?>
                             <tr>
                                 <td><?= $this->Number->format($key + 1) ?></td>
-                                <td><?= __($unit_levels[$itemUnit->unit_level])?></td>
+                                <td><?= $itemUnit->has('item') ?
+                                        $this->Html->link($itemUnit->item
+                                            ->name, ['controller' => 'Items',
+                                            'action' => 'view', $itemUnit->item
+                                                ->id]) : '' ?></td>
+                                <td><?= $itemUnit->code?></td>
+
                                 <td><?= h($itemUnit->unit_name) ?></td>
-                                <td><?= $this->Number->format($itemUnit->unit_size) ?></td>
-                                <td><?= __($unit_type[$itemUnit->unit_type])?></td>
-                                <td><?= $this->Number->format($itemUnit->converted_quantity) ?></td>
+                                <td><?= $this->Number->format($itemUnit->unit->unit_size)?></td>
+                                <td><?= h($itemUnit->unit_display_name) ?></td>
+                                <td><?= h($itemUnit->converted_quantity) ?></td>
+                                <td><?= __($status[$itemUnit->status]) ?></td>
                                 <td class="actions">
                                     <?php
                                     echo $this->Html->link(__('View'), ['action' => 'view', $itemUnit->id], ['class' => 'btn btn-sm btn-info']);
@@ -82,3 +89,9 @@ $unit_levels = \Cake\Core\Configure::read('unit_levels');
     </div>
 </div>
 
+<!--                                <td>--><?php
+//                                    $itemUnit->has('unit') ? $this->Html->link(__($unit_level[$itemUnit->unit->unit_level])
+//                                        . '__' . $itemUnit->unit->unit_name
+//                                        . '__' . $itemUnit->unit->unit_size, ['controller' => 'Units', 'action' => 'view', $itemUnit->unit->id])
+//                                        : '' ?>
+<!--</td>-->
