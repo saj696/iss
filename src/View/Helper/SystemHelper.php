@@ -3,6 +3,7 @@ namespace App\View\Helper;
 
 use App\Model\Table\AdministrativeUnitsTable;
 use App\Model\Table\ItemUnitsTable;
+use Cake\Database\Schema\Table;
 use Cake\View\Helper;
 use Cake\View\View;
 use Cake\Core\Configure;
@@ -21,6 +22,7 @@ class SystemHelper extends Helper
      * @var array
      */
     protected $_defaultConfig = [];
+
 
     public function display_date($date)
     {
@@ -127,22 +129,56 @@ class SystemHelper extends Helper
         endif;
     }
 
-    public function get_item_unit_array()
+    public function getItemAlias($item_id)
     {
+        $user = $this->Auth->user();
         $item_unit_table = TableRegistry::get('item_units');
-        $result = $item_unit_table->find('all')->contain(['Items', 'Units'])->where([
-            'Items.status' => 1,
-            'Units.status' => 1,
-            'item_units.status' => 1])->hydrate(false);
-
-        $dropArray = [];
-        foreach ($result as $key => $value):
-            $dropArray[$value['id']] = $value['item']['name'].'--'.$value['unit']['unit_display_name'];
-
-        endforeach;
-        return $dropArray;
+        $item_name_for_warehouse = "";
+        if (!empty($user['warehouse_id'])) {
+            $warehouse_items = TableRegistry::get('WarehouseItems')
+                ->find('all')
+                ->contain(['Items', 'Warehouses'])
+                ->where(['Warehouses.id' => $user['warehouse_id'], 'Items.id' => $item_id, 'Items.status' => 1, 'WarehouseItems.status' => 1])
+                ->hydrate(false)
+                ->first();
+            if ($warehouse_items['use_alias'] == 1) {
+                $item_name_for_warehouse = $warehouse_items['item']['alias'];
+                return $item_name_for_warehouse;
+            } else {
+                $item_name_for_warehouse = $warehouse_items['item']['name'];
+                return $item_name_for_warehouse;
+            }
+        } else {
+            $warehouse_items = TableRegistry::get('WarehouseItems')
+                ->find('all')
+                ->contain(['Items', 'Warehouses'])
+                ->where(['Items.id' => $item_id, 'Items.status' => 1, 'WarehouseItems.status' => 1])
+                ->first();
+            $item_name_for_warehouse = $warehouse_items['item']['name'];
+            return $item_name_for_warehouse;
+        }
 
     }
+
+    public function get_item_unit_array()
+    {
+        $user = $this->Auth->user();
+            $warehouse_user = $user['id'];
+            $item_unit_table = TableRegistry::get('item_units');
+            $result = $item_unit_table->find('all')->contain(['Items', 'Units'])->where([
+                'Items.status' => 1,
+                'Units.status' => 1,
+                'item_units.status' => 1
+            ])->hydrate(false);
+
+            $dropArray = [];
+            foreach ($result as $key => $value):
+                $dropArray[$value['id']] = SystemHelper::getItemAlias($value['item']['id']) . '--' . $value['unit']['unit_display_name'];
+
+            endforeach;
+            return $dropArray;
+        }
+
 
     public function item_offers($item_id)
     {
