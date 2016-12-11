@@ -8,6 +8,7 @@ use Cake\Core\Configure;
 use Cake\Datasource\ConnectionManager;
 use Cake\ORM\TableRegistry;
 use Cake\View\View;
+use Exception;
 
 /**
  * InvoiceChalans Controller
@@ -129,8 +130,7 @@ class InvoiceChalansController extends AppController
                                 $query->update()->set(['quantity' => $newStockQuantity])->where(['id' => $stockInfo->id])->execute();
                             } else {
                                 $this->Flash->error('Stock is not enough, delivery not possible. Please try again!');
-                                throw new \Exception('error');
-                                break;
+                                throw new Exception('error');
                             }
                         }
                     } elseif(isset($_POST['forward'])) {
@@ -174,7 +174,7 @@ class InvoiceChalansController extends AppController
                             $this->PoEvents->save($poEvent);
                         } else {
                             $this->Flash->error('Forward not possible, no warehouse in charge. Please try again!');
-                            throw new \Exception('error');
+                            throw new Exception('error');
                         }
                     }
 
@@ -190,11 +190,11 @@ class InvoiceChalansController extends AppController
 
             $this->Flash->success('Successfully done.');
             return $this->redirect(['action' => 'index']);
-        } catch (\Exception $e) {
-            echo '<pre>';
-            print_r($e);
-            echo '</pre>';
-            die();
+        } catch (Exception $e) {
+//            echo '<pre>';
+//            print_r($e);
+//            echo '</pre>';
+//            die();
             $this->Flash->error('Failed. Please try again!');
             return $this->redirect(['action' => 'index']);
         }

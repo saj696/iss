@@ -82,9 +82,9 @@ class FunctionHelper extends Helper
         App::import('Helper', 'SystemHelper');
         $SystemHelper = new SystemHelper(new View());
         $itemArray = array_flip($SystemHelper->get_item_unit_array());
-        $itemNameArray = json_decode($item, true);
+
         $item_unit_ids = [];
-        foreach($itemNameArray as $itemName){
+        foreach($item as $itemName){
             $item_unit_ids[] = $itemArray[$itemName];
         }
 
@@ -341,9 +341,10 @@ class FunctionHelper extends Helper
         return $location_info['created_date'];
     }
 
-    public function invoice_age($invoice){
-        $invoice = TableRegistry::get('invoices')->find('all', ['conditions'=>['id'=>$invoice]])->first();
-        return $invoice['invoice_date'];
+    public function max_due_invoice_age($level, $unit=null){
+        return 'work to do';
+//        $invoice = TableRegistry::get('invoices')->find('all', ['conditions'=>['id'=>$invoice]])->first();
+//        return $invoice['invoice_date'];
     }
 
     public function is_mango($customer){

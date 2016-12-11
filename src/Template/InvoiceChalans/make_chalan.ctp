@@ -70,9 +70,3 @@ $status = \Cake\Core\Configure::read('status_options');
         </div>
     </div>
 </div>
-
-<script>
-    $(document).ready(function(){
-
-    });
-</script>

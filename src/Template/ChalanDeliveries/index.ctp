@@ -46,9 +46,9 @@ $status = \Cake\Core\Configure::read('status_options');
                                     $size = sizeof($event->invoice_chalan->invoice_chalan_details);
                                     foreach($event->invoice_chalan->invoice_chalan_details as $key=>$detail){
                                         if($key==$size-1){
-                                            $items .= $itemArray[$detail['product_id']].' [<span style="color:red; font-weight:bold;">'.$detail['quantity'].'</span>]';
+                                            $items .= $itemArray[$detail['item_unit_id']].' [<span style="color:red; font-weight:bold;">'.$detail['quantity'].'</span>]';
                                         }else{
-                                            $items .= $itemArray[$detail['product_id']].' [<span style="color:red; font-weight:bold;">'.$detail['quantity'].'</span>] | ';
+                                            $items .= $itemArray[$detail['item_unit_id']].' [<span style="color:red; font-weight:bold;">'.$detail['quantity'].'</span>] | ';
                                         }
                                     }
                                     echo $items;

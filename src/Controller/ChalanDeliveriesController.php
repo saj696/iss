@@ -2,9 +2,12 @@
 namespace App\Controller;
 
 use App\Controller\AppController;
+use App\View\Helper\SystemHelper;
+use Cake\Core\App;
 use Cake\Core\Configure;
 use Cake\Datasource\ConnectionManager;
 use Cake\ORM\TableRegistry;
+use Cake\View\View;
 
 /**
  * InvoiceChalans Controller
@@ -35,12 +38,9 @@ class ChalanDeliveriesController extends AppController
             'contain'=>['InvoiceChalans'=>['InvoiceChalanDetails']]
         ]);
 
-        $this->loadModel('Items');
-        $items = $this->Items->find('all', ['conditions' => ['status' => 1]]);
-        $itemArray = [];
-        foreach($items as $item) {
-            $itemArray[$item['id']] = $item['name'].' - '.$item['pack_size'].' '.Configure::read('pack_size_units')[$item['unit']].' ('.$item['code'].')';
-        }
+        App::import('Helper', 'SystemHelper');
+        $SystemHelper = new SystemHelper(new View());
+        $itemArray = $SystemHelper->get_item_unit_array();
 
         $events = $this->paginate($events);
         $this->set(compact('events', 'itemArray'));
@@ -75,6 +75,7 @@ class ChalanDeliveriesController extends AppController
     {
         $this->loadModel('PoEvents');
         $this->loadModel('Stocks');
+        $this->loadModel('ItemUnits');
         $user = $this->Auth->user();
         $time = time();
         $event = $this->PoEvents->find('all', [
@@ -99,7 +100,8 @@ class ChalanDeliveriesController extends AppController
                 // Warehouse Stock reduce
                 $warehouse_id = $user['warehouse_id'];
                 foreach($chalanDetail as $detail) {
-                    $stockInfo = $this->Stocks->find('all', ['conditions'=>['status !='=>99, 'warehouse_id'=>$warehouse_id, 'item_id'=>$detail['product_id']]])->first();
+                    $temUnitInfo = $this->ItemUnits->get($detail['item_unit_id']);
+                    $stockInfo = $this->Stocks->find('all', ['conditions'=>['status !='=>99, 'warehouse_id'=>$warehouse_id, 'item_id'=>$temUnitInfo['item_id'], 'manufacture_unit_id'=>$temUnitInfo['manufacture_unit_id']]])->first();
 
                     if($stockInfo && ($stockInfo->quantity > $detail['quantity'])) {
                         $newStockQuantity = $stockInfo->quantity - $detail['quantity'];

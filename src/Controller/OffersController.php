@@ -3,8 +3,10 @@ namespace App\Controller;
 
 use App\Controller\AppController;
 use App\View\Helper\FunctionHelper;
+use App\View\Helper\StackHelper;
 use App\View\Helper\SystemHelper;
 use Cake\Core\App;
+use Cake\Core\Configure;
 use Cake\View\View;
 
 /**
@@ -29,33 +31,167 @@ class OffersController extends AppController
      */
     public function index()
     {
-
-//        App::import('Helper', 'FunctionHelper');
-//        $FunctionHelper = new FunctionHelper(new View());
-//        $sales_quantity = $FunctionHelper->sales_quantity('01-11-2016', '30-11-2016', '["Krishan G (Hepta)--122- gm"]', 4, 'Kushtia Territory');;
-
         $offers = $this->Offers->find('all', [
             'conditions' => ['Offers.status !=' => 99]
         ]);
 
-        $general = json_decode($offers->toArray()[0]['general_conditions'], true).'||'.'abc(x)&&bbn(y)';
+        $general = json_decode($offers->toArray()[0]['general_conditions'], true).'$';
 
-        $arr = str_split($general);
-        $func = [];
-        $func_counter = 0;
+        $ca = str_split($general); // condition array
+        $fn = []; // function name
+        $fa = []; // function array
+        $oa = []; // operator array
 
-        foreach($arr as $a){
-            if(preg_match('/[a-z\s_(),]/i',$a)){
-                @$func[$func_counter] .= $a;
-                if($a==')'){
-                    $func_counter++;
+        $stack = [];
+        $stack[0] = '$';
+        $indexOfStackTop = 0;
+        $stop = $stack[$indexOfStackTop];
+
+        $precedence = [];
+        $precedence['%'] = 3;
+        $precedence['*'] = 3;
+        $precedence['+'] = 2;
+        $precedence['-'] = 2;
+        $precedence['&'] = 1;
+        $precedence['|'] = 1;
+        $precedence['>'] = 1;
+        $precedence['<'] = 1;
+        $precedence['='] = 1;
+
+        $postfix = [];
+        $postfixCurrentIndex=0;
+        $functionSerial = 0;
+        $myArray = [];
+        $operators = ['+', '-', '*', '%', '&', '|', '>', '<'];
+
+        for($i=0; $i<sizeof($ca); $i++){
+            if($ca[$i]=='(') {
+                $indexOfStackTop++;
+                $stack[$indexOfStackTop] = $ca[$i];
+                echo '<pre>';
+                print_r($stack);
+                echo '</pre>';
+            } elseif(preg_match('/[a-z\s_]/i',$ca[$i])){
+                do{
+                    @$fn[$functionSerial] .= $ca[$i];
+                    $i++;
+                }while($ca[$i] != '[');
+                $i++;
+
+                do{
+                    @$fa[$functionSerial] .= $ca[$i];
+                    $i++;
+                }while($ca[$i] != ']');
+
+                $postfix[$postfixCurrentIndex]['type'] = Configure::read('postfix_elements_types')['function'];
+                $postfix[$postfixCurrentIndex]['name'] = $fn[$functionSerial];
+                $postfix[$postfixCurrentIndex]['arg'] = $fa[$functionSerial];
+                $postfixCurrentIndex++;
+                $functionSerial++;
+                echo '<pre>';
+                print_r($stack);
+                echo '</pre>';
+            } elseif(preg_match('/[0-9]/i',$ca[$i])){
+                do{
+                    $cn = 0;
+                    $cn .= $ca[$i];
+                    $i++;
+                }while(preg_match('/[0-9]/i',$ca[$i]));
+
+                $postfix[$postfixCurrentIndex]['type'] = Configure::read('postfix_elements_types')['number'];
+                $postfix[$postfixCurrentIndex]['number'] = $cn;
+                $postfixCurrentIndex++;
+                $i--;
+                echo '<pre>';
+                print_r($stack);
+                echo '</pre>';
+            } elseif(in_array($ca[$i], $operators)){
+                if($stack[$indexOfStackTop]=='$'){
+                    $indexOfStackTop++;
+                   // echo $indexOfStackTop."top";
+                    $stack[$indexOfStackTop] = $ca[$i];
+                }elseif(in_array($stack[$indexOfStackTop], $operators)){
+                    do{
+                        if($precedence[$ca[$i]]>$precedence[$stack[$indexOfStackTop]]){
+                            $indexOfStackTop++;
+                            $stack[$indexOfStackTop] = $ca[$i];
+                            break;
+                        }else{
+                            $postfix[$postfixCurrentIndex]['type'] = Configure::read('postfix_elements_types')['operator'];
+                            $postfix[$postfixCurrentIndex]['operator'] = $stack[$indexOfStackTop];
+                            $indexOfStackTop--;
+
+                            echo "here";
+                        }
+                    }while()
+
+                }elseif($stack[$indexOfStackTop] == '('){
+                    $indexOfStackTop++;
+                    $stack[$indexOfStackTop] = $ca[$i];
+                }
+                echo '<pre>';
+                print_r($stack);
+                echo '</pre>';
+            } elseif($ca[$i]==')'){
+                do{
+                    $stop=$stack[$indexOfStackTop];
+                    //echo $stop."stop";
+                    $postfix[$postfixCurrentIndex]['type'] = Configure::read('postfix_elements_types')['operator'];
+                    $postfix[$postfixCurrentIndex]['operator'] = $stop;
+                    $indexOfStackTop--;
+                    $stop=$stack[$indexOfStackTop];
+                }while($stop != '(');
+
+                $indexOfStackTop--;
+                echo '<pre>';
+                print_r($stack);
+                echo '</pre>';
+            } elseif($ca[$i]=='$'){
+                while($indexOfStackTop>0){
+                    $postfix[$postfixCurrentIndex]['type'] = Configure::read('postfix_elements_types')['operator'];
+                    $postfix[$postfixCurrentIndex]['operator'] = $stack[$indexOfStackTop];
+                    $indexOfStackTop--;
+                }
+                echo '<pre>';
+                print_r($stack);
+                echo '</pre>';
+            }
+        }
+
+
+        echo '<pre>';
+        print_r($postfix);
+        echo '</pre>';
+        exit;
+
+        $argExploded = explode(',', $fa[0]);
+        $argArray = [];
+        foreach($argExploded as $arg){
+            $argArray[] = trim($arg);
+        }
+
+        if($fn[0]=='sales_quantity'){
+            $itemArray = [];
+            foreach($argArray as $k=>$arg){
+                if($k==0){
+                    $period_start = $arg;
+                }elseif($k==1){
+                    $period_end = $arg;
+                }elseif($k==sizeof($argArray)-1){
+                    $unit = $arg;
+                }elseif($k==sizeof($argArray)-2){
+                    $level = $arg;
+                }else{
+                    $itemArray[] = str_replace("'", '', $arg);
                 }
             }
         }
 
-        echo '<pre>';
-        print_r($func);
-        echo '</pre>';
+        App::import('Helper', 'FunctionHelper');
+        $FunctionHelper = new FunctionHelper(new View());
+        $max_due_invoice_age = $FunctionHelper->$fn[0]($period_start, $period_end, $itemArray, $level, $unit);
+
+        echo $max_due_invoice_age;
         exit;
 
         $this->set('offers', $this->paginate($offers));
@@ -114,7 +250,7 @@ class OffersController extends AppController
         $functions = $this->OfferFunctions->find('all', ['conditions'=>['status'=>1]]);
         $functionArray = [];
         foreach($functions as $function){
-            $functionArray[$function->id] = $function->function_name.'('.$function->arguments.')';
+            $functionArray[$function->id] = $function->function_name.'['.$function->arguments.']';
         }
 
         $this->loadModel('Awards');
