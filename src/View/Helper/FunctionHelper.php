@@ -75,17 +75,22 @@ class FunctionHelper extends Helper
         return $percentage?round($percentage, 2):0;
     }
 
-    public function sales_quantity($period_start, $period_end, $item, $level, $unit=null){
+    public function sales_quantity($period_start, $period_end, $itemArray, $level, $unit=null){
         if(!is_int($period_start)){$period_start = strtotime($period_start);}
         if(!is_int($period_end)){$period_end = strtotime($period_end);}
 
-        App::import('Helper', 'SystemHelper');
-        $SystemHelper = new SystemHelper(new View());
-        $itemArray = array_flip($SystemHelper->get_item_unit_array());
-
         $item_unit_ids = [];
-        foreach($item as $itemName){
-            $item_unit_ids[] = $itemArray[$itemName];
+        if(sizeof($itemArray)>0){
+            foreach($itemArray as $item){
+                $itemInfo = TableRegistry::get('items')->find('all', ['conditions'=>['name'=>$item['item_name']]])->first();
+                $unitInfo = TableRegistry::get('units')->find('all', ['conditions'=>['unit_display_name'=>$item['unit_name']]])->first();
+                $item_id = $itemInfo['id'];
+                $unit_id = $unitInfo['id'];
+                $itemUnitInfo = TableRegistry::get('item_units')->find('all', ['conditions'=>['item_id'=>$item_id, 'manufacture_unit_id'=>$unit_id]])->first();
+                if($itemUnitInfo){
+                    $item_unit_ids[] = $itemUnitInfo['id'];
+                }
+            }
         }
 
         $sales = TableRegistry::get('invoices')->find('all', ['conditions'=>[
@@ -114,9 +119,23 @@ class FunctionHelper extends Helper
         return $sales_quantity;
     }
 
-    public function sales_value($period_start, $period_end, $level, $unit=null){
+    public function sales_value($period_start, $period_end, $itemArray, $level, $unit=null){
         if(!is_int($period_start)){$period_start = strtotime($period_start);}
         if(!is_int($period_end)){$period_end = strtotime($period_end);}
+
+        $item_unit_ids = [];
+        if(sizeof($itemArray)>0){
+            foreach($itemArray as $item){
+                $itemInfo = TableRegistry::get('items')->find('all', ['conditions'=>['name'=>$item['item_name']]])->first();
+                $unitInfo = TableRegistry::get('units')->find('all', ['conditions'=>['unit_display_name'=>$item['unit_name']]])->first();
+                $item_id = $itemInfo['id'];
+                $unit_id = $unitInfo['id'];
+                $itemUnitInfo = TableRegistry::get('item_units')->find('all', ['conditions'=>['item_id'=>$item_id, 'manufacture_unit_id'=>$unit_id]])->first();
+                if($itemUnitInfo){
+                    $item_unit_ids[] = $itemUnitInfo['id'];
+                }
+            }
+        }
 
         $sales = TableRegistry::get('invoices')->find('all', ['conditions'=>[
             'invoices.invoice_date >='=>$period_start,
@@ -385,5 +404,33 @@ class FunctionHelper extends Helper
     public function payment_age($invoice){
         $payment_info = TableRegistry::get('invoice_payments')->find('all', ['conditions'=>['invoice_id'=>$invoice]])->first();
         return $payment_info['payment_collection_date'];
+    }
+
+    public function is_current_item($contextArray = [], $item = [], $unit= []){
+        if(sizeof($contextArray)>0){
+            if($item==$contextArray['current_item_id'] && $unit==$contextArray['current_item_unit_id']){
+                return true;
+            }
+        }
+    }
+
+    public function current_quantity($contextArray = [], $itemName, $unitName = null){
+        $item_info = TableRegistry::get('items')->find('all', ['conditions'=>['name'=>$itemName]])->first();
+        $unit_info = TableRegistry::get('units')->find('all', ['conditions'=>['unit_display_name'=>$unitName]])->first();
+        $item_id = $item_info['id'];
+        $unit_id = $unit_info['id'];
+        $sum = 0;
+        if(sizeof($contextArray)>0){
+            if($item_id>0 && $unitName==null){
+                if (false !== $key = array_search($item_id, $contextArray['current_item_id'])) {
+                    $sum += $contextArray['current_item_quantity'][$key];
+                }
+            }elseif($item_id>0 && $unit_id>0){
+                if ((false !== $key = array_search($item_id, $contextArray['current_item_id'])) && (false !== $key = array_search($unit_id, $contextArray['current_item_quantity']))) {
+                    $sum += $contextArray['current_item_quantity'][$key];
+                }
+            }
+        }
+        return $sum?$sum:0;
     }
 }

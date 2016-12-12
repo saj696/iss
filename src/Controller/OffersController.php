@@ -7,6 +7,7 @@ use App\View\Helper\StackHelper;
 use App\View\Helper\SystemHelper;
 use Cake\Core\App;
 use Cake\Core\Configure;
+use Cake\ORM\TableRegistry;
 use Cake\View\View;
 
 /**
@@ -31,102 +32,109 @@ class OffersController extends AppController
      */
     public function index()
     {
-        App::import('Helper', 'SystemHelper');
-        $systemHelper = new SystemHelper(new View());
+//        $amount = 15000;
+//        $comArray = [
+//            0=>['start'=>0, 'end'=>5000, 'commission'=>5],
+//            1=>['start'=>5001, 'end'=>10000, 'commission'=>7],
+//            2=>['start'=>10001, 'end'=>15000, 'commission'=>10],
+//        ];
+//
+//        App::import('Helper', 'SystemHelper');
+//        $systemHelper = new SystemHelper(new View());
+//        $slab = $systemHelper->slab_computer($amount, $comArray);
+//        echo $slab;
+//        exit;
 
-        $amount = 10000;
-        $comArray = [
-            0=>['start'=>0, 'end'=>5000, 'commission'=>5],
-            1=>['start'=>5001, 'end'=>10000, 'commission'=>7],
-            2=>['start'=>10001, 'end'=>15000, 'commission'=>10],
-        ];
-
-        $commission = 0;
-
-        for($i=0; $i<sizeof($comArray); $i++){
-            if($amount > $comArray[$i]['end']){
-                $commission += ($comArray[$i]['commission']/100)*($comArray[$i]['end']-$comArray[$i]['start']);
-            } else {
-                $commission += ($comArray[$i]['commission']/100)*($amount - $comArray[$i]['start']);
-                break;
-            }
-        }
-
-        echo $commission;
-        exit;
-
-
-
+//        $context = [
+//            'current_item_id'=>[0=>10, 1=>12, 2=>13],
+//            'current_item_unit_id'=>[0=>11, 1=>12, 2=>13],
+//            'current_item_quantity'=>[0=>100, 1=>200, 2=>300],
+//            'invoice_date'=>'10-11-2016',
+//            'payment_date'=>'10-11-2016',
+//        ];
+//
+//        App::import('Helper', 'FunctionHelper');
+//        $functionHelper = new FunctionHelper(new View());
+//        $slab = $functionHelper->current_quantity($context, 12);
+//
+//        echo '<pre>';
+//        print_r($slab);
+//        echo '</pre>';
+//        exit;
+//
         $offers = $this->Offers->find('all', [
             'conditions' => ['Offers.status !=' => 99]
         ]);
-
-        $general = json_decode($offers->toArray()[0]['general_conditions'], true).'$';
-
-        $ca = str_split($general); // condition array
-        $fn = []; // function name
-        $fa = []; // function array
-        $oa = []; // operator array
-
-        $stack = [];
-        $stack[0] = '$';
-        $indexOfStackTop = 0;
-        $stop = $stack[$indexOfStackTop];
-
-        $precedence = [];
-        $precedence['%'] = 3;
-        $precedence['*'] = 3;
-        $precedence['+'] = 2;
-        $precedence['-'] = 2;
-        $precedence['&'] = 1;
-        $precedence['|'] = 1;
-        $precedence['>'] = 1;
-        $precedence['<'] = 1;
-        $precedence['='] = 1;
-
-        $postfix = [];
-        $postfixCurrentIndex=0;
-        $functionSerial = 0;
-        $myArray = [];
-        $operators = ['+', '-', '*', '%', '&', '|', '>', '<'];
-
-        for($i=0; $i<sizeof($ca); $i++){
-            if($ca[$i]=='(') {
-                $indexOfStackTop++;
-                $stack[$indexOfStackTop] = $ca[$i];
-            } elseif(preg_match('/[a-z\s_]/i',$ca[$i])){
-                do{
-                    @$fn[$functionSerial] .= $ca[$i];
-                    $i++;
-                }while($ca[$i] != '[');
-                $i++;
-
-                do{
-                    @$fa[$functionSerial] .= $ca[$i];
-                    $i++;
-                }while($ca[$i] != ']');
-
-                $postfix[$postfixCurrentIndex]['type'] = Configure::read('postfix_elements_types')['function'];
-                $postfix[$postfixCurrentIndex]['name'] = $fn[$functionSerial];
-                $postfix[$postfixCurrentIndex]['arg'] = $fa[$functionSerial];
-                $postfixCurrentIndex++;
-                $functionSerial++;
-            } elseif(preg_match('/[0-9]/i',$ca[$i])){
-                do{
-                    $cn = 0;
-                    $cn .= $ca[$i];
-                    $i++;
-                }while(preg_match('/[0-9]/i',$ca[$i]));
-
-                $postfix[$postfixCurrentIndex]['type'] = Configure::read('postfix_elements_types')['number'];
-                $postfix[$postfixCurrentIndex]['number'] = $cn;
-                $postfixCurrentIndex++;
-                $i--;
-            } elseif(in_array($ca[$i], $operators)){
-                if($stack[$indexOfStackTop]=='$'){
-                    $indexOfStackTop++;
-                    $stack[$indexOfStackTop] = $ca[$i];
-                }elseif(in_array($stack[$indexOfStackTop], $operators)){
+//
+//        $general = json_decode($offers->toArray()[0]['general_conditions'], true).'$';
+//
+//        $ca = str_split($general); // condition array
+//        $fn = []; // function name
+//        $fa = []; // function array
+//        $cn=[];
+//
+//        $stack = [];
+//        $stack[0] = '$';
+//        $indexOfStackTop = 0;
+//
+//        $precedence = [];
+//        $precedence['%'] = 3;
+//        $precedence['*'] = 3;
+//        $precedence['+'] = 2;
+//        $precedence['-'] = 2;
+//        $precedence['&'] = 1;
+//        $precedence['|'] = 1;
+//        $precedence['>'] = 1;
+//        $precedence['<'] = 1;
+//        $precedence['='] = 1;
+//
+//        $postfix = [];
+//        $postfixCurrentIndex=0;
+//        $functionSerial = 0;
+//        $myArray = [];
+//        $operators = ['+', '-', '*', '%', '&', '|', '>', '<'];
+//
+//        for($i=0; $i<sizeof($ca); $i++){
+//            if($ca[$i]=='(') {
+//                $indexOfStackTop++;
+//                $stack[$indexOfStackTop] = $ca[$i];
+//            } elseif(preg_match('/[a-z\s_]/i',$ca[$i])){
+//                do{
+//                    @$fn[$functionSerial] .= $ca[$i];
+//                    $i++;
+//                }while($ca[$i] != '[');
+//                $i++;
+//
+//                do{
+//                    if($ca[$i] == ']'){
+//                        break;
+//                    }
+//                    @$fa[$functionSerial] .= $ca[$i];
+//
+//                    $i++;
+//                }while(1);
+//
+//                $postfix[$postfixCurrentIndex]['type'] = Configure::read('postfix_elements_types')['function'];
+//                $postfix[$postfixCurrentIndex]['name'] = $fn[$functionSerial];
+//                $postfix[$postfixCurrentIndex]['arg'] = $fa[$functionSerial];
+//                $postfixCurrentIndex++;
+//                $functionSerial++;
+//            } elseif(preg_match('/[0-9]/i',$ca[$i])){
+//                unset($cn[0]);
+//                do{
+//                    @$cn[0] .= intval($ca[$i]);
+//                    $i++;
+//                }while(preg_match('/[0-9]/i',$ca[$i]));
+//
+//                $postfix[$postfixCurrentIndex]['type'] = Configure::read('postfix_elements_types')['number'];
+//                $postfix[$postfixCurrentIndex]['number'] = $cn[0];
+//                $postfixCurrentIndex++;
+//                $i--;
+//            } elseif(in_array($ca[$i], $operators)){
+//                if($stack[$indexOfStackTop]=='$'){
+//                    $indexOfStackTop++;
+//                    $stack[$indexOfStackTop] = $ca[$i];
+//                }elseif(in_array($stack[$indexOfStackTop], $operators)){
 //                    do{
 //                        if($precedence[$ca[$i]]>$precedence[$stack[$indexOfStackTop]]){
 //                            $indexOfStackTop++;
@@ -135,67 +143,77 @@ class OffersController extends AppController
 //                        }else{
 //                            $postfix[$postfixCurrentIndex]['type'] = Configure::read('postfix_elements_types')['operator'];
 //                            $postfix[$postfixCurrentIndex]['operator'] = $stack[$indexOfStackTop];
+//                            $postfixCurrentIndex++;
 //                            $indexOfStackTop--;
+//                            if(!in_array($stack[$indexOfStackTop], $operators)) {
+//                                $indexOfStackTop++;
+//                                $stack[$indexOfStackTop] = $ca[$i];
+//                                break;
+//                            }
 //                        }
-//                    }while();
-
-                }elseif($stack[$indexOfStackTop] == '('){
-                    $indexOfStackTop++;
-                    $stack[$indexOfStackTop] = $ca[$i];
-                }
-            } elseif($ca[$i]==')'){
-                do{
-                    $stop=$stack[$indexOfStackTop];
-                    $postfix[$postfixCurrentIndex]['type'] = Configure::read('postfix_elements_types')['operator'];
-                    $postfix[$postfixCurrentIndex]['operator'] = $stop;
-                    $indexOfStackTop--;
-                    $stop=$stack[$indexOfStackTop];
-                }while($stop != '(');
-
-                $indexOfStackTop--;
-            } elseif($ca[$i]=='$'){
-                while($indexOfStackTop>0){
-                    $postfix[$postfixCurrentIndex]['type'] = Configure::read('postfix_elements_types')['operator'];
-                    $postfix[$postfixCurrentIndex]['operator'] = $stack[$indexOfStackTop];
-                    $indexOfStackTop--;
-                }
-            }
-        }
-
-        echo '<pre>';
-        print_r($postfix);
-        echo '</pre>';
-        exit;
-
-        $argExploded = explode(',', $fa[0]);
-        $argArray = [];
-        foreach($argExploded as $arg){
-            $argArray[] = trim($arg);
-        }
-
-        if($fn[0]=='sales_quantity'){
-            $itemArray = [];
-            foreach($argArray as $k=>$arg){
-                if($k==0){
-                    $period_start = $arg;
-                }elseif($k==1){
-                    $period_end = $arg;
-                }elseif($k==sizeof($argArray)-1){
-                    $unit = $arg;
-                }elseif($k==sizeof($argArray)-2){
-                    $level = $arg;
-                }else{
-                    $itemArray[] = str_replace("'", '', $arg);
-                }
-            }
-        }
-
-        App::import('Helper', 'FunctionHelper');
-        $FunctionHelper = new FunctionHelper(new View());
-        $max_due_invoice_age = $FunctionHelper->$fn[0]($period_start, $period_end, $itemArray, $level, $unit);
-
-        echo $max_due_invoice_age;
-        exit;
+//                    }while(1);
+//
+//                }elseif($stack[$indexOfStackTop] == '('){
+//                    $indexOfStackTop++;
+//                    $stack[$indexOfStackTop] = $ca[$i];
+//                }
+//            } elseif($ca[$i]==')'){
+//                do{
+//                    $stop=$stack[$indexOfStackTop];
+//                    $postfix[$postfixCurrentIndex]['type'] = Configure::read('postfix_elements_types')['operator'];
+//                    $postfix[$postfixCurrentIndex]['operator'] = $stop;
+//                    $postfixCurrentIndex++;
+//                    $indexOfStackTop--;
+//                    $stop=$stack[$indexOfStackTop];
+//                }while($stop != '(');
+//
+//                $indexOfStackTop--;
+//            } elseif($ca[$i]=='$'){
+//                while($indexOfStackTop>0){
+//                    $postfix[$postfixCurrentIndex]['type'] = Configure::read('postfix_elements_types')['operator'];
+//                    $postfix[$postfixCurrentIndex]['operator'] = $stack[$indexOfStackTop];
+//                    $indexOfStackTop--;
+//                    $postfixCurrentIndex++;
+//                }
+//            }
+//        }
+//
+//        echo '<pre>';
+//        print_r($postfix);
+//        echo '</pre>';
+//        exit;
+//
+//
+//
+//        $argExploded = explode(',', $fa[0]);
+//        $argArray = [];
+//        foreach($argExploded as $arg){
+//            $argArray[] = trim($arg);
+//        }
+//
+//        if($fn[0]=='sales_quantity'){
+//            $itemArray = [];
+//            foreach($argArray as $k=>$arg){
+//                if($k==0){
+//                    $period_start = $arg;
+//                }elseif($k==1){
+//                    $period_end = $arg;
+//                }elseif($k==sizeof($argArray)-1){
+//                    $unit = $arg;
+//                }elseif($k==sizeof($argArray)-2){
+//                    $level = $arg;
+//                }else{
+//                    $itemArray[] = str_replace("'", '', $arg);
+//                }
+//            }
+//        }
+//
+//        App::import('Helper', 'FunctionHelper');
+//        $FunctionHelper = new FunctionHelper(new View());
+//        $max_due_invoice_age = $FunctionHelper->$fn[0]($period_start, $period_end, $itemArray, $level, $unit);
+//
+//        echo $max_due_invoice_age;
+//        exit;
 
         $this->set('offers', $this->paginate($offers));
         $this->set('_serialize', ['offers']);
@@ -266,8 +284,8 @@ class OffersController extends AppController
         $SystemHelper = new SystemHelper(new View());
         $items = $SystemHelper->get_item_unit_array();
 
-        $this->loadModel('TaskForces');
-        $forces = $this->TaskForces->find('list', ['conditions'=>['status'=>1]]);
+        $this->loadModel('SalesForces');
+        $forces = $this->SalesForces->find('list', ['conditions'=>['status'=>1]]);
         $recipients = [];
         foreach($forces as $k=>$force){
             $recipients[] = $force;
