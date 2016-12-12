@@ -129,9 +129,9 @@ class SystemHelper extends Helper
         endif;
     }
 
-    public function getItemAlias($item_id)
+    public function getItemAlias($item_id, $warehouse_id = null)
     {
-       $user = $this->request->session()->read('Auth.User');
+        $user = $this->request->session()->read('Auth.User');
         $item_unit_table = TableRegistry::get('item_units');
         $item_name_for_warehouse = "";
         if ($warehouse_id) {
@@ -159,26 +159,23 @@ class SystemHelper extends Helper
 
     }
 
-    public function get_item_unit_array()
+    public function get_item_unit_array($warehouse_id = null)
     {
+        $user = $this->request->session()->read('Auth.User');
+        $item_unit_table = TableRegistry::get('item_units');
+        $result = $item_unit_table->find('all')->contain(['Items', 'Units'])->where([
+            'Items.status' => 1,
+            'Units.status' => 1,
+            'item_units.status' => 1
+        ])->hydrate(false);
 
-            $user = $this->request->session()->read('Auth.user');
-            $warehouse_user = $user['id'];
-            $item_unit_table = TableRegistry::get('item_units');
-            $result = $item_unit_table->find('all')->contain(['Items', 'Units'])->where([
-                'Items.status' => 1,
-                'Units.status' => 1,
-                'item_units.status' => 1
-            ])->hydrate(false);
+        $dropArray = [];
+        foreach ($result as $key => $value):
+            $dropArray[$value['id']] = SystemHelper::getItemAlias($value['item']['id'], $warehouse_id) . '--' . $value['unit']['unit_display_name'];
 
-            $dropArray = [];
-            foreach ($result as $key => $value):
-                $dropArray[$value['id']] = SystemHelper::getItemAlias($value['item']['id']) . '--' . $value['unit']['unit_display_name'];
-
-            endforeach;
-
-            return $dropArray;
-        }
+        endforeach;
+        return $dropArray;
+    }
 
 
     public function item_offers($item_id)
