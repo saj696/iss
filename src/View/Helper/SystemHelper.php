@@ -131,14 +131,14 @@ class SystemHelper extends Helper
 
     public function getItemAlias($item_id)
     {
-        $user = $this->request->session()->read('Auth.user');
+       $user = $this->request->session()->read('Auth.User');
         $item_unit_table = TableRegistry::get('item_units');
         $item_name_for_warehouse = "";
-        if (!empty($user['warehouse_id'])) {
+        if ($warehouse_id) {
             $warehouse_items = TableRegistry::get('WarehouseItems')
                 ->find('all')
                 ->contain(['Items', 'Warehouses'])
-                ->where(['Warehouses.id' => $user['warehouse_id'], 'Items.id' => $item_id, 'Items.status' => 1, 'WarehouseItems.status' => 1])
+                ->where(['Warehouses.id' => $warehouse_id, 'Items.id' => $item_id, 'Items.status' => 1, 'WarehouseItems.status' => 1])
                 ->hydrate(false)
                 ->first();
             if ($warehouse_items['use_alias'] == 1) {
@@ -149,12 +149,11 @@ class SystemHelper extends Helper
                 return $item_name_for_warehouse;
             }
         } else {
-            $warehouse_items = TableRegistry::get('WarehouseItems')
+            $items = TableRegistry::get('Items')
                 ->find('all')
-                ->contain(['Items', 'Warehouses'])
-                ->where(['Items.id' => $item_id, 'Items.status' => 1, 'WarehouseItems.status' => 1])
+                ->where(['id' => $item_id, 'status' => 1])
                 ->first();
-            $item_name_for_warehouse = $warehouse_items['item']['name'];
+            $item_name_for_warehouse = $items['name'];
             return $item_name_for_warehouse;
         }
 
