@@ -31,6 +31,32 @@ class OffersController extends AppController
      */
     public function index()
     {
+        App::import('Helper', 'SystemHelper');
+        $systemHelper = new SystemHelper(new View());
+
+        $amount = 10000;
+        $comArray = [
+            0=>['start'=>0, 'end'=>5000, 'commission'=>5],
+            1=>['start'=>5001, 'end'=>10000, 'commission'=>7],
+            2=>['start'=>10001, 'end'=>15000, 'commission'=>10],
+        ];
+
+        $commission = 0;
+
+        for($i=0; $i<sizeof($comArray); $i++){
+            if($amount > $comArray[$i]['end']){
+                $commission += ($comArray[$i]['commission']/100)*($comArray[$i]['end']-$comArray[$i]['start']);
+            } else {
+                $commission += ($comArray[$i]['commission']/100)*($amount - $comArray[$i]['start']);
+                break;
+            }
+        }
+
+        echo $commission;
+        exit;
+
+
+
         $offers = $this->Offers->find('all', [
             'conditions' => ['Offers.status !=' => 99]
         ]);
@@ -68,9 +94,6 @@ class OffersController extends AppController
             if($ca[$i]=='(') {
                 $indexOfStackTop++;
                 $stack[$indexOfStackTop] = $ca[$i];
-                echo '<pre>';
-                print_r($stack);
-                echo '</pre>';
             } elseif(preg_match('/[a-z\s_]/i',$ca[$i])){
                 do{
                     @$fn[$functionSerial] .= $ca[$i];
@@ -88,9 +111,6 @@ class OffersController extends AppController
                 $postfix[$postfixCurrentIndex]['arg'] = $fa[$functionSerial];
                 $postfixCurrentIndex++;
                 $functionSerial++;
-                echo '<pre>';
-                print_r($stack);
-                echo '</pre>';
             } elseif(preg_match('/[0-9]/i',$ca[$i])){
                 do{
                     $cn = 0;
@@ -102,40 +122,30 @@ class OffersController extends AppController
                 $postfix[$postfixCurrentIndex]['number'] = $cn;
                 $postfixCurrentIndex++;
                 $i--;
-                echo '<pre>';
-                print_r($stack);
-                echo '</pre>';
             } elseif(in_array($ca[$i], $operators)){
                 if($stack[$indexOfStackTop]=='$'){
                     $indexOfStackTop++;
-                   // echo $indexOfStackTop."top";
                     $stack[$indexOfStackTop] = $ca[$i];
                 }elseif(in_array($stack[$indexOfStackTop], $operators)){
-                    do{
-                        if($precedence[$ca[$i]]>$precedence[$stack[$indexOfStackTop]]){
-                            $indexOfStackTop++;
-                            $stack[$indexOfStackTop] = $ca[$i];
-                            break;
-                        }else{
-                            $postfix[$postfixCurrentIndex]['type'] = Configure::read('postfix_elements_types')['operator'];
-                            $postfix[$postfixCurrentIndex]['operator'] = $stack[$indexOfStackTop];
-                            $indexOfStackTop--;
-
-                            echo "here";
-                        }
-                    }while()
+//                    do{
+//                        if($precedence[$ca[$i]]>$precedence[$stack[$indexOfStackTop]]){
+//                            $indexOfStackTop++;
+//                            $stack[$indexOfStackTop] = $ca[$i];
+//                            break;
+//                        }else{
+//                            $postfix[$postfixCurrentIndex]['type'] = Configure::read('postfix_elements_types')['operator'];
+//                            $postfix[$postfixCurrentIndex]['operator'] = $stack[$indexOfStackTop];
+//                            $indexOfStackTop--;
+//                        }
+//                    }while();
 
                 }elseif($stack[$indexOfStackTop] == '('){
                     $indexOfStackTop++;
                     $stack[$indexOfStackTop] = $ca[$i];
                 }
-                echo '<pre>';
-                print_r($stack);
-                echo '</pre>';
             } elseif($ca[$i]==')'){
                 do{
                     $stop=$stack[$indexOfStackTop];
-                    //echo $stop."stop";
                     $postfix[$postfixCurrentIndex]['type'] = Configure::read('postfix_elements_types')['operator'];
                     $postfix[$postfixCurrentIndex]['operator'] = $stop;
                     $indexOfStackTop--;
@@ -143,21 +153,14 @@ class OffersController extends AppController
                 }while($stop != '(');
 
                 $indexOfStackTop--;
-                echo '<pre>';
-                print_r($stack);
-                echo '</pre>';
             } elseif($ca[$i]=='$'){
                 while($indexOfStackTop>0){
                     $postfix[$postfixCurrentIndex]['type'] = Configure::read('postfix_elements_types')['operator'];
                     $postfix[$postfixCurrentIndex]['operator'] = $stack[$indexOfStackTop];
                     $indexOfStackTop--;
                 }
-                echo '<pre>';
-                print_r($stack);
-                echo '</pre>';
             }
         }
-
 
         echo '<pre>';
         print_r($postfix);

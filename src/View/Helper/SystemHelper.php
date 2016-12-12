@@ -199,4 +199,18 @@ class SystemHelper extends Helper
         }
         return $expected;
     }
+
+    public function slab_computer($amount, $comArray){
+        $commission = 0;
+        for($i=0; $i<sizeof($comArray); $i++){
+            if($amount > $comArray[$i]['end']){
+                $commission += ($comArray[$i]['commission']/100)*($comArray[$i]['end']-$comArray[$i]['start']);
+            } else {
+                $commission += ($comArray[$i]['commission']/100)*($amount - $comArray[$i]['start']);
+                break;
+            }
+        }
+
+        return $commission?$commission:0;
+    }
 }
