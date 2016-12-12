@@ -131,7 +131,7 @@ class SystemHelper extends Helper
 
     public function getItemAlias($item_id)
     {
-        $user = $this->Auth->user();
+        $user = $this->request->session()->read('Auth.user');
         $item_unit_table = TableRegistry::get('item_units');
         $item_name_for_warehouse = "";
         if (!empty($user['warehouse_id'])) {
@@ -162,7 +162,8 @@ class SystemHelper extends Helper
 
     public function get_item_unit_array()
     {
-        $user = $this->Auth->user();
+
+            $user = $this->request->session()->read('Auth.user');
             $warehouse_user = $user['id'];
             $item_unit_table = TableRegistry::get('item_units');
             $result = $item_unit_table->find('all')->contain(['Items', 'Units'])->where([
@@ -176,6 +177,7 @@ class SystemHelper extends Helper
                 $dropArray[$value['id']] = SystemHelper::getItemAlias($value['item']['id']) . '--' . $value['unit']['unit_display_name'];
 
             endforeach;
+
             return $dropArray;
         }
 
