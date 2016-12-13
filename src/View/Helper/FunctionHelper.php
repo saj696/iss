@@ -26,6 +26,115 @@ class FunctionHelper extends Helper
 
     protected $_defaultConfig = [];
 
+    public function postfix_converter($array){
+        $ca = str_split($array); // condition array
+        $fn = []; // function name
+        $fa = []; // function array
+        $cn=[];
+        $stack = [];
+        $stack[0] = '$';
+        $indexOfStackTop = 0;
+        $precedence = [];
+        $precedence['%'] = 3;
+        $precedence['*'] = 3;
+        $precedence['+'] = 2;
+        $precedence['-'] = 2;
+        $precedence['&'] = 1;
+        $precedence['|'] = 1;
+        $precedence['>'] = 1;
+        $precedence['<'] = 1;
+        $precedence['='] = 1;
+        $postfix = [];
+        $postfixCurrentIndex=0;
+        $functionSerial = 0;
+        $operators = ['+', '-', '*', '%', '&', '|', '>', '<', '='];
+
+        for($i=0; $i<sizeof($ca); $i++){
+            if($ca[$i]=='(') {
+                $indexOfStackTop++;
+                $stack[$indexOfStackTop] = $ca[$i];
+            } elseif(preg_match('/[a-z\s_]/i',$ca[$i])){
+                do{
+                    @$fn[$functionSerial] .= $ca[$i];
+                    $i++;
+                }while($ca[$i] != '[');
+                $i++;
+
+                do{
+                    if($ca[$i] == ']'){
+                        break;
+                    }
+                    @$fa[$functionSerial] .= $ca[$i];
+
+                    $i++;
+                }while(1);
+
+                $postfix[$postfixCurrentIndex]['type'] = Configure::read('postfix_elements_types')['function'];
+                $postfix[$postfixCurrentIndex]['name'] = $fn[$functionSerial];
+                $postfix[$postfixCurrentIndex]['arg'] = $fa[$functionSerial];
+                $postfixCurrentIndex++;
+                $functionSerial++;
+            } elseif(preg_match('/[0-9\s.]/i',$ca[$i])){
+                unset($cn[0]);
+                do{
+                    @$cn[0] .= $ca[$i];
+                    $i++;
+                }while(preg_match('/[0-9\s.]/i',$ca[$i]));
+
+                $postfix[$postfixCurrentIndex]['type'] = Configure::read('postfix_elements_types')['number'];
+                $postfix[$postfixCurrentIndex]['number'] = $cn[0];
+                $postfixCurrentIndex++;
+                $i--;
+            } elseif(in_array($ca[$i], $operators)){
+                if($stack[$indexOfStackTop]=='$'){
+                    $indexOfStackTop++;
+                    $stack[$indexOfStackTop] = $ca[$i];
+                }elseif(in_array($stack[$indexOfStackTop], $operators)){
+                    do{
+                        if($precedence[$ca[$i]]>$precedence[$stack[$indexOfStackTop]]){
+                            $indexOfStackTop++;
+                            $stack[$indexOfStackTop] = $ca[$i];
+                            break;
+                        }else{
+                            $postfix[$postfixCurrentIndex]['type'] = Configure::read('postfix_elements_types')['operator'];
+                            $postfix[$postfixCurrentIndex]['operator'] = $stack[$indexOfStackTop];
+                            $postfixCurrentIndex++;
+                            $indexOfStackTop--;
+                            if(!in_array($stack[$indexOfStackTop], $operators)) {
+                                $indexOfStackTop++;
+                                $stack[$indexOfStackTop] = $ca[$i];
+                                break;
+                            }
+                        }
+                    }while(1);
+
+                }elseif($stack[$indexOfStackTop] == '('){
+                    $indexOfStackTop++;
+                    $stack[$indexOfStackTop] = $ca[$i];
+                }
+            } elseif($ca[$i]==')'){
+                do{
+                    $stop=$stack[$indexOfStackTop];
+                    $postfix[$postfixCurrentIndex]['type'] = Configure::read('postfix_elements_types')['operator'];
+                    $postfix[$postfixCurrentIndex]['operator'] = $stop;
+                    $postfixCurrentIndex++;
+                    $indexOfStackTop--;
+                    $stop=$stack[$indexOfStackTop];
+                }while($stop != '(');
+
+                $indexOfStackTop--;
+            } elseif($ca[$i]=='$'){
+                while($indexOfStackTop>0){
+                    $postfix[$postfixCurrentIndex]['type'] = Configure::read('postfix_elements_types')['operator'];
+                    $postfix[$postfixCurrentIndex]['operator'] = $stack[$indexOfStackTop];
+                    $indexOfStackTop--;
+                    $postfixCurrentIndex++;
+                }
+            }
+        }
+        return $postfix;
+    }
+
     public function credit_closing_percentage($period_start, $period_end, $payment_start, $payment_end, $level, $unit=null, $contextArray = []){
         //working with sales (invoice)
         if(!is_int($period_start)){$period_start = strtotime($period_start);}
