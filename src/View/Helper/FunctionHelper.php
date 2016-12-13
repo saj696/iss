@@ -26,7 +26,7 @@ class FunctionHelper extends Helper
 
     protected $_defaultConfig = [];
 
-    public function credit_closing_percentage($period_start, $period_end, $payment_start, $payment_end, $level, $unit=null){
+    public function credit_closing_percentage($period_start, $period_end, $payment_start, $payment_end, $level, $unit=null, $contextArray = []){
         //working with sales (invoice)
         if(!is_int($period_start)){$period_start = strtotime($period_start);}
         if(!is_int($period_end)){$period_end = strtotime($period_end);}
@@ -75,7 +75,7 @@ class FunctionHelper extends Helper
         return $percentage?round($percentage, 2):0;
     }
 
-    public function sales_quantity($period_start, $period_end, $itemArray, $level, $unit=null){
+    public function sales_quantity($period_start, $period_end, $itemArray, $level, $unit=null, $contextArray = []){
         if(!is_int($period_start)){$period_start = strtotime($period_start);}
         if(!is_int($period_end)){$period_end = strtotime($period_end);}
 
@@ -119,7 +119,7 @@ class FunctionHelper extends Helper
         return $sales_quantity;
     }
 
-    public function sales_value($period_start, $period_end, $itemArray, $level, $unit=null){
+    public function sales_value($period_start, $period_end, $itemArray, $level, $unit=null, $contextArray = []){
         if(!is_int($period_start)){$period_start = strtotime($period_start);}
         if(!is_int($period_end)){$period_end = strtotime($period_end);}
 
@@ -142,6 +142,11 @@ class FunctionHelper extends Helper
             'invoices.invoice_date <='=>$period_end,
         ]]);
 
+        $sales->innerJoin('invoiced_products', 'invoices.id=invoiced_products.invoice_id');
+        if(sizeof($item_unit_ids)>0){
+            $sales->where(['invoiced_products.item_unit_id IN'=> $item_unit_ids]);
+        }
+
         if($level==Configure::read('max_level_no')+1){
             if($unit){
                 $sales->where(['invoices.customer_id'=>$unit]);
@@ -158,7 +163,7 @@ class FunctionHelper extends Helper
         return $sales_value;
     }
 
-    public function sales_target_achievement($period_start, $period_end, $level, $unit=null){
+    public function sales_target_achievement($period_start, $period_end, $itemArray, $level, $unit=null){
         if(!is_int($period_start)){$period_start = strtotime($period_start);}
         if(!is_int($period_end)){$period_end = strtotime($period_end);}
 
@@ -184,10 +189,10 @@ class FunctionHelper extends Helper
         $salesBudgetConfiguration = TableRegistry::get('sales_budget_configurations')->find('all')->where(['status'=>1])->first();
         $sales_measure = $salesBudgetConfiguration['sales_measure'];
         if($sales_measure==1){
-            $sales_quantity = self::sales_quantity($period_start, $period_end, null, $level, $unit=null);
+            $sales_quantity = self::sales_quantity($period_start, $period_end, $itemArray, $level, $unit=null);
             $achievement = $total_budget>0?round(($sales_quantity/$total_budget)*100, 2):0;
         }else{
-            $sales_value = self::sales_value($period_start, $period_end, $level, $unit=null);
+            $sales_value = self::sales_value($period_start, $period_end, $itemArray, $level, $unit=null);
             $achievement = $total_budget>0?round(($sales_value/$total_budget)*100, 2):0;
         }
         return $achievement;
@@ -217,17 +222,22 @@ class FunctionHelper extends Helper
         return round($total_after_demurrage, 2);
     }
 
-    public function cash_sales_quantity($period_start, $period_end, $item, $level, $unit=null){
+    public function cash_sales_quantity($period_start, $period_end, $itemArray, $level, $unit=null){
         if(!is_int($period_start)){$period_start = strtotime($period_start);}
         if(!is_int($period_end)){$period_end = strtotime($period_end);}
 
-        App::import('Helper', 'SystemHelper');
-        $SystemHelper = new SystemHelper(new View());
-        $itemArray = array_flip($SystemHelper->get_item_unit_array());
-        $itemNameArray = json_decode($item, true);
         $item_unit_ids = [];
-        foreach($itemNameArray as $itemName){
-            $item_unit_ids[] = $itemArray[$itemName];
+        if(sizeof($itemArray)>0){
+            foreach($itemArray as $item){
+                $itemInfo = TableRegistry::get('items')->find('all', ['conditions'=>['name'=>$item['item_name']]])->first();
+                $unitInfo = TableRegistry::get('units')->find('all', ['conditions'=>['unit_display_name'=>$item['unit_name']]])->first();
+                $item_id = $itemInfo['id'];
+                $unit_id = $unitInfo['id'];
+                $itemUnitInfo = TableRegistry::get('item_units')->find('all', ['conditions'=>['item_id'=>$item_id, 'manufacture_unit_id'=>$unit_id]])->first();
+                if($itemUnitInfo){
+                    $item_unit_ids[] = $itemUnitInfo['id'];
+                }
+            }
         }
 
         $sales = TableRegistry::get('invoices')->find('all', ['conditions'=>[
@@ -257,15 +267,34 @@ class FunctionHelper extends Helper
         return $sales_quantity;
     }
 
-    public function cash_sales_value($period_start, $period_end, $level, $unit=null){
+    public function cash_sales_value($period_start, $period_end, $itemArray, $level, $unit=null){
         if(!is_int($period_start)){$period_start = strtotime($period_start);}
         if(!is_int($period_end)){$period_end = strtotime($period_end);}
+
+        $item_unit_ids = [];
+        if(sizeof($itemArray)>0){
+            foreach($itemArray as $item){
+                $itemInfo = TableRegistry::get('items')->find('all', ['conditions'=>['name'=>$item['item_name']]])->first();
+                $unitInfo = TableRegistry::get('units')->find('all', ['conditions'=>['unit_display_name'=>$item['unit_name']]])->first();
+                $item_id = $itemInfo['id'];
+                $unit_id = $unitInfo['id'];
+                $itemUnitInfo = TableRegistry::get('item_units')->find('all', ['conditions'=>['item_id'=>$item_id, 'manufacture_unit_id'=>$unit_id]])->first();
+                if($itemUnitInfo){
+                    $item_unit_ids[] = $itemUnitInfo['id'];
+                }
+            }
+        }
 
         $sales = TableRegistry::get('invoices')->find('all', ['conditions'=>[
             'invoices.invoice_date >='=>$period_start,
             'invoices.invoice_date <='=>$period_end,
             'invoices.invoice_type'=>2
         ]]);
+
+        $sales->innerJoin('invoiced_products', 'invoices.id=invoiced_products.invoice_id');
+        if(sizeof($item_unit_ids)>0){
+            $sales->where(['invoiced_products.item_unit_id IN'=>$item_unit_ids]);
+        }
 
         if($level==Configure::read('max_level_no')+1){
             if($unit){
