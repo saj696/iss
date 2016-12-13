@@ -4,6 +4,7 @@ namespace App\Controller;
 use App\Controller\AppController;
 use Cake\ORM\TableRegistry;
 use Cake\Core\Configure;
+use Cake\Datasource\ConnectionManager;
 
 /**
  * CustomerAwardGivings Controller
@@ -261,7 +262,7 @@ class CustomerAwardGivingsController extends AppController
             $data['parent_global_id'] = $customer_awards->parent_global_id;
             $data['award_account_code'] = $customer_awards->award_account_code;
             $data['award_id'] = $customer_awards->award_id;
-            $data['amount'] = $customer_awards->amount;
+            $data['amount'] = $customer_awards->remaining_amount;
             $data['giving_mode'] = Configure::read('customer_award_giving_status.delivered');
             $data['award_giving_date'] = $time;
             $data['status'] = 1;
@@ -288,12 +289,12 @@ class CustomerAwardGivingsController extends AppController
     {
         if ($this->request->is(['patch', 'post', 'put'])) {
             $data = $this->request->data;
-            //  echo "<pre>";print_r($data);die();
+            $connection = ConnectionManager::get('default');
             $user = $this->Auth->user();
             $time = time();
 
             $customer_awards = TableRegistry::get('customer_awards')->get($data['id']);
-//            pr($customer_awards);die();
+       //   pr($customer_awards);die();
 
             if($data['amount'] > $customer_awards->remaining_amount){
                 $this->Flash->error('Given amount is large then remaining amount. Please, try again.');
@@ -307,42 +308,47 @@ class CustomerAwardGivingsController extends AppController
             } else {
                 $status = Configure::read('customer_award_status.fully_adjusted');
             }
+            $connection->transactional(function ($connection)
+            use ($time, $user,$data,$remaining_amount,$status,$customer_awards) {
+                $this->Common->pay_invoice_due($customer_awards->customer_id,$data['amount'],$customer_awards->award_account_code);
 
+                $query = TableRegistry::get('customer_awards')->query();
+                $err = $query->update()
+                    ->set(['action_status' => $status, 'remaining_amount' =>$remaining_amount, 'updated_by' => $user['id'], 'updated_date' => $time])
+                    ->where(['id' => $data['id']])
+                    ->execute();
 
-            $query = TableRegistry::get('customer_awards')->query();
-            $err = $query->update()
-                ->set(['action_status' => $status, 'remaining_amount' =>$remaining_amount, 'updated_by' => $user['id'], 'updated_date' => $time])
-                ->where(['id' => $data['id']])
-                ->execute();
-
-            if ($err) {
-                $customer_award_givings = $this->CustomerAwardGivings->newEntity();
-                $val = [];
-                $val['customer_award_id'] = $customer_awards->id;
-                $val['customer_id'] = $customer_awards->customer_id;
-                $val['parent_global_id'] = $customer_awards->parent_global_id;
-                $val['award_account_code'] = $customer_awards->award_account_code;
-                $val['award_id'] = $customer_awards->award_id;
-                $val['amount'] = $data['amount'];
-                $val['giving_mode'] = Configure::read('customer_award_giving_status.adjustment');
-                $val['award_giving_date'] = $time;
-                $val['status'] = 1;
-                $val['created_by'] = $user['id'];
-                $val['created_date'] = $time;
-                $customer_award_givings = $this->CustomerAwardGivings->patchEntity($customer_award_givings, $val);
-                //  echo "<pre>";print_r($customer_award_givings);die();
-                if ($this->CustomerAwardGivings->save($customer_award_givings)) {
-                    $this->Flash->success('The customer award adjustment has been saved.');
-                    return $this->redirect(['action' => 'index']);
-                } else {
-                    $this->Flash->error('The customer award adjustment could not be saved. Please, try again.');
-                }
+                if ($err) {
+                    // $this->CustomerAwardGivings($customer_awards->customer_id,$data['amount'],$customer_awards->award_account_code);
+                    $customer_award_givings = $this->CustomerAwardGivings->newEntity();
+                    $val = [];
+                    $val['customer_award_id'] = $customer_awards->id;
+                    $val['customer_id'] = $customer_awards->customer_id;
+                    $val['parent_global_id'] = $customer_awards->parent_global_id;
+                    $val['award_account_code'] = $customer_awards->award_account_code;
+                    $val['award_id'] = $customer_awards->award_id;
+                    $val['amount'] = $data['amount'];
+                    $val['giving_mode'] = Configure::read('customer_award_giving_status.adjustment');
+                    $val['award_giving_date'] = $time;
+                    $val['status'] = 1;
+                    $val['created_by'] = $user['id'];
+                    $val['created_date'] = $time;
+                    $customer_award_givings = $this->CustomerAwardGivings->patchEntity($customer_award_givings, $val);
+                    //  echo "<pre>";print_r($customer_award_givings);die();
+                    if ($this->CustomerAwardGivings->save($customer_award_givings)) {
+                        $this->Flash->success('The customer award adjustment has been saved.');
+                        return $this->redirect(['action' => 'index']);
+                    } else {
+                        $this->Flash->error('The customer award adjustment could not be saved. Please, try again.');
+                    }
 
 //            echo "<pre>";print_r($customer_awards);die();
 //            $this->Flash->success('The customer award giving has been deleted.');
-            } else {
-                $this->Flash->error('The customer award adjustment could not be deleted. Please, try again.');
-            }
+                } else {
+                    $this->Flash->error('The customer award adjustment could not be deleted. Please, try again.');
+                }
+            });
+
             return $this->redirect(['action' => 'index']);
         }
     }
