@@ -53,15 +53,28 @@ class OffersController extends AppController
 //            'payment_date'=>'10-11-2016',
 //        ];
 //
-//        App::import('Helper', 'FunctionHelper');
-//        $functionHelper = new FunctionHelper(new View());
-//        $slab = $functionHelper->current_quantity($context, 12);
-//
-//        echo '<pre>';
-//        print_r($slab);
-//        echo '</pre>';
-//        exit;
-//
+
+        $array = ['Item 1', 'Unit 1', 'Item 2', null, 'Item 3', 'Unit 3'];
+        App::import('Helper', 'SystemHelper');
+        $SystemHelper = new SystemHelper(new View());
+        $refined = $SystemHelper->item_array_generator($array);
+
+        App::import('Helper', 'FunctionHelper');
+        $functionHelper = new FunctionHelper(new View());
+        $slab = $functionHelper->sales_quantity('01-01-2016', '01-01-2017', $refined, 10, 12);
+
+        echo '<pre>';
+        print_r($slab);
+        echo '</pre>';
+        exit;
+
+
+        echo '<pre>';
+        print_r($refined);
+        echo '</pre>';
+        exit;
+
+
         $offers = $this->Offers->find('all', [
             'conditions' => ['Offers.status !=' => 99]
         ]);

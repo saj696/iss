@@ -211,4 +211,24 @@ class SystemHelper extends Helper
 
         return $commission?$commission:0;
     }
+
+    public function item_array_generator($rawArray){
+        if($rawArray && sizeof($rawArray)>0){
+            foreach($rawArray as $k=>$raw){
+                $counter = $k+1;
+                if($counter%2 != 0){
+                    $itemIds[] = $raw;
+                }else{
+                    $unitIds[] = $raw;
+                }
+            }
+
+            $mainArray = [];
+            foreach($itemIds as $key=>$itemId){
+                $mainArray[$key]['item_name'] = $itemId;
+                $mainArray[$key]['unit_name'] = $unitIds[$key];
+            }
+        }
+        return $mainArray;
+    }
 }

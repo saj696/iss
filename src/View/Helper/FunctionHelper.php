@@ -86,12 +86,11 @@ class FunctionHelper extends Helper
                 $unitInfo = TableRegistry::get('units')->find('all', ['conditions'=>['unit_display_name'=>$item['unit_name']]])->first();
                 $item_id = $itemInfo['id'];
                 $unit_id = $unitInfo['id'];
-                $itemUnitInfo = TableRegistry::get('item_units')->find('all', ['conditions'=>['item_id'=>$item_id, 'manufacture_unit_id'=>$unit_id]])->first();
-                if($itemUnitInfo){
-                    $item_unit_ids[] = $itemUnitInfo['id'];
-                }
+                $item_unit_ids[] = ['item_id'=>$item_id, 'unit_id'=>$unit_id];
             }
         }
+
+        $item_unit_ids = [['item_id'=>5,'unit_id'=>10], ['item_id'=>14,'unit_id'=>15]];
 
         $sales = TableRegistry::get('invoices')->find('all', ['conditions'=>[
             'invoices.invoice_date >='=>$period_start,
@@ -100,7 +99,23 @@ class FunctionHelper extends Helper
 
         $sales->innerJoin('invoiced_products', 'invoices.id=invoiced_products.invoice_id');
         if(sizeof($item_unit_ids)>0){
-            $sales->where(['invoiced_products.item_unit_id IN'=> $item_unit_ids]);
+            foreach($item_unit_ids as $key=>$item_unit){
+                if($key==0){
+                    if($item_unit['item_id']>0){
+                        $sales->where(['invoiced_products.item_id'=> $item_unit['item_id']]);
+                    }
+                    if($item_unit['unit_id']>0){
+                        $sales->where(['invoiced_products.manufacture_unit_id'=> $item_unit['unit_id']]);
+                    }
+                }else{
+                    if($item_unit['item_id']>0){
+                        $sales->orWhere(['invoiced_products.item_id'=> $item_unit['item_id']]);
+                    }
+                    if($item_unit['unit_id']>0){
+                        $sales->where(['invoiced_products.manufacture_unit_id'=> $item_unit['unit_id']]);
+                    }
+                }
+            }
         }
 
         if($level==Configure::read('max_level_no')+1){
@@ -115,8 +130,11 @@ class FunctionHelper extends Helper
         }
 
         $sales->select(['sales_quantity'=>'SUM(invoiced_products.product_quantity)']);
-        $sales_quantity = $sales->first()['sales_quantity']?$sales->first()['sales_quantity']:0;
-        return $sales_quantity;
+        return $sales;
+
+
+//        $sales_quantity = $sales->first()['sales_quantity']?$sales->first()['sales_quantity']:0;
+//        return $sales_quantity;
     }
 
     public function sales_value($period_start, $period_end, $itemArray, $level, $unit=null, $contextArray = []){
