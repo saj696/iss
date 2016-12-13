@@ -54,31 +54,25 @@ class OffersController extends AppController
 //        ];
 //
 
-        $array = ['Item 1', 'Unit 1', 'Item 2', null, 'Item 3', 'Unit 3'];
-        App::import('Helper', 'SystemHelper');
-        $SystemHelper = new SystemHelper(new View());
-        $refined = $SystemHelper->item_array_generator($array);
-
-        App::import('Helper', 'FunctionHelper');
-        $functionHelper = new FunctionHelper(new View());
-        $slab = $functionHelper->sales_quantity('01-01-2016', '01-01-2017', $refined, 10, 12);
-
-        echo '<pre>';
-        print_r($slab);
-        echo '</pre>';
-        exit;
-
-
-        echo '<pre>';
-        print_r($refined);
-        echo '</pre>';
-        exit;
+//        $array = ['Item 1', 'Unit 1', 'Item 2', null, 'Item 3', 'Unit 3'];
+//        App::import('Helper', 'SystemHelper');
+//        $SystemHelper = new SystemHelper(new View());
+//        $refined = $SystemHelper->item_array_generator($array);
+//
+//        App::import('Helper', 'FunctionHelper');
+//        $functionHelper = new FunctionHelper(new View());
+//        $slab = $functionHelper->sales_quantity('01-01-2016', '01-01-2017', $refined, 10, 12);
+//
+//        echo '<pre>';
+//        print_r($slab);
+//        echo '</pre>';
+//        exit;
 
 
         $offers = $this->Offers->find('all', [
             'conditions' => ['Offers.status !=' => 99]
         ]);
-//
+
 //        $general = json_decode($offers->toArray()[0]['general_conditions'], true).'$';
 //
 //        $ca = str_split($general); // condition array
@@ -89,6 +83,7 @@ class OffersController extends AppController
 //        $stack = [];
 //        $stack[0] = '$';
 //        $indexOfStackTop = 0;
+//
 //
 //        $precedence = [];
 //        $precedence['%'] = 3;
@@ -132,12 +127,12 @@ class OffersController extends AppController
 //                $postfix[$postfixCurrentIndex]['arg'] = $fa[$functionSerial];
 //                $postfixCurrentIndex++;
 //                $functionSerial++;
-//            } elseif(preg_match('/[0-9]/i',$ca[$i])){
+//            } elseif(preg_match('/[0-9\s.]/i',$ca[$i])){
 //                unset($cn[0]);
 //                do{
-//                    @$cn[0] .= intval($ca[$i]);
+//                    @$cn[0] .= $ca[$i];
 //                    $i++;
-//                }while(preg_match('/[0-9]/i',$ca[$i]));
+//                }while(preg_match('/[0-9\s.]/i',$ca[$i]));
 //
 //                $postfix[$postfixCurrentIndex]['type'] = Configure::read('postfix_elements_types')['number'];
 //                $postfix[$postfixCurrentIndex]['number'] = $cn[0];
@@ -195,9 +190,9 @@ class OffersController extends AppController
 //        print_r($postfix);
 //        echo '</pre>';
 //        exit;
-//
-//
-//
+
+
+
 //        $argExploded = explode(',', $fa[0]);
 //        $argArray = [];
 //        foreach($argExploded as $arg){
