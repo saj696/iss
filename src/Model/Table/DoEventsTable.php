@@ -1,16 +1,16 @@
 <?php
 namespace App\Model\Table;
 
-use App\Model\Entity\DoObject;
+use App\Model\Entity\DoEvent;
 use Cake\ORM\Query;
 use Cake\ORM\RulesChecker;
 use Cake\ORM\Table;
 use Cake\Validation\Validator;
 
 /**
- * DoObjects Model
+ * DoEvents Model
  */
-class DoObjectsTable extends Table
+class DoEventsTable extends Table
 {
 
     /**
@@ -21,14 +21,21 @@ class DoObjectsTable extends Table
      */
     public function initialize(array $config)
     {
-        $this->table('do_objects');
+        $this->table('do_events');
         $this->displayField('id');
         $this->primaryKey('id');
-//        $this->belongsTo('Targets', [
-//            'foreignKey' => 'target_id'
+        $this->belongsTo('Senders', [
+            'className' => 'Users',
+            'foreignKey' => 'sender_id',
+            'joinType' => 'INNER'
+        ]);
+//        $this->belongsTo('Recipients', [
+//            'foreignKey' => 'recipient_id',
+//            'joinType' => 'INNER'
 //        ]);
-        $this->hasMany('DoObjectItems', [
-            'foreignKey' => 'do_object_id'
+        $this->belongsTo('DoObjects', [
+            'foreignKey' => 'do_object_id',
+            'joinType' => 'INNER'
         ]);
     }
 
@@ -45,38 +52,21 @@ class DoObjectsTable extends Table
             ->allowEmpty('id', 'create');
             
         $validator
-            ->add('serial_no', 'valid', ['rule' => 'isInteger'])
-            ->requirePresence('serial_no', 'create')
-            ->notEmpty('serial_no');
-            
-        $validator
-            ->add('date', 'valid', ['rule' => 'isInteger'])
-            ->requirePresence('date', 'create')
-            ->notEmpty('date');
-            
-        $validator
-            ->add('object_type', 'valid', ['rule' => 'isInteger'])
-            ->requirePresence('object_type', 'create')
-            ->notEmpty('object_type');
-            
-        $validator
-            ->add('target_type', 'valid', ['rule' => 'isInteger'])
-            ->allowEmpty('target_type');
+            ->add('events_tepe', 'valid', ['rule' => 'isInteger'])
+            ->requirePresence('events_tepe', 'create')
+            ->notEmpty('events_tepe');
             
         $validator
             ->add('action_status', 'valid', ['rule' => 'isInteger'])
-            ->requirePresence('action_status', 'create')
-            ->notEmpty('action_status');
+            ->allowEmpty('action_status');
             
         $validator
             ->add('created_by', 'valid', ['rule' => 'isInteger'])
-            ->requirePresence('created_by', 'create')
-            ->notEmpty('created_by');
+            ->allowEmpty('created_by');
             
         $validator
             ->add('created_date', 'valid', ['rule' => 'isInteger'])
-            ->requirePresence('created_date', 'create')
-            ->notEmpty('created_date');
+            ->allowEmpty('created_date');
             
         $validator
             ->add('updated_by', 'valid', ['rule' => 'isInteger'])
@@ -96,9 +86,11 @@ class DoObjectsTable extends Table
      * @param \Cake\ORM\RulesChecker $rules The rules object to be modified.
      * @return \Cake\ORM\RulesChecker
      */
-//    public function buildRules(RulesChecker $rules)
-//    {
-//     //   $rules->add($rules->existsIn(['target_id'], 'Targets'));
-//        return $rules;
-//    }
+    public function buildRules(RulesChecker $rules)
+    {
+//        $rules->add($rules->existsIn(['sender_id'], 'Senders'));
+//        $rules->add($rules->existsIn(['recipient_id'], 'Recipients'));
+        $rules->add($rules->existsIn(['do_object_id'], 'DoObjects'));
+        return $rules;
+    }
 }

@@ -35,38 +35,51 @@ use Cake\Core\Configure;
             <div class="portlet-body">
                 <?= $this->Form->create($doObject, ['class' => 'form-horizontal', 'role' => 'form']) ?>
                 <div class="row">
-                    <div class="col-md-6 col-md-offset-3">
-                        <?php
-                        echo $this->Form->input('serial_no');
-                        echo $this->Form->input('date', ['type' => 'text', 'label' => 'Date', 'class' => 'datepicker form-control']);
-                        ?>
-                    </div>
-                    <div class="col-md-12" id="file_wrapper" data-index_no="0">
-                        <table class="table table-bordered ">
-                            <thead>
-                            <tr>
-                                <td>Itme</td>
-                                <td>Unit</td>
-                                <td>Quantity</td>
-                                <td>Action</td>
-                            </tr>
-                            </thead>
+                    <div class="col-md-12">
+                        <div class="row">
 
-                            <tbody class="file_container">
-                            <tr class="single_row">
-                                <td><?php echo $this->Form->input('do_object_items.0.item_id', ['options' => $items, 'required' => 'required', 'class' => 'item form-control', 'empty' => __('Select'), 'templates' => ['label' => '']]); ?></td>
-                                <td><?php echo $this->Form->input('do_object_items.0.unit_id', ['options' => '', 'class' => 'unit form-control','required' => 'required', 'templates' => ['label' => '']]); ?></td>
-                                <td><?php echo $this->Form->input('do_object_items.0.quantity', ['required' => 'required', 'class' => 'form-control', 'templates' => ['label' => '']]); ?></td>
-                                <td>
-                                    <button type="button" class="btn btn-success btn-sm add_file"><i class="fa fa-plus" aria-hidden="true"></i> </button>
-                                    <button type="button" class="btn btn-danger btn-sm remove_file"><i class="fa fa-times"  aria-hidden="true"></i></button>
-                                </td>
-                            </tr>
-                            </tbody>
+                            <div class="col-md-12" id="file_wrapper" data-index_no="0">
+                                <table class="table table-bordered ">
+                                    <thead>
+                                    <tr>
+                                        <td>Itme</td>
+                                        <td>Unit</td>
+                                        <td>Quantity</td>
+                                        <td>Action</td>
+                                    </tr>
+                                    </thead>
 
-                        </table>
+                                    <tbody class="file_container">
+                                    <tr class="single_row">
+                                        <td><?php echo $this->Form->input('do_object_items.0.item_id', ['options' => $items, 'required' => 'required', 'class' => 'item form-control', 'empty' => __('Select'), 'templates' => ['label' => '']]); ?></td>
+                                        <td><?php echo $this->Form->input('do_object_items.0.unit_id', ['options' => '', 'class' => 'unit form-control','required' => 'required', 'templates' => ['label' => '']]); ?></td>
+                                        <td><?php echo $this->Form->input('do_object_items.0.quantity', ['required' => 'required', 'class' => 'form-control', 'templates' => ['label' => '']]); ?></td>
+                                        <td>
+                                            <button type="button" class="btn btn-success btn-sm add_file"><i class="fa fa-plus" aria-hidden="true"></i> </button>
+                                            <button type="button" class="btn btn-danger btn-sm remove_file"><i class="fa fa-times"  aria-hidden="true"></i></button>
+                                        </td>
+                                    </tr>
+                                    </tbody>
+
+                                </table>
+
+                            </div>
+
+                            <div class="col-md-6 col-md-offset-3">
+                                <?php
+                                echo $this->Form->input('date', ['type' => 'text', 'label' => 'Date', 'class' => 'datepicker form-control']);
+                                ?>
+                            </div>
+                            <div class="col-md-6 col-md-offset-3 recipient_row">
+                                <?php echo $this->Form->input('do_events.0.recipient_id', ['options' => $recipients, 'class' => 'recipient form-control', 'empty' => __('Select')]);?>
+                            </div>
+                        </div>
+
+                        <button class="btn blue pull-right save" style="margin:20px" type="submit">Save</button>
+                        <button class="btn green pull-right save_send" style="margin-top:20px" type="button">Save & Send</button>
+
                     </div>
-                    <?= $this->Form->button(__('Submit'), ['class' => 'btn blue pull-right', 'style' => 'margin-top:20px']) ?>
+
 
                 </div>
                 <?= $this->Form->end() ?>
@@ -77,6 +90,8 @@ use Cake\Core\Configure;
 </div>
 <script>
     $(document).ready(function () {
+
+        $('.recipient_row').hide();
         $(document).on("keyup", ".numbersOnly", function (event) {
             this.value = this.value.replace(/[^0-9\.]/g, '');
         });
@@ -134,6 +149,12 @@ use Cake\Core\Configure;
             }else {
                 alert('Please select a Customer and Award Type')
             }
+        });
+
+        $(document).on('click','.save_send',function(){
+            $('.recipient_row').show();
+            $(this).hide();
+            $('.save').html('Save & Send');
         });
     })
 </script>

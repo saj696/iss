@@ -1,4 +1,6 @@
 <?php
+use Cake\Core\Configure;
+
 $status = \Cake\Core\Configure::read('status_options');
 ?>
 
@@ -22,58 +24,60 @@ $status = \Cake\Core\Configure::read('status_options');
                     <i class="fa fa-list-alt fa-lg"></i><?= __('Do Object List') ?>
                 </div>
                 <div class="tools">
-                    <?= $this->Html->link(__('New Do Object'), ['action' => 'add'],['class'=>'btn btn-sm btn-primary']); ?>
+                    <?= $this->Html->link(__('New Do Object'), ['action' => 'add'], ['class' => 'btn btn-sm btn-primary']); ?>
                 </div>
             </div>
             <div class="portlet-body">
                 <div class="table-scrollable">
                     <table class="table table-bordered table-hover">
                         <thead>
-                            <tr>
-                                                                                                            <th><?= __('Sl. No.') ?></th>
-                                                                                                                    <th><?= __('serial_no') ?></th>
-                                                                                                                                                <th><?= __('date') ?></th>
-                                                                                                                                                <th><?= __('object_type') ?></th>
-                                                                                                                                                <th><?= __('target_type') ?></th>
-                                                                                                                                                <th><?= __('target_id') ?></th>
-                                                                                                                                                <th><?= __('action_status') ?></th>
-                                                                                                    <th><?= __('Actions') ?></th>
-                            </tr>
+                        <tr>
+                            <th><?= __('Sl. No.') ?></th>
+                            <th><?= __('serial_no') ?></th>
+                            <th><?= __('date') ?></th>
+                            <th><?= __('object_type') ?></th>
+                            <th><?= __('target_type') ?></th>
+                            <th><?= __('target_id') ?></th>
+                            <th><?= __('action_status') ?></th>
+                            <th><?= __('Actions') ?></th>
+                        </tr>
                         </thead>
                         <tbody>
-                            <?php foreach ($doObjects as $key => $doObject) {  ?>
-                                <tr>
-                                                                                    <td><?= $this->Number->format($key+1) ?></td>
-                                                                                            <td><?= $this->Number->format($doObject->serial_no) ?></td>
-                                                                                            <td><?= $this->Number->format($doObject->date) ?></td>
-                                                                                            <td><?= $this->Number->format($doObject->object_type) ?></td>
-                                                                                            <td><?= $this->Number->format($doObject->target_type) ?></td>
-                                                                                            <td><?= $this->Number->format($doObject->target_id) ?></td>
-                                                                                            <td><?= $this->Number->format($doObject->action_status) ?></td>
-                                                                                <td class="actions">
-                                        <?php
-                                            echo $this->Html->link(__('View'), ['action' => 'view', $doObject->id],['class'=>'btn btn-sm btn-info']);
+                        <?php foreach ($doObjects as $key => $doObject) { ?>
+                            <tr>
+                                <td><?= $this->Number->format($key + 1) ?></td>
+                                <td><?= $this->Number->format($doObject->serial_no) ?></td>
+                                <td><?= date('d-M-Y',$doObject->date) ?></td>
+                                <td><?= $this->Number->format($doObject->object_type) ?></td>
+                                <td><?= $this->Number->format($doObject->target_type) ?></td>
+                                <td><?= $this->Number->format($doObject->target_id) ?></td>
+                                <td><?= array_flip( Configure::read('do_object_action_status'))[$doObject->action_status] ?></td>
+                                <td class="actions">
+                                    <?php
 
-                                            echo $this->Html->link(__('Edit'), ['action' => 'edit', $doObject->id],['class'=>'btn btn-sm btn-warning']);
+                                    if($doObject->action_status == Configure::read('do_object_action_status')['Save']){
+                                    echo $this->Html->link(__('Action'), ['action' => 'view', $doObject->id], ['class' => 'btn btn-sm btn-info']);
+                                    }
+//                                    echo $this->Html->link(__('Edit'), ['action' => 'edit', $doObject->id], ['class' => 'btn btn-sm btn-warning']);
+//
+//                                    echo $this->Form->postLink(__('Delete'), ['action' => 'delete', $doObject->id], ['class' => 'btn btn-sm btn-danger', 'confirm' => __('Are you sure you want to delete # {0}?', $doObject->id)]);
 
-                                            echo $this->Form->postLink(__('Delete'), ['action' => 'delete', $doObject->id],['class'=>'btn btn-sm btn-danger','confirm' => __('Are you sure you want to delete # {0}?', $doObject->id)]);
-                                            
-                                        ?>
+                                    ?>
 
-                                    </td>
-                                </tr>
+                                </td>
+                            </tr>
 
                         <?php } ?>
                         </tbody>
                     </table>
                 </div>
                 <ul class="pagination">
-                       <?php
-                       echo $this->Paginator->prev('<<');
-                       echo $this->Paginator->numbers();
-                       echo $this->Paginator->next('>>');
-                       ?>
-                   </ul>
+                    <?php
+                    echo $this->Paginator->prev('<<');
+                    echo $this->Paginator->numbers();
+                    echo $this->Paginator->next('>>');
+                    ?>
+                </ul>
             </div>
         </div>
         <!-- END BORDERED TABLE PORTLET-->

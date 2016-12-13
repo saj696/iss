@@ -32,12 +32,12 @@ License: You must have a valid license purchased only from softbd
     <meta content="" name="author"/>
     <!-- BEGIN GLOBAL MANDATORY STYLES -->
     <script src="<?= $this->request->webroot; ?>assets/global/plugins/jquery.min.js" type="text/javascript"></script>
-    <script src="<?= $this->request->webroot; ?>assets/pages/scripts/ui-toastr.js" type="text/javascript"></script>
+    <script src="<?= $this->request->webroot; ?>assets/admin/pages/scripts/ui-toastr.js" type="text/javascript"></script>
     <script src="<?= $this->request->webroot; ?>assets/global/plugins/bootstrap-toastr/toastr.js" type="text/javascript"></script>
 
     <link href="<?= $this->request->webroot; ?>assets/global/plugins/bootstrap-toastr/toastr.min.css" rel="stylesheet" type="text/css"/>
-    <link href="http://fonts.googleapis.com/css?family=Open+Sans:400,300,600,700&subset=all" rel="stylesheet"
-          type="text/css"/>
+<!--    <link href="http://fonts.googleapis.com/css?family=Open+Sans:400,300,600,700&subset=all" rel="stylesheet"-->
+<!--          type="text/css"/>-->
     <link href="<?= $this->request->webroot; ?>assets/global/plugins/font-awesome/css/font-awesome.min.css"
           rel="stylesheet" type="text/css"/>
     <link href="<?= $this->request->webroot; ?>assets/global/plugins/simple-line-icons/simple-line-icons.min.css"

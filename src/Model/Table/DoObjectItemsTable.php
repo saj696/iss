@@ -82,7 +82,7 @@ class DoObjectItemsTable extends Table
     {
         $rules->add($rules->existsIn(['do_object_id'], 'DoObjects'));
         $rules->add($rules->existsIn(['item_id'], 'Items'));
-        $rules->add($rules->existsIn(['unit_id'], 'Units'));
+       // $rules->add($rules->existsIn(['unit_id'], 'Units'));
 
         return $rules;
     }

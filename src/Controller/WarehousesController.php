@@ -64,6 +64,10 @@ class WarehousesController extends AppController
         if ($this->request->is('post')) {
 
             $data = $this->request->data;
+           // echo "<pre>";print_r($data);die();
+           $administrative_units= TableRegistry::get('administrative_units')->get($data['unit_id'])->toArray();
+          //  echo "<pre>";print_r($administrative_units);die();
+            $data['global_id'] = $administrative_units['global_id'];
             $data['created_by'] = $user['id'];
             $data['created_date'] = $time;
             $warehouse = $this->Warehouses->patchEntity($warehouse, $data);
@@ -102,6 +106,9 @@ class WarehousesController extends AppController
         ]);
         if ($this->request->is(['patch', 'post', 'put'])) {
             $data = $this->request->data;
+            $administrative_units= TableRegistry::get('administrative_units')->get($data['unit_id'])->toArray();
+            $data['global_id'] = $administrative_units['global_id'];
+
             $data['updated_by'] = $user['id'];
             $data['updated_date'] = $time;
             $warehouse = $this->Warehouses->patchEntity($warehouse, $data);
