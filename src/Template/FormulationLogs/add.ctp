@@ -9,10 +9,10 @@ use Cake\Core\Configure;
             <i class="fa fa-angle-right"></i>
         </li>
         <li>
-            <?= $this->Html->link(__('Formulation Logs'), ['action' => 'index']) ?>
+            <?= $this->Html->link(__('Formulation'), ['action' => 'index']) ?>
             <i class="fa fa-angle-right"></i>
         </li>
-        <li><?= __('New Formulation Log') ?></li>
+        <li><?= __('New Formulation') ?></li>
 
     </ul>
 </div>
@@ -24,7 +24,7 @@ use Cake\Core\Configure;
         <div class="portlet box blue-hoki">
             <div class="portlet-title">
                 <div class="caption">
-                    <i class="fa fa-plus-square-o fa-lg"></i><?= __('Add New Formulation Log') ?>
+                    <i class="fa fa-plus-square-o fa-lg"></i><?= __('Add New Formulation') ?>
                 </div>
                 <div class="tools">
                     <?= $this->Html->link(__('Back'), ['action' => 'index'],['class'=>'btn btn-sm btn-success']); ?>
@@ -111,8 +111,6 @@ use Cake\Core\Configure;
 
 <script>
     $(document).ready(function (){
-
-
         //      item load when warehouse trigger
         $(document).on('change', '.wareHouseTrigger', function(){
             var obj = $(this);
@@ -311,6 +309,16 @@ use Cake\Core\Configure;
                     $('.outputresult').val(result.resultName);
                 }
             });
+        });
+
+        $(document).on('click','.submitCheck',function(){
+            var outputItemCheck = $('.outputInputName').val();
+            if(outputItemCheck == '')
+            {
+                toastr.info('You Have To Formulate First!');
+                return false;
+            }
+
         });
     });
 

@@ -62,6 +62,7 @@ class FormulationLogsController extends AppController
      */
     public function add()
     {
+        $this->loadModel('FormulationLogs');
         $this->loadModel('StockLogs');
         $this->loadModel('ItemUnits');
         $this->loadModel('Stocks');
@@ -76,6 +77,7 @@ class FormulationLogsController extends AppController
                 $conn->transactional(function () use ($stockLog, $user, $time, &$saveStatus)
                 {
                     $data = $this->request->data;
+//                     echo '<pre>'; print_r($data);echo '</pre>';die();
                     $data['create_by'] = $user['id'];
                     $data['create_date'] = $time;
 
@@ -124,23 +126,51 @@ class FormulationLogsController extends AppController
                         $this->Stocks->save($stockAdd);
                     endif;
 
+//                    add formulate product in stock log table
+                        $stockIDForLog = $this->Stocks->find('all',['conditions' => ['item_id' => $data['item_id'], 'manufacture_unit_id' => $data['manufacture_unit_id']], 'fields'=>['id'] ])->hydrate(false)->first();
+                        $stockLog = $this->StockLogs->newEntity();
+                        $stockLogData['warehouse_id'] = $data['warehouse_id'];
+                        $stockLogData['manufacture_unit_id'] = $data['manufacture_unit_id'];
+                        $stockLogData['item_id'] = $data['item_id'];
+                        $stockLogData['stock_id'] = $stockIDForLog['id'];
+                        $stockLogData['type'] = 10;
+                        $stockLogData['quantity'] = $data['output_result'];
+                        $stockLogData['status'] = 1;
+                        $stockLogData['created_by'] = $user['id'];
+                        $stockLogData['created_date'] = $time;
+                        $stockLog = $this->StockLogs->patchEntity($stockLog, $stockLogData);
+                        $this->StockLogs->save($stockLog);
+
+                        if($data['output_gain']):
+                            $stockLog = $this->StockLogs->newEntity();
+                            $stockLogData['type'] = 5;
+                            $stockLogData['quantity'] = $data['output_gain'];
+                            $stockLog = $this->StockLogs->patchEntity($stockLog, $stockLogData);
+                            $this->StockLogs->save($stockLog);
+                        endif;
+
+
+//                        Formulation log table data insert
+                        $inputName =  $this->Common->specific_item_name_resolver($data['warehouse_id'],$data['Item']);
+                        $formulationLog = $this->FormulationLogs->newEntity();
+                        $formulationLogData['input_name'] = $inputName['name'];
+                        $formulationLogData['output_name'] = $data['item_name'];
+                        $formulationLogData['status'] = 1;
+                        $formulationLogData['output_gain'] = $data['output_gain'];
+                        $formulationLog = $this->FormulationLogs->patchEntity($formulationLog, $formulationLogData);
+                        $this->FormulationLogs->save($formulationLog);
                 });
 
-                $this->Flash->success('Payment Successful');
+                $this->Flash->success('Formulation Generation Successful');
                 return $this->redirect(['action' => 'index']);
             } catch (\Exception $e) {
                 echo '<pre>';
                 print_r($e);
                 echo '</pre>';
                 exit;
-                $this->Flash->error('Payment Unsuccessful');
+                $this->Flash->error('Formulation Generation Unsuccessful');
                 return $this->redirect(['action' => 'index']);
             }
-
-
-
-
-
 
         }
 

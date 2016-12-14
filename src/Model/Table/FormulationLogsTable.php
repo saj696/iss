@@ -35,31 +35,31 @@ class FormulationLogsTable extends Table
     public function validationDefault(Validator $validator)
     {
         $validator
-            ->add('id', 'valid', ['rule' => 'integer'])
+            ->add('id', 'valid', ['rule' => 'isInteger'])
             ->allowEmpty('id', 'create');
             
         $validator
             ->allowEmpty('body');
             
         $validator
-            ->add('status', 'valid', ['rule' => 'integer'])
+            ->add('status', 'valid', ['rule' => 'isInteger'])
             ->requirePresence('status', 'create')
             ->notEmpty('status');
             
         $validator
-            ->add('created_by', 'valid', ['rule' => 'integer'])
+            ->add('created_by', 'valid', ['rule' => 'isInteger'])
             ->allowEmpty('created_by');
             
         $validator
-            ->add('created_date', 'valid', ['rule' => 'integer'])
+            ->add('created_date', 'valid', ['rule' => 'isInteger'])
             ->allowEmpty('created_date');
             
         $validator
-            ->add('updated_by', 'valid', ['rule' => 'integer'])
+            ->add('updated_by', 'valid', ['rule' => 'isInteger'])
             ->allowEmpty('updated_by');
             
         $validator
-            ->add('updated_date', 'valid', ['rule' => 'integer'])
+            ->add('updated_date', 'valid', ['rule' => 'isInteger'])
             ->allowEmpty('updated_date');
 
         return $validator;
