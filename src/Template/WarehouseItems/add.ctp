@@ -89,9 +89,18 @@ $yes_no = Configure::read('yes_no');
             var index = $('.list').data('index_no');
             $('.list').data('index_no', index + 1);
             var html = $('.itemWrapper .item_tr:last').clone().find('.form-control').each(function () {
-                this.name = this.name.replace(/\d+/, index + 1);
-                this.id = this.id.replace(/\d+/, index + 1);
-                this.value = '';
+
+                if (this.type == 'select-one') {
+                    var options_select_box = $(this).html();
+                    $(this).html(options_select_box);
+                    this.name = this.name.replace(/\d+/, index + 1);
+                    this.id = this.id.replace(/\d+/, index + 1);
+                }
+                else {
+                    this.name = this.name.replace(/\d+/, index + 1);
+                    this.id = this.id.replace(/\d+/, index + 1);
+                    this.value = '';
+                }
             }).end();
 
             $('.moreTable').append(html);
@@ -104,7 +113,9 @@ $yes_no = Configure::read('yes_no');
                 obj.closest('.single_list').remove();
             }
         });
-
+        $(document).on('change', '.warehouses', function () {
+            $(this).closest('tr').find('.items').val('');
+        });
         $(document).on('change', '.items', function () {
             var This = $(this)
             var item_value = This.val();

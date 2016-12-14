@@ -98,7 +98,7 @@ class WarehouseItemsController extends AppController
                 return $this->redirect(['action' => 'index']);
             }
         }
-        $warehouses = $this->WarehouseItems->Warehouses->find('list', ['conditions' => ['status' => 1, 'id' => $user['warehouse_id']]]);
+        $warehouses = $this->WarehouseItems->Warehouses->find('list', ['conditions' => ['status' => 1]]);
         $items = $this->WarehouseItems->Items->find('list', ['conditions' => ['status' => 1]]);
         $this->set(compact('warehouseItem', 'warehouses', 'items'));
         $this->set('_serialize', ['warehouseItem']);
@@ -130,7 +130,7 @@ class WarehouseItemsController extends AppController
                 $this->Flash->error('The warehouse item could not be saved . Please, try again . ');
             }
         }
-        $warehouses = $this->WarehouseItems->Warehouses->find('list', ['conditions' => ['status' => 1, 'id' => $user['warehouse_id']]]);
+        $warehouses = $this->WarehouseItems->Warehouses->find('list', ['conditions' => ['status' => 1]]);
         $items = $this->WarehouseItems->Items->find('list', ['conditions' => ['status' => 1]]);
         $this->set(compact('warehouseItem', 'warehouses', 'items'));
         $this->set('_serialize', ['warehouseItem']);

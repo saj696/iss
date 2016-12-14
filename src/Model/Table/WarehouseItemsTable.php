@@ -85,7 +85,8 @@ class WarehouseItemsTable extends Table
     {
         $rules->add($rules->existsIn(['warehouse_id'], 'Warehouses'));
         $rules->add($rules->existsIn(['item_id'], 'Items'));
-        $rules->add($rules->isUnique(['item_id'],'Items'));
+        $rules->add($rules->isUnique(['item_id', 'warehouse_id'],
+            'This Item Already In Given WareHouse.'));
         return $rules;
     }
 }
