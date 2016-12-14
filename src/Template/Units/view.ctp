@@ -1,5 +1,8 @@
 <?php
+use App\View\Helper\MyHelper;
 $status = \Cake\Core\Configure::read('status_options');
+$unit_level = \Cake\Core\Configure::read('unit_levels');
+$unit_type = \Cake\Core\Configure::read('pack_size_units');
 ?>
 
 <div class="page-bar">
@@ -10,10 +13,10 @@ $status = \Cake\Core\Configure::read('status_options');
             <i class="fa fa-angle-right"></i>
         </li>
         <li>
-            <?= $this->Html->link(__('Stocks'), ['action' => 'index']) ?>
+            <?= $this->Html->link(__('Item Units'), ['action' => 'index']) ?>
             <i class="fa fa-angle-right"></i>
         </li>
-        <li><?= __('View Stock') ?></li>
+        <li><?= __('View Item Unit') ?></li>
     </ul>
 </div>
 
@@ -24,7 +27,7 @@ $status = \Cake\Core\Configure::read('status_options');
         <div class="portlet box blue-hoki">
             <div class="portlet-title">
                 <div class="caption">
-                    <i class="fa fa-picture-o fa-lg"></i><?= __('Stock Details') ?>
+                    <i class="fa fa-picture-o fa-lg"></i><?= __('Item Unit Details') ?>
                 </div>
                 <div class="tools">
                     <?= $this->Html->link(__('Back'), ['action' => 'index'], ['class' => 'btn btn-sm btn-success']); ?>
@@ -34,29 +37,33 @@ $status = \Cake\Core\Configure::read('status_options');
                 <div class="table-scrollable">
                     <table class="table table-bordered table-hover">
                         <tr>
-                            <th><?= __('Warehouse') ?></th>
-                            <td><?= $stock->has('warehouse') ? $this->Html->link($stock->warehouse->name, ['controller' => 'Warehouses', 'action' => 'view', $stock->warehouse->id]) : '' ?></td>
+                            <th><?= __('Unit Name') ?></th>
+                            <td><?= h($unit->unit_name) ?></td>
                         </tr>
                         <tr>
-                            <th><?= __('Item') ?></th>
-                            <td><?= $stock->has('item') ? $this->Html->link($stock->item->name, ['controller' => 'Items', 'action' => 'view', $stock->item->id]) : '' ?></td>
+                            <th><?= __('Unit Type') ?></th>
+                            <td><?= __($unit_type[$unit->unit_type]) ?></td>
                         </tr>
-                        <tr><th><?= __('Unit') ?></th>
-                        <td><?=
-                            $stock->has('unit') ? $this->Html->link(
-                                $stock->unit->unit_display_name, ['controller' => 'Units', 'action' => 'view', $stock->unit->id])
-                                : '' ?></td>
-                        </tr>
+
                         <tr>
-                            <th><?= __('Quantity') ?></th>
-                            <td><?= $this->Number->format($stock->quantity) ?></td>
+                            <th><?= __('Unit Level') ?></th>
+                            <td><?=__($unit_level[$unit->unit_level])?></td>
+                        </tr>
+
+                        <tr>
+                            <th><?= __('Unit Size') ?></th>
+                            <td><?= $this->Number->format($unit->unit_size) ?></td>
+                        </tr>
+
+                        <tr>
+                            <th><?= __('Converted Quantity') ?></th>
+                            <td><?= $this->Number->format($unit->converted_quantity) ?></td>
                         </tr>
 
                         <tr>
                             <th><?= __('Status') ?></th>
-                            <td><?= __($status[$stock->status]) ?></td>
+                            <td><?= __($status[$unit->status]) ?></td>
                         </tr>
-
                     </table>
                 </div>
             </div>

@@ -33,7 +33,7 @@ $approval_status = Configure::read('approval_status');
             </div>
 
             <div class="portlet-body">
-                <h3>Credit Note Items</h3>
+                <h4 style="text-align:center">Items</h4>
                 <div class="table-scrollable">
                     <table class="table table-bordered table-hover">
                         <thead>
@@ -71,30 +71,47 @@ $approval_status = Configure::read('approval_status');
                         </tbody>
                     </table>
                 </div>
-                <h3> Credit Note</h3>
-                <?= $this->Form->create('CreditNotes', ['class' => 'form-horizontal', 'role' => 'form']) ?>
-                <div class="row">
-                    <div class="col-md-7 col-md-offset-3">
-                        <?php
-                        //pr($creditNote);
-                        $base_amount = 0;
-                        foreach ($creditNote['credit_note_items'] as $cn):
-                            $base_amount += $cn->net_total;
-                        endforeach;
-                        echo $this->Form->input('customer_id', ['type' => 'text', 'disabled' => true, 'value' => $creditNote['customer']['name']]);
-                        echo $this->Form->input('date', ['type' => 'text', 'value' => date('d-m-Y', $creditNote['date']), 'disabled' => true]);
-                        echo $this->Form->input('total_after_demurrage', ['required' => true, 'disabled' => true, 'value' => $creditNote['total_after_demurrage']]);
-                        echo $this->Form->input('demurrage_percentage', ['type' => 'number', 'min' => 0, 'disabled' => true, 'id' => 'demurrage-percentage', 'class' => 'form-control numbersOnly', 'value' => $creditNote['demurrage_percentage']]);
-                        echo $this->Form->input('approval_status', ['required' => true, 'default' => $creditNote['approval_status'],'disabled'=>true,'options' => $approval_status]);
-                        //  echo $this->Form->input('status', ['options' => Configure::read('status_options')]);
-                        ?>
-                    </div>
-                </div>
-                <?= $this->Form->end() ?>
+                <table class="table table-bordered table-striped table-hover table-condensed table-responsive">
+                    <thead>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <th>Customer</th>
+                        <td>
+                            <?= $creditNote['customer']['name'] ?>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Date</th>
+                        <td>
+                            <?= date('d-m-Y', $creditNote['date']) ?>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Percentage</th>
+                        <td>
+                            <?= $creditNote['demurrage_percentage'] ?>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Total</th>
+                        <td>
+                            <?= $creditNote['total_after_demurrage'] ?>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Approval Status</th>
+                        <td>
+                            <?= __($approval_status[$creditNote['approval_status']]) ?>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
             </div>
         </div>
-        <!-- END BORDERED TABLE PORTLET-->
     </div>
+    <!-- END BORDERED TABLE PORTLET-->
+</div>
 
 </div>
 <div class="row">
@@ -104,17 +121,17 @@ $approval_status = Configure::read('approval_status');
     <script>
         var base_amount = '<?php echo $base_amount?>';
         console.log(base_amount);
-        $(document).on('keyup', '#demurrage-percentage', function () {
-            var percentage = parseFloat($("#demurrage-percentage").val());
-            console.log(percentage);
-            var new_a = base_amount * percentage / 100;
-            console.log(new_a);
-            console.log(base_amount);
-            var amount_new_percentage = 0;
-            amount_new_percentage = new_a + parseFloat(base_amount);
-            console.log(amount_new_percentage);
-            $("#total-after-demurrage").val('');
-            $("#total-after-demurrage").val(amount_new_percentage);
-        });
+        //  $(document).on('keyup', '#demurrage-percentage', function () {
+        var percentage = parseFloat($("#demurrage-percentage").val());
+        console.log(percentage);
+        var new_a = base_amount * percentage / 100;
+        console.log(new_a);
+        console.log(base_amount);
+        var amount_new_percentage = 0;
+        amount_new_percentage = new_a + parseFloat(base_amount);
+        console.log(amount_new_percentage);
+        $("#total-after-demurrage").val('');
+        $("#total-after-demurrage").val(amount_new_percentage);
+        // });
     </script>
 

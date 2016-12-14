@@ -261,7 +261,7 @@ use Cake\Core\Configure;
             var sum = 0;
             var selector = '.net-total';
             $('.moreTable').find(selector).each(function (index, element) {
-                sum += parseInt($(element).val());
+                sum += parseFloat($(element).val());
             });
             return sum;
         };

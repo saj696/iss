@@ -40,8 +40,7 @@ $invoice_type = Configure::read('invoice_type');
                                     <tr>
                                         <th><?= __('Item') ?></th>
                                         <th><?= __('Unit') ?></th>
-                                        <th><?= __('Order Qty From') ?></th>
-                                        <th><?= __('Order Qty To') ?></th>
+                                        <th><?= __('Order Qty') ?></th>
                                         <th><?= __('Bonus Qty') ?></th>
                                         <th><?= __('Invoice Type') ?></th>
                                         <th></th>
@@ -53,10 +52,9 @@ $invoice_type = Configure::read('invoice_type');
                                         <td style="width: 20%;">
                                             <?php echo $this->Form->input('details.0.manufacture_unit_id', ['options' => $units, 'style' => 'max-width: 100%', 'class' => 'form-control', 'empty' => __('Select'),  'required','templates' => ['label' => '']]); ?></td>
 
-                                        <td><?php echo $this->Form->input('details.0.order_quantity_from', ['type' => 'text', 'style' => 'width: 100%', 'class' => 'form-control quantityFrom quantity numbersOnly', 'templates' => ['label' => '']]); ?></td>
-                                        <td><?php echo $this->Form->input('details.0.order_quantity_to', ['type' => 'text', 'style' => 'width: 100%', 'class' => 'form-control quantityTo quantity numbersOnly', 'templates' => ['label' => '']]); ?></td>
+                                        <td><?php echo $this->Form->input('details.0.order_quantity', ['type' => 'text', 'style' => 'width: 100%', 'class' => 'form-control quantity numbersOnly', 'templates' => ['label' => '']]); ?></td>
                                         <td><?php echo $this->Form->input('details.0.bonus_quantity', ['type' => 'text', 'style' => 'width: 100%', 'class' => 'form-control numbersOnly', 'required', 'templates' => ['label' => '']]); ?></td>
-                                        <td><?php echo $this->Form->input('details.0.invoice_type', ['options' => $invoice_type,'class' => 'form-control','empty' => __('Select'), 'required', 'templates' => ['label' => '']]); ?></td>
+                                        <td style="width: 20%"><?php echo $this->Form->input('details.0.invoice_type', ['options' => $invoice_type,'class' => 'form-control','empty' => __('Select'), 'required', 'templates' => ['label' => '']]); ?></td>
 
                                         <td width="50px;"><span
                                                 class="btn btn-sm btn-circle btn-danger remove pull-right">X</span></td>
@@ -71,7 +69,7 @@ $invoice_type = Configure::read('invoice_type');
                     </div>
 
                     <div class="row text-center" style="margin-bottom: 20px;">
-                        <?= $this->Form->button(__('Submit'), ['class' => 'btn blue submitBtn', 'style' => 'margin-top:20px']) ?>
+                        <?= $this->Form->button(__('Submit'), ['class' => 'btn blue', 'style' => 'margin-top:20px']) ?>
                     </div>
                 </div>
                 <?= $this->Form->end() ?>
@@ -96,23 +94,6 @@ $invoice_type = Configure::read('invoice_type');
             }).end();
 
             $('.table').append(html);
-        });
-
-//        Order Quantity Value Check
-        $(document).on('click','.submitBtn', function(){
-            var flag = 0;
-            $('.item_tr').each(function(){
-                var quantityFrom = $(this).find('.quantityFrom').val();
-                var quantityTo = $(this).find('.quantityTo').val();
-                if(quantityFrom > quantityTo){
-                    flag = 1;
-                }
-            });
-            if(flag == 1)
-            {
-                alert('Please Make Sure Your Quantity Is Correct');
-                return false;
-            }
         });
 
         $(document).on('click', '.remove', function () {

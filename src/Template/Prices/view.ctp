@@ -1,5 +1,8 @@
 <?php
 $status = \Cake\Core\Configure::read('status_options');
+$unit_type = \Cake\Core\Configure::read('pack_size_units');
+$unit_level = \Cake\Core\Configure::read('unit_levels');
+
 ?>
 
 <div class="page-bar">
@@ -10,10 +13,10 @@ $status = \Cake\Core\Configure::read('status_options');
             <i class="fa fa-angle-right"></i>
         </li>
         <li>
-            <?= $this->Html->link(__('Items'), ['action' => 'index']) ?>
+            <?= $this->Html->link(__('Prices'), ['action' => 'index']) ?>
             <i class="fa fa-angle-right"></i>
         </li>
-        <li><?= __('View Item') ?></li>
+        <li><?= __('View Price') ?></li>
     </ul>
 </div>
 
@@ -24,36 +27,48 @@ $status = \Cake\Core\Configure::read('status_options');
         <div class="portlet box blue-hoki">
             <div class="portlet-title">
                 <div class="caption">
-                    <i class="fa fa-picture-o fa-lg"></i><?= __('Item Details') ?>
+                    <i class="fa fa-picture-o fa-lg"></i><?= __('Price Details') ?>
                 </div>
                 <div class="tools">
                     <?= $this->Html->link(__('Back'), ['action' => 'index'], ['class' => 'btn btn-sm btn-success']); ?>
                 </div>
             </div>
+
             <div class="portlet-body">
                 <div class="table-scrollable">
                     <table class="table table-bordered table-hover">
                         <tr>
-                            <th><?= __('Category') ?></th>
-                            <td><?= $item->has('category') ? $this->Html->link($item->category->name, ['controller' => 'Categories', 'action' => 'view', $item->category->id]) : '' ?></td>
+                            <th><?= __('Item') ?></th>
+                            <td><?= $price->has('item') ? $this->Html->link($price->item->name, ['controller' => 'Items', 'action' => 'view', $price->item->id]) : '' ?></td>
                         </tr>
                         <tr>
-                            <th><?= __('Name') ?></th>
-                            <td><?= h($item->name) ?></td>
-                        </tr>
-                        <tr>
-                            <th><?= __('Generic Name') ?></th>
-                            <td><?= h($item->generic_name) ?></td>
-                        </tr>
-                        <tr>
-                            <th><?= __('Alias') ?></th>
-                            <td><?= h($item->alias) ?></td>
-                        </tr>
-                        <tr>
-                            <th><?= __('Status') ?></th>
-                            <td><?= __($status[$item->status]) ?></td>
+                            <th><?= __('Unit') ?></th>
+                            <td><?=
+                                $price->has('unit') ? $this->Html->link($price->unit->unit_display_name
+                                ,['controller' => 'Units', 'action' => 'view', $price->unit->id])
+                                    : '' ?></td>
                         </tr>
 
+                        <tr>
+                            <th><?= __('Cash Sales Price') ?></th>
+                            <td><?= $this->Number->format($price->cash_sales_price) ?></td>
+                        </tr>
+
+                        <tr>
+                            <th><?= __('Credit Sales Price') ?></th>
+                            <td><?= $this->Number->format($price->credit_sales_price) ?></td>
+                        </tr>
+
+                        <tr>
+                            <th><?= __('Retail Price') ?></th>
+                            <td><?= $this->Number->format($price->retail_price) ?></td>
+                        </tr>
+
+
+                        <tr>
+                            <th><?= __('Status') ?></th>
+                            <td><?= __($status[$price->status]) ?></td>
+                        </tr>
                     </table>
                 </div>
             </div>

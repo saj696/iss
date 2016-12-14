@@ -160,16 +160,5 @@ class ItemsController extends AppController
 
     }
 
-    public function generateCode()
-    {
-        $this->autoRender=false;
-        $itemPadding = Configure::read('item_generation_padding');
-        $data = $this->request->data;
-        $itemPrefix = TableRegistry::get('categories')->find('all', ['conditions' => ['id' => $data['category']], 'fields'=>['prefix']])->first()->toArray();
-        App::import('Helper', 'SystemHelper');
-        $SystemHelper = new SystemHelper(new View());
-        $itemCode = $SystemHelper->generate_code($itemPrefix['prefix'], 'item', $itemPadding);
-        $this->response->body($itemCode);
-        return $this->response;
-    }
+
 }

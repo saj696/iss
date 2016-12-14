@@ -30,6 +30,7 @@ class CreditNoteItemsController extends AppController
      */
     public function index($credit_note_id)
     {
+
         $user = $this->Auth->user();
         $creditNoteItems = $this->CreditNoteItems->find('all', [
             'contain' => ['Invoices', 'Items', 'Units', 'CreditNoteCreators', 'CreditNotes', 'CreditNotes.Customers'],

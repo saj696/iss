@@ -33,7 +33,7 @@ $approval_status = Configure::read('approval_status');
             </div>
 
             <div class="portlet-body">
-                <h3>Credit Note Items</h3>
+                <h4 style="text-align:center">Items</h4>
                 <div class="table-scrollable">
                     <table class="table table-bordered table-hover">
                         <thead>
@@ -70,8 +70,7 @@ $approval_status = Configure::read('approval_status');
                         <?php endforeach; ?>
                         </tbody>
                     </table>
-                </div>
-                <h3> Credit Note</h3>
+                </div><br>
                 <?= $this->Form->create('CreditNotes', ['class' => 'form-horizontal', 'role' => 'form']) ?>
                 <div class="row">
                     <div class="col-md-7 col-md-offset-3">
@@ -84,7 +83,7 @@ $approval_status = Configure::read('approval_status');
                         echo $this->Form->input('customer_id', ['type' => 'text', 'readonly' => true, 'value' => $creditNote['customer']['name']]);
                         echo $this->Form->input('date', ['type' => 'text', 'value' => date('d-m-Y', $creditNote['date']), 'readonly' => true]);
                         echo $this->Form->input('total_after_demurrage', ['required' => true, 'readonly' => true, 'value' => $creditNote['total_after_demurrage']]);
-                        echo $this->Form->input('demurrage_percentage', ['type' => 'number', 'min' => 0, 'required' => true, 'id' => 'demurrage-percentage', 'class' => 'form-control numbersOnly', 'value' => $creditNote['demurrage_percentage']]);
+                        echo $this->Form->input('demurrage_percentage', ['min' => 0, 'required' => true, 'id' => 'demurrage-percentage', 'class' => 'form-control numbersOnly', 'value' => $creditNote['demurrage_percentage']]);
                         echo $this->Form->input('approval_status', ['required' => true, 'default' => $creditNote['approval_status'], 'options' => $approval_status]);
                         //  echo $this->Form->input('status', ['options' => Configure::read('status_options')]);
                         ?>
@@ -103,6 +102,9 @@ $approval_status = Configure::read('approval_status');
         <!-- BEGIN BORDERED TABLE PORTLET-->
     </div>
     <script>
+        $(document).on("keyup", ".numbersOnly", function (event) {
+            this.value = this.value.replace(/[^0-9\.]/g, '');
+        });
         var base_amount = '<?php echo $base_amount?>';
         console.log(base_amount);
         $(document).on('keyup', '#demurrage-percentage', function () {
@@ -115,7 +117,12 @@ $approval_status = Configure::read('approval_status');
             amount_new_percentage = new_a + parseFloat(base_amount);
             console.log(amount_new_percentage);
             $("#total-after-demurrage").val('');
-            $("#total-after-demurrage").val(amount_new_percentage);
+            if (!isNaN(amount_new_percentage)) {
+                $("#total-after-demurrage").val(amount_new_percentage);
+            }
+            else {
+                $("#total-after-demurrage").val('');
+            }
         });
     </script>
 

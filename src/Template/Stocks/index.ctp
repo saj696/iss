@@ -1,5 +1,7 @@
 <?php
 $status = \Cake\Core\Configure::read('status_options');
+$unit_level = \Cake\Core\Configure::read('unit_levels');
+
 ?>
 
 <div class="page-bar">
@@ -32,28 +34,41 @@ $status = \Cake\Core\Configure::read('status_options');
                             <th><?= __('Sl. No.') ?></th>
                             <th><?= __('Warehouse') ?></th>
                             <th><?= __('Item') ?></th>
+                            <th><?= __('Unit') ?></th>
                             <th><?= __('Quantity') ?></th>
-                            <th><?= __('Approved Quantity') ?></th>
+                            <th><?= __('Status') ?></th>
                             <th><?= __('Actions') ?></th>
                         </tr>
                         </thead>
                         <tbody>
-                        <?php foreach ($stocks as $key => $stock) { ?>
+                        <?php
+
+                        foreach ($stocks as $key => $stock) { ?>
                             <tr>
                                 <td><?= $this->Number->format($key + 1) ?></td>
-                                <td><?= $stock->warehouse->name ?></td>
-                                <td><?= $stock->item->name ?></td>
+                                <td><?=
+                                    $stock->has('warehouse') ? $this->Html->link(
+                                        $stock->warehouse->name, ['controller' => 'Warehouses', 'action' => 'view', $stock->warehouse->id])
+                                        : '' ?></td>
+                                <td><?=
+                                    $stock->has('item') ? $this->Html->link(
+                                        $stock->item->name, ['controller' => 'Items', 'action' => 'view', $stock->item->id])
+                                        : '' ?></td>
+                                <td><?=
+                                    $stock->has('unit') ? $this->Html->link(
+                                        $stock->unit->unit_display_name, ['controller' => 'Units', 'action' => 'view', $stock->unit->id])
+                                        : '' ?></td>
                                 <td><?= $this->Number->format($stock->quantity) ?></td>
-                                <td><?= $this->Number->format($stock->approved_quantity) ?></td>
+                                <td><?= __($status[$stock->status]) ?></td>
                                 <td class="actions">
                                     <?php
                                     echo $this->Html->link(__('View'), ['action' => 'view', $stock->id], ['class' => 'btn btn-sm btn-info']);
-                                    echo $this->Html->link(__('Edit'), ['action' => 'edit', $stock->id], ['class' => 'btn btn-sm btn-warning']);
+                                   /// echo $this->Html->link(__('Edit'), ['action' => 'edit', $stock->id], ['class' => 'btn btn-sm btn-warning']);
                                     echo $this->Form->postLink(__('Delete'), ['action' => 'delete', $stock->id], ['class' => 'btn btn-sm btn-danger', 'confirm' => __('Are you sure you want to delete # {0}?', $stock->id)]);
                                     ?>
                                 </td>
                             </tr>
-                        <?php
+                            <?php
                         }
                         ?>
                         </tbody>

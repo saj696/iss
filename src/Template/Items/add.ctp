@@ -34,19 +34,21 @@ use Cake\Core\Configure;
                 <div class="row">
                     <div class="col-md-6 col-md-offset-3">
                         <?php
-                        echo $this->Form->input('category_id', ['options' => $categories, 'class'=>'form-control category', 'empty' => __('Select'),'required'=>'required']);
+                        echo $this->Form->input('category_id', ['options' => $categories, 'class' => 'form-control category', 'empty' => __('Select'), 'required' => 'required']);
                         ?>
                         <div class="subDiv"></div>
                         <?php
                         echo $this->Form->input('name');
-                        echo $this->Form->input('code',['class'=>'form-control codeItem','readonly']);
-                        //echo $this->Form->input('pack_size',['type'=>'text', 'class'=>'form-control numbersOnly']);
-                       // echo $this->Form->input('unit', ['options'=>Configure::read('pack_size_units'), 'empty'=>'Select', 'required'=>'required']);
                         echo $this->Form->input('generic_name');
-                        //echo $this->Form->input('box_size',['type'=>'text', 'class'=>'form-control numbersOnly']);
-                        //echo $this->Form->input('cash_sales_price',['type'=>'text', 'class'=>'form-control numbersOnly']);
-                        //echo $this->Form->input('credit_sales_price',['type'=>'text', 'class'=>'form-control numbersOnly']);
-                        //echo $this->Form->input('retail_price',['type'=>'text', 'class'=>'form-control numbersOnly']);
+                        ?>
+                        <button type="button" id="alias-add" class="btn btn-sm btn-circle btn-warning">
+                            <i class="fa fa-plus-circle"></i> Add Alias
+                        </button>
+                        <button type="button" id="alias-cancel" class="btn btn-sm btn-circle btn-danger">
+                            <i class="fa fa-minus-circle"></i> Cancel Alias
+                        </button><br><br>
+                        <?php
+                        echo $this->Form->input('alias');
                         ?>
                         <?= $this->Form->button(__('Submit'), ['class' => 'btn blue pull-right', 'style' => 'margin-top:20px']) ?>
                     </div>
@@ -58,11 +60,25 @@ use Cake\Core\Configure;
 </div>
 
 <script>
-    $(document).ready(function(){
-        $(document).on("keyup", ".numbersOnly", function(event) {
-            this.value = this.value.replace(/[^0-9\.]/g,'');
+    $(document).ready(function () {
+        $("#alias").hide();
+        $("#alias-cancel").hide();
+        $('label[for=alias], input#alias').hide();
+        $(document).on("keyup", ".numbersOnly", function (event) {
+            this.value = this.value.replace(/[^0-9\.]/g, '');
         });
 
+        $(document).on('click', '#alias-add', function () {
+            $("#alias").show();
+            $("#alias").attr("required", true);
+            $("#alias-cancel").show();
+            $('label[for=alias], input#alias').show();
+        });
+        $(document).on('click', '#alias-cancel', function () {
+            $("#alias").hide();
+            $("#alias").removeAttr('required');
+            $('label[for=alias], input#alias').hide();
+        });
         $(document).on('change', '.category', function () {
             var obj = $(this);
             var category = obj.val();
@@ -79,17 +95,17 @@ use Cake\Core\Configure;
                     }
                 }
             });
-            $('.codeItem').val('');
-            if(category!= ''){
-            $.ajax({
-                type: 'POST',
-                url: '<?= $this->Url->build("/Items/generateCode")?>',
-                data: {category: category},
-                success: function (data, status) {
-                    $('.codeItem').val(data);
-                }
-            });
-        }
+//            $('.codeItem').val('');
+//            if(category!= ''){
+//            $.ajax({
+//                type: 'POST',
+//                url: '<?//= $this->Url->build("/Items/generateCode")?>//',
+//                data: {category: category},
+//                success: function (data, status) {
+//                    $('.codeItem').val(data);
+//                }
+//            });
+//        }
         });
     });
 </script>

@@ -42,7 +42,6 @@ use Cake\Core\Configure;
                                     <tr>
                                         <th><?= __('Item') ?></th>
                                         <th><?= __('Unit') ?></th>
-                                        <th><?= __('Code') ?></th>
                                         <th><?= __('Cancel') ?></th>
                                         <th></th>
                                     </tr>

@@ -1,6 +1,8 @@
 <?php
 use Cake\Core\Configure;
 
+$config_stock_types = Configure::read('stock_log_types');
+unset($config_stock_types[0], $config_stock_types[1], $config_stock_types[2]);
 ?>
 <div class="page-bar">
     <ul class="page-breadcrumb">
@@ -36,8 +38,9 @@ use Cake\Core\Configure;
                         <?php
                         echo $this->Form->input('warehouse_id', ['options' => $warehouses, 'empty' => __('Select')]);
                         echo $this->Form->input('item_id', ['options' => $items, 'empty' => __('Select')]);
-                        echo $this->Form->input('quantity', ['class'=>'form-control numbersOnly', 'label'=>'Quantity (Pcs)']);
-                        echo $this->Form->input('approved_quantity', ['class'=>'form-control numbersOnly']);
+                        echo $this->Form->input('manufacture_unit_id', ['options' => $units, 'label' => 'Unit', 'empty' => __('Select')]);
+                        echo $this->Form->input('type', ['class' => 'form-control', 'options' => $config_stock_types, 'label' => 'Stock Type']);
+                        echo $this->Form->input('quantity', ['class' => 'form-control numbersOnly', 'label' => 'Quantity (Pcs)']);
                         echo $this->Form->input('status', ['options' => Configure::read('status_options')]);
                         ?>
                         <?= $this->Form->button(__('Submit'), ['class' => 'btn blue pull-right', 'style' => 'margin-top:20px']) ?>
@@ -51,8 +54,8 @@ use Cake\Core\Configure;
 
 <script>
     $(document).ready(function () {
-        $(document).on("keyup", ".numbersOnly", function(event) {
-            this.value = this.value.replace(/[^0-9\.]/g,'');
+        $(document).on("keyup", ".numbersOnly", function (event) {
+            this.value = this.value.replace(/[^0-9\.]/g, '');
         });
     });
 </script>

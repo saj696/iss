@@ -33,7 +33,8 @@ $status = \Cake\Core\Configure::read('status_options');
                             <th><?= __('Sl. No.') ?></th>
                             <th><?= __('Category') ?></th>
                             <th><?= __('Name') ?></th>
-                            <th><?= __('Code') ?></th>
+                            <th><?= __('Generic Name') ?></th>
+                            <th><?= __('Alias') ?></th>
                             <th><?= __('Actions') ?></th>
                         </tr>
                         </thead>
@@ -47,7 +48,9 @@ $status = \Cake\Core\Configure::read('status_options');
                                             'action' => 'view', $item->category
                                                 ->id]) : '' ?></td>
                                 <td><?= h($item->name) ?></td>
-                                <td><?= h($item->code) ?></td>
+                                <td><?= h($item->generic_name) ?></td>
+
+                                <td><?= h($item->alias) ?></td>
                                 <td class="actions">
                                     <?php
                                     echo $this->Html->link(__('View'), ['action' => 'view', $item->id], ['class' => 'btn btn-sm btn-info']);
@@ -56,7 +59,7 @@ $status = \Cake\Core\Configure::read('status_options');
                                     ?>
                                 </td>
                             </tr>
-                        <?php
+                            <?php
                         }
                         ?>
                         </tbody>

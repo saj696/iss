@@ -3,6 +3,7 @@ namespace App\View\Helper;
 
 use App\Model\Table\AdministrativeUnitsTable;
 use App\Model\Table\ItemUnitsTable;
+use Cake\Controller\Component\AuthComponent;
 use Cake\Database\Schema\Table;
 use Cake\View\Helper;
 use Cake\View\View;
@@ -129,6 +130,16 @@ class SystemHelper extends Helper
         endif;
     }
 
+    public function item_array($warehouse_id = null)
+    {
+        $items = TableRegistry::get('items')->find('all', ['conditions' => ['status' => 1]]);
+        $item_arr = [];
+        foreach ($items as $item):
+            $item_arr[$item['id']] = SystemHelper::getItemAlias($item['id'], $warehouse_id);
+        endforeach;
+        return $item_arr;
+    }
+
     public function getItemAlias($item_id, $warehouse_id = null)
     {
         $user = $this->request->session()->read('Auth.User');
@@ -196,39 +207,5 @@ class SystemHelper extends Helper
             }
         }
         return $expected;
-    }
-
-    public function slab_computer($amount, $comArray){
-        $commission = 0;
-        for($i=0; $i<sizeof($comArray); $i++){
-            if($amount > $comArray[$i]['end']){
-                $commission += ($comArray[$i]['commission']/100)*($comArray[$i]['end']-$comArray[$i]['start']);
-            } else {
-                $commission += ($comArray[$i]['commission']/100)*($amount - $comArray[$i]['start']);
-                break;
-            }
-        }
-
-        return $commission?$commission:0;
-    }
-
-    public function item_array_generator($rawArray){
-        if($rawArray && sizeof($rawArray)>0){
-            foreach($rawArray as $k=>$raw){
-                $counter = $k+1;
-                if($counter%2 != 0){
-                    $itemIds[] = $raw;
-                }else{
-                    $unitIds[] = $raw;
-                }
-            }
-
-            $mainArray = [];
-            foreach($itemIds as $key=>$itemId){
-                $mainArray[$key]['item_name'] = $itemId;
-                $mainArray[$key]['unit_name'] = $unitIds[$key];
-            }
-        }
-        return $mainArray;
     }
 }

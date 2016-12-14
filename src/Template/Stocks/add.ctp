@@ -1,6 +1,9 @@
 <?php
 use Cake\Core\Configure;
 
+$config_stock_types = Configure::read('stock_log_types');
+unset($config_stock_types[0], $config_stock_types[1], $config_stock_types[2],$config_stock_types[7],$config_stock_types[8]);
+
 ?>
 <div class="page-bar">
     <ul class="page-breadcrumb">
@@ -36,7 +39,7 @@ use Cake\Core\Configure;
                         <table class="table table-bordered">
                             <tr>
                                 <td>
-                                    <?php echo $this->Form->input('warehouse_id', ['options' => $warehouses, 'style'=>'width:50%', 'class'=>'form-control', 'empty' => __('Select')]);?>
+                                    <?php echo $this->Form->input('warehouse_id', ['options' => $warehouses, 'style' => 'width:50%', 'class' => 'form-control', 'required' => true, 'empty' => __('Select')]); ?>
                                 </td>
                             </tr>
                         </table>
@@ -49,16 +52,22 @@ use Cake\Core\Configure;
                             <div class="itemWrapper">
                                 <table class="table table-bordered moreTable">
                                     <tr>
-                                        <th><?= __('Item')?></th>
-                                        <th><?= __('Quantity (Pcs)')?></th>
-                                        <th><?= __('Approved Qty')?></th>
+                                        <th><?= __('Item') ?></th>
+                                        <th><?= __('Unit') ?></th>
+                                        <th><?= __('Stock Type') ?></th>
+                                        <th><?= __('Quantity (Pcs)') ?></th>
                                         <th></th>
                                     </tr>
                                     <tr class="item_tr single_list">
-                                        <td style="width: 40%;"><?php echo $this->Form->input('details.0.item_id', ['options' => $dropArray, 'required'=>'required', 'style'=>'max-width: 100%', 'class'=>'form-control', 'empty' => __('Select'), 'templates'=>['label' => '']]);?></td>
-                                        <td><?php echo $this->Form->input('details.0.quantity', ['type' => 'text', 'style'=>'width: 100%', 'required'=>'required', 'class'=>'form-control quantity numbersOnly', 'templates'=>['label' => '']]);?></td>
-                                        <td><?php echo $this->Form->input('details.0.approved_quantity', ['type' => 'text', 'style'=>'width: 100%', 'class'=>'form-control numbersOnly','required', 'templates'=>['label' => '']]);?></td>
-                                        <td width="50px;"><span class="btn btn-sm btn-circle btn-danger remove pull-right">X</span></td>
+                                        <td style="width:25%;">
+                                            <?php echo $this->Form->input('details.0.item_id', ['options' => $items, 'required' => 'required', 'style' => 'max-width: 100%', 'class' => 'form-control', 'empty' => __('Select'), 'templates' => ['label' => '']]); ?></td>
+                                        <td style="width: 30%;">
+                                            <?php echo $this->Form->input('details.0.manufacture_unit_id', ['options' => $units, 'required' => 'required', 'style' => 'max-width: 100%', 'class' => 'form-control', 'empty' => __('Select'), 'templates' => ['label' => '']]); ?></td>
+                                        <td style="width:20%"><?php echo $this->Form->input('details.0.type', ['options' => $config_stock_types, 'style' => 'width: 100%', 'required' => 'required', 'class' => 'form-control', 'templates' => ['label' => '']]); ?></td>
+
+                                        <td style="width:25%"><?php echo $this->Form->input('details.0.quantity', ['type' => 'text', 'style' => 'width: 100%', 'required' => 'required', 'class' => 'form-control quantity numbersOnly', 'templates' => ['label' => '']]); ?></td>
+                                        <td width="50px;"><span
+                                                class="btn btn-sm btn-circle btn-danger remove pull-right">X</span></td>
                                     </tr>
                                 </table>
                             </div>
@@ -66,7 +75,7 @@ use Cake\Core\Configure;
                     </div>
 
                     <div class="row col-md-offset-11">
-                        <input type="button" class="btn btn-circle btn-warning add_more" value="Add" />
+                        <input type="button" class="btn btn-circle btn-warning add_more" value="Add"/>
                     </div>
 
                     <div class="row text-center" style="margin-bottom: 20px;">
@@ -80,27 +89,36 @@ use Cake\Core\Configure;
 </div>
 
 <script>
-    $(document).ready(function(){
-        $(document).on("keyup", ".numbersOnly", function(event) {
-            this.value = this.value.replace(/[^0-9\.]/g,'');
+    $(document).ready(function () {
+        $(document).on("keyup", ".numbersOnly", function (event) {
+            this.value = this.value.replace(/[^0-9\.]/g, '');
         });
 
         $(document).on('click', '.add_more', function () {
             var index = $('.list').data('index_no');
             $('.list').data('index_no', index + 1);
             var html = $('.itemWrapper .item_tr:last').clone().find('.form-control').each(function () {
-                this.name = this.name.replace(/\d+/, index+1);
-                this.id = this.id.replace(/\d+/, index+1);
-                this.value = '';
+
+                if (this.type == 'select-one') {
+                    var options_select_box = $(this).html();
+                    $(this).html(options_select_box);
+                    this.name = this.name.replace(/\d+/, index + 1);
+                    this.id = this.id.replace(/\d+/, index + 1);
+                }
+                else {
+                    this.name = this.name.replace(/\d+/, index + 1);
+                    this.id = this.id.replace(/\d+/, index + 1);
+                    this.value = '';
+                }
             }).end();
 
             $('.moreTable').append(html);
         });
 
         $(document).on('click', '.remove', function () {
-            var obj=$(this);
-            var count= $('.single_list').length;
-            if(count > 1){
+            var obj = $(this);
+            var count = $('.single_list').length;
+            if (count > 1) {
                 obj.closest('.single_list').remove();
             }
         });

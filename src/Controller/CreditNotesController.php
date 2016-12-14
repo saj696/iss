@@ -30,7 +30,7 @@ class CreditNotesController extends AppController
      */
     public function index()
     {
-         $this->Common->pay_invoice_due(44,289,1);
+        // $this->Common->pay_invoice_due(44, 490, 1, 1);
         $user = $this->Auth->user();
         $creditNotes = $this->CreditNotes->find('all', [
             'contain' => ['Customers', 'CreditNoteEvents.Senders',
@@ -110,12 +110,9 @@ class CreditNotesController extends AppController
         $creditNote = $this->CreditNotes->get($id, [
             'contain' => ['Customers', 'CreditNoteItems.Items', 'CreditNoteItems.Units', 'CreditNoteEvents']
         ]);
-        //debug($creditNote);die;
-
         if ($this->request->is(['patch', 'post', 'put'])) {
             $conn = ConnectionManager::get('default');
             $data = $this->request->data;
-            pr($data);die;
             $data['date'] = strtotime($data['date']);
             $conn->transactional(function () use ($user, $creditNote, $time, $data) {
                 unset($data['customer_id']);
@@ -130,11 +127,15 @@ class CreditNotesController extends AppController
                         ->execute();
                 }
                 $creditNote = $this->CreditNotes->patchEntity($creditNote, $data);
-                if ($this->CreditNotes->save($creditNote, ['associated' => ['CreditNoteEvents']])) {
-                    $this->Flash->success('The credit note has been saved.');
+                if ($this->CreditNotes->save($creditNote)) {
+                    //$customer_id
+                    //$amount
+                    //$payment_account code from account_heads tablehere it's Credit Note =>130000
+                    $this->Common->pay_invoice_due($creditNote->customer_id, $creditNote->total_after_demurrage,130000);
+                    $this->Flash->success('The credit note has been approved.');
                     return $this->redirect(['action' => 'index']);
                 } else {
-                    $this->Flash->error('The credit note could not be saved. Please, try again.');
+                    $this->Flash->error('The credit note could not be approved. Please, try again.');
                 }
             });
         }

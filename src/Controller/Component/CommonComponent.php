@@ -7,6 +7,7 @@ use Cake\ORM\TableRegistry;
 use Cake\Utility\Security;
 use Hashids\Hashids;
 use Cake\I18n\Time;
+use Cake\Datasource\ConnectionManager;
 use Symfony\Component\Config\Definition\Exception\Exception;
 
 /**
@@ -18,10 +19,8 @@ class CommonComponent extends Component
     /**
      * Default configuration.
      *
-     *
      * @var array
      */
-
     public $components = ['Auth'];
     protected $_defaultConfig = [];
 
@@ -60,6 +59,15 @@ class CommonComponent extends Component
         if (empty($invoices)) {
             echo "Invoice not found for this customer";
             die;
+        }
+
+        foreach ($invoices as $inv_due) {
+            if ($inv_due['due'] != 0) {
+                $due_available = 1;
+            } else {
+                $due_available = 0;
+            }
+            pr($due_available);die;
         }
 
         $time = time();
@@ -119,26 +127,14 @@ class CommonComponent extends Component
         });
     }
 
-    public function item_name_resolver($warehouse_id)
+    public
+    function closest($array, $price)
     {
-        $items = TableRegistry::get('warehouse_items')->find()
-            ->select(['use_alias' => 'warehouse_items.use_alias', 'id' => 'items.id', 'name' => 'items.name', 'alias' => 'items.alias'])
-            ->where(['warehouse_items.warehouse_id' => $warehouse_id])
-            ->leftJoin('items', 'items.id=warehouse_items.item_id')
-            ->toArray();
-        $item = [];
-        foreach ($items as $row) {
-
-            if ($row['use_alias']) {
-                $item[$row['id']] = $row['alias'];
-
-            } else {
-                $item[$row['id']] = $row['name'];
-
-            }
+        foreach ($array as $k => $v) {
+            $diff[abs($v - $price)] = $k;
         }
-        return $item;
-
-
+        $closest_key = $diff[min(array_keys($diff))];
+        return array($closest_key, $array[$closest_key]);
     }
+
 }
