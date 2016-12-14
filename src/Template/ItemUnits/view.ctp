@@ -40,46 +40,14 @@ $unit_level = \Cake\Core\Configure::read('unit_levels');
                         </tr>
 
                         <tr>
-                            <th><?= __('Code') ?></th>
+                            <th><?= __('Unit') ?></th>
                             <td>
                                 <?=
-                                $itemUnit->code;
+                                $itemUnit->unit->unit_display_name;
                                 ?>
                             </td>
-                        </tr>
-                        <tr>
-                            <th><?= __('Unit') ?></th>
-                            <td><?=
-                                $itemUnit->has('unit') ? $this->Html->link(__($unit_level[$itemUnit->unit->unit_level])
-                                    . '__' . $itemUnit->unit->unit_name
-                                    . '__' . $itemUnit->unit->unit_size, ['controller' => 'Units', 'action' => 'view', $itemUnit->unit->id])
-                                    : '' ?></td>
                         </tr>
 
-                        <tr>
-                            <th><?= __('Unit Size') ?></th>
-                            <td>
-                                <?=
-                                $itemUnit->unit_size;
-                                ?>
-                            </td>
-                        </tr>
-                        <tr>
-                            <th><?= __('Unit Display Name') ?></th>
-                            <td>
-                                <?=
-                                $itemUnit->unit_display_name;
-                                ?>
-                            </td>
-                        </tr>
-                        <tr>
-                            <th><?= __('Converted Quantity') ?></th>
-                            <td>
-                                <?=
-                                $itemUnit->converted_quantity;
-                                ?>
-                            </td>
-                        </tr>
                         <tr>
                             <th><?= __('Status') ?></th>
                             <td><?= __($status[$itemUnit->status]) ?></td>

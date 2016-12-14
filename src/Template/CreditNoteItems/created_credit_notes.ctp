@@ -1,6 +1,6 @@
 <?php
 $status = \Cake\Core\Configure::read('status_options');
-$approval_status = \Cake\Core\Configure::read('approval_status');
+$approval_status = \Cake\Core\Configure::read('credit_note_approval_status');
 ?>
 
 <div class="page-bar">

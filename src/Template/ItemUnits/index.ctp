@@ -33,12 +33,7 @@ $unit_level = \Cake\Core\Configure::read('unit_levels');
                         <tr>
                             <th><?= __('Sl. No.') ?></th>
                             <th><?= __('Item') ?></th>
-                            <th><?= __('Code') ?></th>
-<!--                            <th>--><?//= __('Unit') ?><!--</th>-->
-                            <th><?= __('Unit Name') ?></th>
-                            <th><?= __('Unit Size') ?></th>
-                            <th><?= __('Unit Display Name') ?></th>
-                            <th><?= __('Converted Quantity') ?></th>
+                            <th><?= __('Unit') ?></th>
                             <th><?= __('Status') ?></th>
                             <th><?= __('Actions') ?></th>
                         </tr>
@@ -52,18 +47,19 @@ $unit_level = \Cake\Core\Configure::read('unit_levels');
                                             ->name, ['controller' => 'Items',
                                             'action' => 'view', $itemUnit->item
                                                 ->id]) : '' ?></td>
-                                <td><?= $itemUnit->code?></td>
 
-                                <td><?= h($itemUnit->unit_name) ?></td>
-                                <td><?= $this->Number->format($itemUnit->unit->unit_size)?></td>
-                                <td><?= h($itemUnit->unit_display_name) ?></td>
-                                <td><?= h($itemUnit->converted_quantity) ?></td>
+                                <td><?= $itemUnit->has('unit') ?
+                                        $this->Html->link($itemUnit->unit
+                                            ->unit_display_name, ['controller' => 'Units',
+                                            'action' => 'view', $itemUnit->unit
+                                                ->id]) : '' ?></td>
+
                                 <td><?= __($status[$itemUnit->status]) ?></td>
                                 <td class="actions">
                                     <?php
                                     echo $this->Html->link(__('View'), ['action' => 'view', $itemUnit->id], ['class' => 'btn btn-sm btn-info']);
 
-                                    echo $this->Html->link(__('Edit'), ['action' => 'edit', $itemUnit->id], ['class' => 'btn btn-sm btn-warning']);
+                                    ///echo $this->Html->link(__('Edit'), ['action' => 'edit', $itemUnit->id], ['class' => 'btn btn-sm btn-warning']);
 
                                     echo $this->Form->postLink(__('Delete'), ['action' => 'delete', $itemUnit->id], ['class' => 'btn btn-sm btn-danger', 'confirm' => __('Are you sure you want to delete # {0}?', $itemUnit->id)]);
 

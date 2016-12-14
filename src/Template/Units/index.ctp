@@ -35,6 +35,7 @@ $yes_no = \Cake\Core\Configure::read('yes_no');
                         <thead>
                         <tr>
                             <th><?= __('Sl. No.') ?></th>
+                            <th><?= __('Unit Level') ?></th>
                             <th><?= __('Unit Name') ?></th>
                             <th><?= __('Unit Size') ?></th>
                             <th><?= __('Unit Type') ?></th>

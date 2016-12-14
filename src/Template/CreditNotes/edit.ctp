@@ -1,7 +1,7 @@
 <?php
 use Cake\Core\Configure;
 
-$approval_status = Configure::read('approval_status');
+$approval_status = Configure::read('credit_note_approval_status');
 ?>
 <div class="page-bar">
     <ul class="page-breadcrumb">

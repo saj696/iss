@@ -40,10 +40,6 @@ use Cake\Core\Configure;
                         echo $this->Form->input('item_id', ['options' => $items, 'class' => 'form-control items', 'empty' => __('Select')]);
                         echo $this->Form->input('manufacture_unit_id', ['label' => 'Unit','class'=>'form-control units', 'options' => $units, 'empty' => __('Select')]);
                         echo $this->Form->input('code', ['label' => 'Code', 'class' => 'form-control codeItem', 'readonly' => true]);
-                        echo $this->Form->input('unit_name', ['label' => 'Unit Name', 'disabled' => true]);
-                        echo $this->Form->input('unit_size', ['label' => 'Unit Size', 'disabled' => true]);
-                        echo $this->Form->input('unit_display_name', ['label' => 'Unit Display Name', 'disabled' => true]);
-                        echo $this->Form->input('converted_quantity', ['label' => 'Converted Quantity', 'disabled' => true]);
                         echo $this->Form->input('status', ['options' => Configure::read('status_options')]);
                         ?>
                         <?= $this->Form->button(__('Submit'), ['class' => 'btn blue pull-right', 'style' => 'margin-top:20px']) ?>
