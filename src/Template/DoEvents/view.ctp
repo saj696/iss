@@ -1,5 +1,8 @@
 <?php
 $status = \Cake\Core\Configure::read('status_options');
+use Cake\Routing\Router;
+use App\View\Helper\SystemHelper;
+//echo "<pre>";print_r($do_items);die();
 ?>
 
 <div class="page-bar">
@@ -27,57 +30,34 @@ $status = \Cake\Core\Configure::read('status_options');
                     <i class="fa fa-picture-o fa-lg"></i><?= __('Do Event Details') ?>
                 </div>
                 <div class="tools">
-                    <?= $this->Html->link(__('Back'), ['action' => 'index'],['class'=>'btn btn-sm btn-success']); ?>
+                    <?= $this->Html->link(__('Back'), ['action' => 'index'], ['class' => 'btn btn-sm btn-success']); ?>
                 </div>
             </div>
             <div class="portlet-body">
                 <div class="table-scrollable">
-                    <table class="table table-bordered table-hover">
-                                                                                                        <tr>
-                                    <th><?= __('Do Object') ?></th>
-                                    <td><?= $doEvent->has('do_object') ? $this->Html->link($doEvent->do_object->id, ['controller' => 'DoObjects', 'action' => 'view', $doEvent->do_object->id]) : '' ?></td>
+                    <form class="form-horizontal"  method="post" action="<?php echo Router::url('/',true); ?>DoObjects/view" enctype="multipart/form-data">
+                        <table class="table table-bordered">
+                            <tr>
+                                <td>SL:</td>
+                                <td>Item Name</td>
+                                <td>Unit</td>
+                                <td>Quantity</td>
+                                <td>Approve Quantity</td>
+
+                            </tr>
+                            <?php foreach($do_items as $key=>$row):?>
+
+                                <tr>
+                                    <td><?= $key+1?></td>
+                                    <td><input  class="form-control" name="" type="text" readonly value="<?php echo SystemHelper::getItemAlias($row['item']['id'],$warehouse_id);?>"></td>
+                                    <td><input  class="form-control" name="" type="text" readonly value="<?php foreach($row['item']['item_units'] as $r){if($r['id']==$row['unit_id']){echo $r['unit_display_name'];}}?>"></td>
+                                    <td><input  class="form-control" name="" type="text" readonly value="<?=$row['quantity']?>"></td>
+                                    <td><input  class="form-control" name="" type="text"></td>
                                 </tr>
-                                                                                                                                                                                                                
-                                                            <tr>
-                                    <th><?= __('Sender Id') ?></th>
-                                    <td><?= $this->Number->format($doEvent->sender_id) ?></td>
-                                </tr>
-                                                    
-                                                            <tr>
-                                    <th><?= __('Recipient Id') ?></th>
-                                    <td><?= $this->Number->format($doEvent->recipient_id) ?></td>
-                                </tr>
-                                                    
-                                                            <tr>
-                                    <th><?= __('Events Tepe') ?></th>
-                                    <td><?= $this->Number->format($doEvent->events_tepe) ?></td>
-                                </tr>
-                                                    
-                                                            <tr>
-                                    <th><?= __('Action Status') ?></th>
-                                    <td><?= $this->Number->format($doEvent->action_status) ?></td>
-                                </tr>
-                                                    
-                                                            <tr>
-                                    <th><?= __('Created By') ?></th>
-                                    <td><?= $this->Number->format($doEvent->created_by) ?></td>
-                                </tr>
-                                                    
-                                                            <tr>
-                                    <th><?= __('Created Date') ?></th>
-                                    <td><?= $this->Number->format($doEvent->created_date) ?></td>
-                                </tr>
-                                                    
-                                                            <tr>
-                                    <th><?= __('Updated By') ?></th>
-                                    <td><?= $this->Number->format($doEvent->updated_by) ?></td>
-                                </tr>
-                                                    
-                                                            <tr>
-                                    <th><?= __('Updated Date') ?></th>
-                                    <td><?= $this->Number->format($doEvent->updated_date) ?></td>
-                                </tr>
-                                                                                                                    </table>
+                            <?php endforeach;?>
+                        </table>
+                        <button class="btn blue pull-right" style="margin:20px" type="submit">Submit</button>
+                    </form>
                 </div>
             </div>
         </div>

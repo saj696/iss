@@ -30,6 +30,11 @@ class ItemsTable extends Table
             'joinType' => 'INNER'
         ]);
 
+        $this->hasMany('ItemUnits', [
+            'foreignKey' => 'item_id',
+            'joinType' => 'INNER'
+        ]);
+
     }
 
     /**

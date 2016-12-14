@@ -32,11 +32,12 @@ use Cake\Core\Configure;
 
             </div>
             <div class="portlet-body">
-                <?= $this->Form->create($formulationLog,['class' => 'form-horizontal','role'=>'form']) ?>
+                <?= $this->Form->create($stockLog,['class' => 'form-horizontal','role'=>'form']) ?>
                 <div class="row">
                     <div class="col-md-6 col-md-offset-3">
                         <?php
-                        echo $this->Form->input('warehouse_id',['options' => $warehouseNames, 'empty'=>__('Select')]);
+                        echo $this->Form->input('warehouse_id',['options' => $warehouseNames, 'empty'=>__('Select'), 'class' => 'form-control wareHouseTrigger']);
+                        echo $this->Form->input('Item',['options' => [], 'empty'=>__('Select'), 'class' =>'form-control item', 'required']);
                         ?>
                     </div>
                 </div>
@@ -55,7 +56,7 @@ use Cake\Core\Configure;
                                         <th><?= __('Remove') ?></th>
                                     </tr>
                                     <tr class="item_tr single_list" data-formulation-id="">
-                                        <td style="width:25%"><?php echo $this->Form->input('details.0.item_unit', ['options' => $itemUnit,  'class' => 'form-control itemUnit', 'empty' => __('Select'),  'required','templates' => ['label' => '']]); ?></td>
+                                        <td style="width:25%"> <?php echo $this->Form->input('details.0.item_unit', ['options' => [],  'class' => 'form-control itemUnit', 'empty' => __('Select'),  'required','templates' => ['label' => '']]); ?></td>
                                         <td><?php echo $this->Form->input('details.0.stock', ['type' => 'text', 'readonly' ,'class' => 'form-control stock','templates' => ['label' => '']]); ?></td>
                                         <td><?php echo $this->Form->input('details.0.amount', ['type' => 'text', 'class' => 'form-control numbersOnly inputAmount', 'unitType'=> 0, 'required', 'templates' => ['label' => '']]); ?></td>
                                         <td><?php echo $this->Form->input('details.0.amount_unit', ['type' => 'text','class' => 'form-control amount', 'readonly', 'templates' => ['label' => '']]); ?></td>
@@ -67,7 +68,8 @@ use Cake\Core\Configure;
                     </div>
 
                     <div class="row col-md-offset-11">
-                        <input type="button" class="btn btn-circle btn-warning add_more" value="Add"/>
+                        <?php echo $this->Form->input('total_amount',['type' => 'text', 'label'=>' ' ,'class' =>'form-control sumResult', 'readonly']); ?>
+                        <input type="button" class="btn btn-circle btn-warning add_more addBtnFormulation" value="Add"/>
                     </div>
                 </div>
 
@@ -80,8 +82,25 @@ use Cake\Core\Configure;
                 <div class="row">
                     <div class="col-md-12">
                         <h3>Output</h3>
-
                     </div>
+                    <div class="col-md-12">
+                        <div class="col-md-4">
+                            <?php echo $this->Form->input('item_name',['type' => 'text', 'class' => 'form-control outputInputName','readonly', 'label' => 'Item']); ?>
+                            <input type="hidden" name="item_id" class="output_item_id" value="">
+                        </div>
+                        <div class="col-md-4">
+                            <?php echo $this->Form->input('bulk_name',['type' => 'text', 'class' => 'form-control outputbulk','readonly', 'label' => ' ']); ?>
+                            <input type="hidden" name="manufacture_unit_id" class="output_manufacture_unit_id" value="">
+                        </div>
+                        <div class="col-md-4">
+                            <?php echo $this->Form->input('output_result',['type' => 'text', 'class' => 'form-control outputresult','readonly', 'label' => 'Result']); ?>
+                        </div>
+                    </div>
+                    <div class="col-md-4 col-md-offset-8">
+                        <?php    echo $this->Form->input('output_gain',['type' => 'text', 'class' => 'form-control outputgain', 'label' => 'Gain']); ?>
+                        <?= $this->Form->button(__('Submit'),['class'=>'btn blue pull-right submitCheck','style'=>'margin:20px']) ?>
+                    </div>
+
                 </div>
                 <?= $this->Form->end() ?>
             </div>
@@ -92,6 +111,64 @@ use Cake\Core\Configure;
 
 <script>
     $(document).ready(function (){
+
+
+        //      item load when warehouse trigger
+        $(document).on('change', '.wareHouseTrigger', function(){
+            var obj = $(this);
+            var warehouse = obj.val();
+            $.ajax({
+                type: 'POST',
+                url: '<?= $this->Url->build("/FormulationLogs/wareHouseTrigger")?>',
+                data: {warehouse: warehouse},
+                dataType: 'json',
+                success: function (data, status) {
+                    //   Clear inputitem Container
+                    var $el = $('.item');
+                    $el.empty();
+                    $el.append($("<option></option>")
+                        .attr("value", '').text('Select'));
+
+                    //   append inputitem Container
+                    $.each(data, function(key, value) {
+                        $('.item')
+                            .append($("<option></option>")
+                                .attr("value",key)
+                                .text(value));
+                    });
+                }
+            });
+        });
+
+
+//      show item unit based on item
+        $(document).on('change', '.item', function(){
+            var obj = $(this);
+            var item = obj.val();
+            console.log(item);
+            $.ajax({
+                type: 'POST',
+                url: '<?= $this->Url->build("/FormulationLogs/item")?>',
+                data: {item: item},
+                dataType: 'json',
+                success: function (data, status) {
+
+                    //   Clear inputitem Container
+                    var $el = $('.itemUnit');
+                    $el.empty();
+                    $el.append($("<option></option>")
+                        .attr("value", '').text('Select'));
+
+                    //   append inputitem Container
+                    $.each(data, function(key, value) {
+                        $('.itemUnit')
+                            .append($("<option></option>")
+                                .attr("value",key)
+                                .text(value));
+                    });
+                }
+            });
+        });
 
 //      allow only float value
         $(document).on('keyup','.numbersOnly',function(event){
@@ -126,33 +203,36 @@ use Cake\Core\Configure;
             var obj = $(this);
             var itemUnit = obj.val();
 
-            var myArr = [];
-            $( ".itemUnit" ).each(function( index ) {
-                myArr.push($(this).val());
-            });
-
-            var uniqueArr = uniqueArray(myArr);
-            uniqueArr.push(itemUnit);
-            var uniqueArrAfterSelection = uniqueArray(uniqueArr);
-
-console.log(uniqueArr.length);
-console.log(uniqueArrAfterSelection.length);
-
-            if(uniqueArr.length != uniqueArrAfterSelection.length){
-                toastr.info('Duplicate Item Not Allowed!');
-            }
-            else{
-                $.ajax({
-                    type: 'POST',
-                    url: '<?= $this->Url->build("/FormulationLogs/stock")?>',
-                    data: {itemUnit: itemUnit},
-                    success: function (data, status) {
-                        var quantity = JSON.parse(data);
-                        $('.stock').val(quantity.quantity);
-                        $('.stock').attr('unitType',quantity.unitType);
-                        $('.stock').attr('convertQuantity',quantity.convertedQuantity);
-                    }
+            if (itemUnit)
+            {
+                var myArr = [];
+                $( ".itemUnit" ).each(function( index ) {
+                    myArr.push($(this).val());
                 });
+
+                var uniqueArr = uniqueArray(myArr);
+                uniqueArr.push(itemUnit);
+                var uniqueArrAfterSelection = uniqueArray(uniqueArr);
+
+                if(myArr.length != uniqueArrAfterSelection.length){
+                    toastr.info('Duplicate Item Not Allowed!');
+                }
+                else{
+                    $(this).closest('.item_tr').find('.stock').val('');
+                    $(this).closest('.item_tr').find('.amount').val('');
+                    $(this).closest('.item_tr').find('.inputAmount').val('');
+                    $.ajax({
+                        type: 'POST',
+                        url: '<?= $this->Url->build("/FormulationLogs/stock")?>',
+                        data: {itemUnit: itemUnit},
+                        success: function (data, status) {
+                            var quantity = JSON.parse(data);
+                            obj.closest('.item_tr').find('.stock').val(quantity.quantity);
+                            obj.closest('.item_tr').find('.stock').attr('unitType',quantity.unitType);
+                            obj.closest('.item_tr').find('.stock').attr('convertQuantity',quantity.convertedQuantity);
+                        }
+                    });
+                }
             }
         });
 
@@ -160,63 +240,77 @@ console.log(uniqueArrAfterSelection.length);
         $(document).on('keyup','.inputAmount',function(){
             var obj = $(this);
             var amount = obj.val();
-            var unitType = $('.stock').attr("unitType");
-            var convertQuantity = $('.stock').attr("convertQuantity");
+            var unitType = obj.closest('.item_tr').find('.stock').attr("unitType");
+            var convertQuantity = obj.closest('.item_tr').find('.stock').attr("convertQuantity");
 
             if( unitType == 1 && convertQuantity == 0){
 //                gram
                 var final = amount/1000;
-                $('.amount').val(final);
-                console.log(final);
+                obj.closest('.item_tr').find('.amount').val(final);
             }
             else if( unitType == 1 && convertQuantity != 0){
 //                gram
                 var final = (amount*convertQuantity)/1000;
-                $('.amount').val(final);
-                console.log(final);
+                obj.closest('.item_tr').find('.amount').val(final);
             }
 
             else if( (unitType == 2 && convertQuantity == 0) || (unitType == 2 && convertQuantity != 0)){
 //                kg
 //                var final = amount
-                $('.amount').val(amount);
-                console.log(amount);
+                obj.closest('.item_tr').find('.amount').val(amount);
             }
-//            else if( unitType == 2 && convertQuantity != 0){
-////                kg
-//                console.log(final);
-//            }
 
             else if( unitType == 3 && convertQuantity == 0){
 //                ml
                 var final = amount/1000;
-                $('.amount').val(final);
-                console.log(final);
+                obj.closest('.item_tr').find('.amount').val(final);
             }
             else if( unitType == 3 && convertQuantity != 0){
 //                ml
                 var final = (amount*convertQuantity)/1000;
-                $('.amount').val(final);
-                console.log(final);
+                obj.closest('.item_tr').find('.amount').val(final);
             }
 
             else if( (unitType == 4 && convertQuantity == 0) || (unitType == 4 && convertQuantity != 0)){
 //                liter
 //                var final = amount
-                $('.amount').val(amount);
-                console.log(amount);
+                obj.closest('.item_tr').find('.amount').val(amount);
             }
             else {
 //                each
-                console.log(final);
             }
 
+
+            //        Sum Result
+            var sumResult = 0;
+            $('.item_tr').each(function(){
+                var eachRowValue = parseFloat($(this).find('.amount').val());
+
+                sumResult += eachRowValue;
+
+            });
+            $('.sumResult').val(sumResult);
+            console.log(sumResult);
         });
 
 //        output generation
         $(document).on('click','.formulateOutpute',function(){
-            var abc = "test";
-            console.log(abc);
+            var itemVal = $('.item_tr').find('.itemUnit').val();
+            var totalAmount = $('.sumResult').val();
+            $.ajax({
+                type: 'POST',
+                url: '<?= $this->Url->build("/FormulationLogs/outputGeneration")?>',
+                data: {itemVal: itemVal, totalAmount: totalAmount},
+                success: function (data, status) {
+                    var result = JSON.parse(data);
+                    console.log(data);
+                    $('.outputInputName').val(result.itemName);
+                    $('.output_item_id').val(result.itemId);
+                    $('.outputbulk').val(result.bulkName);
+                    $('.output_manufacture_unit_id').val(result.bulkid);
+                    $('.outputresult').val(result.resultName);
+                }
+            });
         });
     });
 

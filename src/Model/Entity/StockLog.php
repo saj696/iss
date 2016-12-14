@@ -34,3 +34,4 @@ class ReducedStock extends Entity
         'id' => false,
     ];
 }
+

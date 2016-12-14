@@ -4,36 +4,39 @@ namespace App\Controller;
 use App\Controller\AppController;
 use App\View\Helper\SystemHelper;
 use Cake\Core\App;
+use Cake\Datasource\ConnectionManager;
+use Cake\ORM\TableRegistry;
 use Cake\View\View;
 
 /**
  * FormulationLogs Controller
  *
  * @property \App\Model\Table\FormulationLogsTable $FormulationLogs
+ * @property bool|object Common
  */
 class FormulationLogsController extends AppController
 {
 
-	public $paginate = [
+    public $paginate = [
         'limit' => 15,
         'order' => [
             'FormulationLogs.id' => 'desc'
         ]
     ];
 
-/**
-* Index method
-*
-* @return void
-*/
-public function index()
-{
-			$formulationLogs = $this->FormulationLogs->find('all', [
-	'conditions' =>['FormulationLogs.status !=' => 99]
-	]);
-		$this->set('formulationLogs', $this->paginate($formulationLogs) );
-	$this->set('_serialize', ['formulationLogs']);
-	}
+    /**
+     * Index method
+     *
+     * @return void
+     */
+    public function index()
+    {
+        $formulationLogs = $this->FormulationLogs->find('all', [
+            'conditions' => ['FormulationLogs.status !=' => 99]
+        ]);
+        $this->set('formulationLogs', $this->paginate($formulationLogs));
+        $this->set('_serialize', ['formulationLogs']);
+    }
 
     /**
      * View method
@@ -44,7 +47,7 @@ public function index()
      */
     public function view($id = null)
     {
-        $user=$this->Auth->user();
+        $user = $this->Auth->user();
         $formulationLog = $this->FormulationLogs->get($id, [
             'contain' => []
         ]);
@@ -59,34 +62,93 @@ public function index()
      */
     public function add()
     {
-        $user=$this->Auth->user();
-        $time=time();
-        $formulationLog = $this->FormulationLogs->newEntity();
-        if ($this->request->is('post'))
-        {
+        $this->loadModel('StockLogs');
+        $this->loadModel('ItemUnits');
+        $this->loadModel('Stocks');
+        $user = $this->Auth->user();
+        $time = time();
+        $stockLog = $this->StockLogs->newEntity();
+        if ($this->request->is('post')) {
 
-            $data=$this->request->data;
-            $data['create_by']=$user['id'];
-            $data['create_date']=$time;
-            $formulationLog = $this->FormulationLogs->patchEntity($formulationLog, $data);
-            if ($this->FormulationLogs->save($formulationLog))
-            {
-                $this->Flash->success('The formulation log has been saved.');
+            try {
+                $saveStatus = 0;
+                $conn = ConnectionManager::get('default');
+                $conn->transactional(function () use ($stockLog, $user, $time, &$saveStatus)
+                {
+                    $data = $this->request->data;
+                    $data['create_by'] = $user['id'];
+                    $data['create_date'] = $time;
+
+//            Add more operations
+                    foreach($data['details'] as $stockID => $stockDetails):
+                        $itemUnit = $this->ItemUnits->find('all',['conditions' => ['id' => $stockDetails['item_unit']], 'fields'=>['item_id','manufacture_unit_id'] ])->hydrate(false)->first();
+                        $stockID = $this->Stocks->find('all',['conditions' => ['item_id' => $itemUnit['item_id'], 'manufacture_unit_id' => $itemUnit['manufacture_unit_id']], 'fields'=>['id'] ])->hydrate(false)->first();
+                        $stockRow = $this->Stocks->get($stockID);
+                        $stockRow->quantity = ($stockRow->quantity) - $stockDetails['amount'];
+                        $this->Stocks->save($stockRow);
+
+//            Stock log data insert
+                        $stockLog = $this->StockLogs->newEntity();
+                        $stockLogData['warehouse_id'] = $data['warehouse_id'];
+                        $stockLogData['manufacture_unit_id'] = $itemUnit['manufacture_unit_id'];
+                        $stockLogData['item_id'] = $itemUnit['item_id'];
+                        $stockLogData['stock_id'] = $stockID['id'];
+                        $stockLogData['type'] = 9;
+                        $stockLogData['quantity'] = $stockDetails['amount'];
+                        $stockLogData['status'] = 1;
+                        $stockLogData['created_by'] = $user['id'];
+                        $stockLogData['created_date'] = $time;
+                        $stockLog = $this->StockLogs->patchEntity($stockLog, $stockLogData);
+                        $this->StockLogs->save($stockLog);
+                    endforeach;
+
+//            Add item unit for formulate product
+                    $stockID = $this->Stocks->find('all',['conditions' => ['item_id' => $data['item_id'], 'manufacture_unit_id' => $data['manufacture_unit_id']], 'fields'=>['id'] ])->hydrate(false)->first();
+                    if($stockID):
+                        $stockRow = $this->Stocks->get($stockID);
+                        $stockRow->quantity = ($stockRow->quantity) + ($data['output_result'] + $data['output_gain']);
+                        $this->Stocks->save($stockRow);
+                    else:
+//                if not present in the stock table
+                        $stockAdd = $this->Stocks->newEntity();
+                        $stockAddData['warehouse_id'] = $data['warehouse_id'];
+                        $stockAddData['item_id'] = $data['item_id'];
+                        $stockAddData['manufacture_unit_id'] = $data['manufacture_unit_id'];
+                        $stockAddData['quantity'] = $data['output_result'] + $data['output_gain'];
+                        $stockAddData['approved_quantity'] = 0;
+                        $stockAddData['status'] = $data['warehouse_id'];
+                        $stockAddData['status'] = 1;
+                        $stockAddData['created_by'] = $user['id'];
+                        $stockAddData['created_date'] = $time;
+                        $stockAdd = $this->Stocks->patchEntity($stockAdd, $stockAddData);
+                        $this->Stocks->save($stockAdd);
+                    endif;
+
+                });
+
+                $this->Flash->success('Payment Successful');
+                return $this->redirect(['action' => 'index']);
+            } catch (\Exception $e) {
+                echo '<pre>';
+                print_r($e);
+                echo '</pre>';
+                exit;
+                $this->Flash->error('Payment Unsuccessful');
                 return $this->redirect(['action' => 'index']);
             }
-            else
-            {
-                $this->Flash->error('The formulation log could not be saved. Please, try again.');
-            }
+
+
+
+
+
+
         }
+
 //        Show Warehouse
         $this->loadModel('Warehouses');
-        $warehouseNames = $this->Warehouses->find('list',['conditions'=> ['id' => $user['warehouse_id']], 'fields'=>['id','name'] ])->hydrate(false)->toArray();
+        $warehouseNames = $this->Warehouses->find('list', ['conditions' => ['id' => $user['warehouse_id']], 'fields' => ['id', 'name']])->hydrate(false)->toArray();
 
-        App::import('Helper', 'SystemHelper');
-        $SystemHelper = new SystemHelper(new View());
-        $itemUnit = $SystemHelper->get_item_unit_array();
-        $this->set(compact('formulationLog','warehouseNames','itemUnit'));
+        $this->set(compact('stockLog', 'warehouseNames'));
         $this->set('_serialize', ['formulationLog']);
     }
 
@@ -99,24 +161,20 @@ public function index()
      */
     public function edit($id = null)
     {
-        $user=$this->Auth->user();
-        $time=time();
+        $user = $this->Auth->user();
+        $time = time();
         $formulationLog = $this->FormulationLogs->get($id, [
             'contain' => []
         ]);
-        if ($this->request->is(['patch', 'post', 'put']))
-        {
-            $data=$this->request->data;
-            $data['update_by']=$user['id'];
-            $data['update_date']=$time;
+        if ($this->request->is(['patch', 'post', 'put'])) {
+            $data = $this->request->data;
+            $data['update_by'] = $user['id'];
+            $data['update_date'] = $time;
             $formulationLog = $this->FormulationLogs->patchEntity($formulationLog, $data);
-            if ($this->FormulationLogs->save($formulationLog))
-            {
+            if ($this->FormulationLogs->save($formulationLog)) {
                 $this->Flash->success('The formulation log has been saved.');
                 return $this->redirect(['action' => 'index']);
-            }
-            else
-            {
+            } else {
                 $this->Flash->error('The formulation log could not be saved. Please, try again.');
             }
         }
@@ -136,23 +194,34 @@ public function index()
 
         $formulationLog = $this->FormulationLogs->get($id);
 
-        $user=$this->Auth->user();
-        $data=$this->request->data;
-        $data['updated_by']=$user['id'];
-        $data['updated_date']=time();
-        $data['status']=99;
+        $user = $this->Auth->user();
+        $data = $this->request->data;
+        $data['updated_by'] = $user['id'];
+        $data['updated_date'] = time();
+        $data['status'] = 99;
         $formulationLog = $this->FormulationLogs->patchEntity($formulationLog, $data);
-        if ($this->FormulationLogs->save($formulationLog))
-        {
+        if ($this->FormulationLogs->save($formulationLog)) {
             $this->Flash->success('The formulation log has been deleted.');
-        }
-        else
-        {
+        } else {
             $this->Flash->error('The formulation log could not be deleted. Please, try again.');
         }
         return $this->redirect(['action' => 'index']);
     }
 
+
+// Warehouse trigger
+    public function wareHouseTrigger()
+    {
+        $data = $this->request->data;
+        $wareHouseData = $data['warehouse'];
+        $itemName = $this->Common->item_name_resolver($wareHouseData);
+        $this->response->body(json_encode($itemName));
+        return $this->response;
+
+    }
+
+
+// Check stock quantity
     public function stock()
     {
         $data = $this->request->data;
@@ -163,10 +232,10 @@ public function index()
         $itemUnitData = $this->ItemUnits->get($itemUnit);
 
         $this->loadModel('Stocks');
-        $quantity = $this->Stocks->find('all',['conditions' => ['item_id' => $itemUnitData['item_id'], 'manufacture_unit_id' => $itemUnitData['manufacture_unit_id']], 'fields' => 'quantity'])->hydrate(false)->first();
+        $quantity = $this->Stocks->find('all', ['conditions' => ['item_id' => $itemUnitData['item_id'], 'manufacture_unit_id' => $itemUnitData['manufacture_unit_id']], 'fields' => 'quantity'])->hydrate(false)->first();
 
         $this->loadModel('Units');
-        $unitType = $this->Units->find('all',['conditions' => ['id' => $itemUnitData['manufacture_unit_id']], 'fields' => ['unit_type','converted_quantity']])->hydrate(false)->first();
+        $unitType = $this->Units->find('all', ['conditions' => ['id' => $itemUnitData['manufacture_unit_id']], 'fields' => ['unit_type', 'converted_quantity']])->hydrate(false)->first();
         $compact = [
             'unitType' => $unitType['unit_type'],
             'convertedQuantity' => $unitType['converted_quantity'],
@@ -174,6 +243,72 @@ public function index()
         ];
         $this->response->body(json_encode($compact));
         return $this->response;
+    }
+
+//    Find item unit based on item
+    public function item()
+    {
+        $this->autoRender = false;
+        $data = $this->request->data;
+        $item = $data['item'];
+
+        $item_unit_table = TableRegistry::get('item_units');
+//        $itemID = $item_unit_table->find('all')->where(['id' => $item])->first();
+
+        // pr($result->toArray());die;
+        $result = $item_unit_table->find('all')->contain(['Items', 'Units'])->where([
+            'item_units.item_id' => $item,
+            'item_units.status' => 1,
+            'Units.status' => 1
+        ])->hydrate(false);
+
+        $unitBsaedItem = [];
+        foreach ($result as $key => $value):
+            $unitBsaedItem[$value['id']] = SystemHelper::getItemAlias($value['item']['id']) . '--' . $value['unit']['unit_display_name'];
+        endforeach;
+
+        $this->response->body(json_encode($unitBsaedItem));
+        return $this->response;
+    }
+
+//    Find out the total final result
+    public function outputGeneration()
+    {
+        $user = $this->Auth->user();
+        $wareHouseID = $user['warehouse_id'];
+        $data = $this->request->data;
+        $itemVal = $data['itemVal'];
+        $totalAmount = $data['totalAmount'];
+        $itemIdData = TableRegistry::get('item_units')->find('all')->where(['id' => $itemVal])->first();
+
+        $bulkInfo = TableRegistry::get('units')->find('all')->where(['id' => $itemIdData['manufacture_unit_id']])->first();
+        $bulk = $bulkInfo['unit_type'];
+        $bulkResult = [];
+        if($bulk == 2 || $bulk == 1):
+            $bulkResult['id'] = 2;
+            $bulkResult['name'] = "KG";
+        else:
+            $bulkResult['id'] = 4;
+            $bulkResult['name'] = "L";
+        endif;
+//      output item id from production rule table
+        $resultInfo = TableRegistry::get('production_rules')->find('all')->where(['input_item_id' =>$itemIdData['item_id'] ])->first();
+        $outputItemID = $resultInfo['output_item_id'];
+
+        $outputName = $this->Common->specific_item_name_resolver($wareHouseID, $outputItemID);
+        $result = ((float)($resultInfo['output_quantity']) * (float)$totalAmount) / (float)($resultInfo['input_quantity']);
+        $output = [
+            'itemId' => $outputName['id'],
+            'itemName' => $outputName['name'],
+            'bulkid' => $bulkResult['id'],
+            'bulkName' => $bulkResult['name'],
+            'resultName' => number_format($result,4),
+        ];
+
+        if($result):
+            $this->response->body(json_encode($output));
+            return $this->response;
+        endif;
 
     }
 }
