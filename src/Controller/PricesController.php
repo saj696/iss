@@ -95,7 +95,7 @@ class PricesController extends AppController
             return $this->redirect(['action' => 'index']);
         }
 
-        $item_unit = SystemHelper::get_item_unit_array($user['warehouse_id']);
+        $item_unit = SystemHelper::get_item_unit_array();
         $this->set(compact('price', 'item_unit'));
         $this->set('_serialize', ['price']);
     }
