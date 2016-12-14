@@ -138,7 +138,30 @@ class CommonComponent extends Component
             }
         }
         return $item;
+    }
 
+//    Output item name generation
+    public function specific_item_name_resolver($warehouse_id, $item_id)
+    {
+        $items = TableRegistry::get('warehouse_items')->find()
+            ->select(['use_alias' => 'warehouse_items.use_alias', 'id' => 'items.id', 'name' => 'items.name', 'alias' => 'items.alias'])
+            ->where(['warehouse_items.warehouse_id' => $warehouse_id])
+            ->where(['items.id' => $item_id])
+            ->leftJoin('items', 'items.id=warehouse_items.item_id')
+            ->toArray();
+        $item = [];
+        foreach ($items as $row) {
 
+            if ($row['use_alias']) {
+                $item['name'] = $row['alias'];
+                $item['id'] = $row['id'];
+
+            } else {
+                $item['name'] = $row['name'];
+                $item['id'] = $row['id'];
+
+            }
+        }
+        return $item;
     }
 }
