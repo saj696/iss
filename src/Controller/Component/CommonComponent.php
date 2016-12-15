@@ -44,7 +44,40 @@ class CommonComponent extends Component
             $security['alphabet']
         );
     }
+    public function initiate_stock($warehouse_id, $item_id, $manufacture_unit_id, $quantity)
+    {
+        $time = time();
+        $user = $this->Auth->user();
+        $stocks_table = TableRegistry::get('stocks');
 
+        $stocks = $stocks_table->find('all')
+            ->where(['item_id' => $item_id, 'warehouse_id' => $warehouse_id, 'manufacture_unit_id' => $manufacture_unit_id, 'status' => 1])
+            ->hydrate(false)
+            ->first();
+        if (empty($stocks)) {
+            $stock_entity = $stocks_table->newEntity();
+            $initiate_stock['item_id'] = $item_id;
+            $initiate_stock['warehouse_id'] = $warehouse_id;
+            $initiate_stock['manufacture_unit_id'] = $manufacture_unit_id;
+            $initiate_stock['quantity'] = $quantity;
+            $initiate_stock['type'] = 6;
+            $initiate_stock['created_by'] = $user['id'];
+            $initiate_stock['created_date'] = $time;
+            $stock_entity = $stocks_table->patchEntity($stock_entity, $initiate_stock);
+            if ($stocks_table->save($stock_entity)) {
+                $result['stock_id'] = $stock_entity->id;
+                return $result; //stock id
+            } else {
+                pr($stock_entity->errors());
+                return 0;
+                die;
+            }
+        } else {
+            echo "Stock Not Empty";
+            die;
+        }
+
+    }
     public function pay_invoice_due($customer_id, $amount, $payment_account_code)
     {
         $response_array = [];

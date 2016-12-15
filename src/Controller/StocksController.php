@@ -29,9 +29,6 @@ class StocksController extends AppController
      */
     public function index()
     {
-
-        ///pr(SystemHelper::get_item_unit_array());die;
-
         $user = $this->Auth->user();
         $stocks = $this->Stocks->find('all', [
             'conditions' => ['Stocks.status !=' => 99, 'Stocks.warehouse_id' => $user['warehouse_id']],
@@ -90,13 +87,15 @@ class StocksController extends AppController
                         if ($existing) {
                             $updateData['quantity'] = $existing['quantity'] + $detail['quantity'];
                             $updateData['approved_quantity'] = 0;
+                            $updateData['updated_by'] = $user['id'];
+                            $updateData['updated_date'] = $time;
                             //  $updateData['approved_quantity'] = $existing['approved_quantity'] + $detail['approved_quantity'];
                             $stock = $this->Stocks->patchEntity($existing, $updateData);
                             if ($this->Stocks->save($stock)) {
                                 $stock_logs = $this->StockLogs->newEntity();
                                 $log['stock_id'] = $stock->id;
                                 $log['warehouse_id'] = $input['warehouse_id'];
-                                $log['quantity'] = $updateData['quantity'];
+                                $log['quantity'] = $detail['quantity'];
                                 $log['type'] = $detail['type'];
                                 $log['created_by'] = $user['id'];
                                 $log['item_id'] = $detail['item_id'];
@@ -107,23 +106,17 @@ class StocksController extends AppController
                             }
 
                         } else {
-                            $stock = $this->Stocks->newEntity();
-                            $data['warehouse_id'] = $input['warehouse_id'];
-                            $data['item_id'] = $detail['item_id'];
-                            $data['manufacture_unit_id'] = $detail['manufacture_unit_id'];
-                            $data['quantity'] = $detail['quantity'];
-                            $data['approved_quantity'] = 0;
-                            $data['created_by'] = $user['id'];
-                            $data['created_date'] = $time;
-                            $stock = $this->Stocks->patchEntity($stock, $data);
-                            if ($this->Stocks->save($stock)) {
+                            // initiate_stock method returns stock_id
+                            $stock_initialized = $this->Common->initiate_stock($input['warehouse_id'], $detail['item_id'], $detail['manufacture_unit_id'], $detail['quantity']);
+
+                            if ($stock_initialized['stock_id']) {
                                 $stock_logs = $this->StockLogs->newEntity();
-                                $log['stock_id'] = $stock->id;
+                                $log['stock_id'] = $stock_initialized['stock_id'];
                                 $log['warehouse_id'] = $input['warehouse_id'];
                                 $log['item_id'] = $detail['item_id'];
                                 $log['manufacture_unit_id'] = $detail['manufacture_unit_id'];
                                 $log['quantity'] = $detail['quantity'];
-                                $log['type'] = $detail['type'];
+                                $log['type'] = 6; // stock initiated
                                 $log['created_by'] = $user['id'];
                                 $log['created_date'] = $time;
                                 $stock_logs = $this->StockLogs->PatchEntity($stock_logs, $log);

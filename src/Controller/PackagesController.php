@@ -78,6 +78,8 @@ class PackagesController extends AppController
 
                     if ($existing) {
                         $updateData['quantity'] = $existing['quantity'] + $packages['quantity'];
+                        $updateData['updated_by'] = $user['id'];
+                        $updateData['updated_date'] = $time;
                         $updateData['approved_quantity'] = 0;
                         $stock = $this->Stocks->patchEntity($existing, $updateData);
                         if ($this->Stocks->save($stock)) {
@@ -86,7 +88,6 @@ class PackagesController extends AppController
                             $log['warehouse_id'] = $data['warehouse_id'];
                             $log['quantity'] = $packages['quantity'];
                             $log['type'] = 7; //conversion
-                            $log['created_by'] = $user['id'];
                             $log['item_id'] = $packages['item_id'];
                             $log['manufacture_unit_id'] = $packages['manufacture_unit_id'];
                             $log['created_date'] = $time;
@@ -96,18 +97,12 @@ class PackagesController extends AppController
                         }
 
                     } else {
-                        $stock = $this->Stocks->newEntity();
-                        $data['warehouse_id'] = $data['warehouse_id'];
-                        $data['item_id'] = $packages['item_id'];
-                        $data['manufacture_unit_id'] = $packages['manufacture_unit_id'];
-                        $data['quantity'] = $packages['quantity'];
-                        $data['approved_quantity'] = 0;
-                        $data['created_by'] = $user['id'];
-                        $data['created_date'] = $time;
-                        $stock = $this->Stocks->patchEntity($stock, $data);
-                        if ($this->Stocks->save($stock)) {
+                        //initiating stock
+                        $stock_initialized = $stock_initialized = $this->Common->initiate_stock($data['warehouse_id'], $packages['item_id'], $packages['manufacture_unit_id'], $packages['quantity']);
+
+                        if ($stock_initialized) {
                             $stock_logs = $this->StockLogs->newEntity();
-                            $log['stock_id'] = $stock->id;
+                            $log['stock_id'] = $stock_initialized['stock_id'];
                             $log['warehouse_id'] = $data['warehouse_id'];
                             $log['item_id'] = $packages['item_id'];
                             $log['manufacture_unit_id'] = $packages['manufacture_unit_id'];
