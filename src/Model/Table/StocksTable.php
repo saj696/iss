@@ -36,7 +36,7 @@ class StocksTable extends Table
 
         $this->belongsTo('Units', [
             'foreignKey' => 'manufacture_unit_id',
-            'joinType' => 'INNER'
+            'joinType' => 'LEFT'
         ]);
 
     }

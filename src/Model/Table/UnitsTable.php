@@ -25,7 +25,13 @@ class UnitsTable extends Table
         $this->displayField('unit_display_name');
         $this->primaryKey('id');
 
+//        $this->hasMany('Units', [
+//            'foreignKey' => 'manufacture_unit_id',
+//            'joinType' => 'INNER'
+//        ]);
+
     }
+
 
     /**
      * Default validation rules.

@@ -1,5 +1,8 @@
 <?php
 $status = \Cake\Core\Configure::read('status_options');
+use Cake\Routing\Router;
+use Cake\Core\Configure;
+
 ?>
 
 <div class="page-bar">
@@ -16,10 +19,16 @@ $status = \Cake\Core\Configure::read('status_options');
 <div class="row">
     <div class="col-md-12">
         <!-- BEGIN BORDERED TABLE PORTLET-->
+
+        <form class="form-horizontal" method="post"
+              action="<?php echo Router::url('/', true); ?>DoEvents/makeDoDs" enctype="multipart/form-data">
         <div class="portlet box blue-hoki">
             <div class="portlet-title">
                 <div class="caption">
                     <i class="fa fa-list-alt fa-lg"></i><?= __('Do Event List') ?>
+                </div>
+                <div class="tools">
+                    <button type="submit" class="btn btn-danger">Make...</button>
                 </div>
 
             </div>
@@ -43,11 +52,19 @@ $status = \Cake\Core\Configure::read('status_options');
                                 <td><?= date('d-M-Y',$doEvent->created_date)?></td>
                                 <td class="actions">
                                     <?php
-                                    echo $this->Html->link(__('View'), ['action' => 'view', $doEvent->id], ['class' => 'btn btn-sm btn-info']);
+                                    if($doEvent['action_status']==Configure::read('do_object_event_action_status')['awaiting_approval']) {
+                                        echo $this->Html->link(__('View'), ['action' => 'view', $doEvent->id], ['class' => 'btn btn-sm btn-info']);
+                                    }else{ ?>
 
-//                                    echo $this->Html->link(__('Edit'), ['action' => 'edit', $doEvent->id], ['class' => 'btn btn-sm btn-warning']);
-//
-//                                    echo $this->Form->postLink(__('Delete'), ['action' => 'delete', $doEvent->id], ['class' => 'btn btn-sm btn-danger', 'confirm' => __('Are you sure you want to delete # {0}?', $doEvent->id)]);
+                                                <div class="checkbox">
+                                                    <label>
+                                                        <input type="checkbox" value="<?= $doEvent['id']?>" name="events[]"> Select
+                                                    </label>
+                                                </div>
+
+                                    <?php
+
+                                    }
 
                                     ?>
 
@@ -58,15 +75,10 @@ $status = \Cake\Core\Configure::read('status_options');
                         </tbody>
                     </table>
                 </div>
-                <ul class="pagination">
-                    <?php
-                    echo $this->Paginator->prev('<<');
-                    echo $this->Paginator->numbers();
-                    echo $this->Paginator->next('>>');
-                    ?>
-                </ul>
+
             </div>
         </div>
+            </form>
         <!-- END BORDERED TABLE PORTLET-->
     </div>
 </div>
