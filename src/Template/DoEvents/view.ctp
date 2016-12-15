@@ -63,8 +63,8 @@ use App\View\Helper\SystemHelper;
                                     </td>
                                     <td><input class="form-control" name="" type="text" readonly
                                                value="<?php foreach ($row['item']['item_units'] as $r) {
-                                                   if ($r['id'] == $row['unit_id']) {
-                                                       echo $r['unit_display_name'];
+                                                   if ($r['manufacture_unit_id'] == $row['unit_id']) {
+                                                       echo $r['unit']['unit_display_name'];
                                                    }
                                                } ?>"></td>
                                     <td><input class="form-control" name="" type="text" readonly

@@ -270,12 +270,23 @@ class DoObjectsController extends AppController
 
             $data = $this->request->data;
             //echo "<pre>";print_r($data);die();
-            $item_unit = TableRegistry::get('item_units')->find('all', ['conditions' => ['item_id' => $data['item_id']], 'fields' => ['id', 'unit_display_name']])->hydrate(false)->toArray();
+//            $item_unit = TableRegistry::get('item_units')->find('all',
+//                ['conditions' => ['item_id' => $data['item_id']],
+//                    'fields' => ['id', 'unit_display_name']])
+//
+//                ->hydrate(false)->toArray();
+
+            $item_unit = TableRegistry::get('item_units')->find('all',
+                ['conditions' => ['item_id' => $data['item_id']]])
+                ->contain(['Units'])
+
+                ->hydrate(false)->toArray();
+         //   echo "<pre>";print_r($item_unit);die();
             $item_units = [];
             foreach ($item_unit as $unit):
-                $item_units[$unit['id']] = $unit['unit_display_name'];
+                $item_units[$unit['unit']['id']] = $unit['unit']['unit_display_name'];
             endforeach;
-            //  echo "<pre>";print_r($item_units);die();
+           //   echo "<pre>";print_r($item_units);die();
             $this->response->body(json_encode($item_units));
             return $this->response;
 
