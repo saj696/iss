@@ -127,8 +127,7 @@ class CommonComponent extends Component
         });
     }
 
-    public
-    function closest($array, $price)
+    public function closest($array, $price)
     {
         foreach ($array as $k => $v) {
             $diff[abs($v - $price)] = $k;
@@ -136,6 +135,27 @@ class CommonComponent extends Component
 
         $closest_key = $diff[min(array_keys($diff))];
         return array($closest_key, $array[$closest_key]);
+        return $item;
+    }
+
+    public function item_name_resolver($warehouse_id)
+    {
+        $items = TableRegistry::get('warehouse_items')->find()
+            ->select(['use_alias' => 'warehouse_items.use_alias', 'id' => 'items.id', 'name' => 'items.name', 'alias' => 'items.alias'])
+            ->where(['warehouse_items.warehouse_id' => $warehouse_id])
+            ->leftJoin('items', 'items.id=warehouse_items.item_id')
+            ->toArray();
+        $item = [];
+        foreach ($items as $row) {
+
+            if ($row['use_alias']) {
+                $item[$row['id']] = $row['alias'];
+
+            } else {
+                $item[$row['id']] = $row['name'];
+
+            }
+        }
         return $item;
     }
 
