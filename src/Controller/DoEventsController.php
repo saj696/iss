@@ -119,10 +119,6 @@ class DoEventsController extends AppController
     }
 
 
-
-
-
-
     public function getItems()
     {
         if ($this->request->is(['patch', 'post', 'put'])) {
@@ -184,6 +180,7 @@ class DoEventsController extends AppController
                 $do_object_ids[] = $doEvent->do_object_id;
             }
 
+
             $do_items = TableRegistry::get('do_object_items')->find()
                 ->select(['item_id' => 'do_object_items.item_id',
                     'unit_id' => 'do_object_items.unit_id',
@@ -200,13 +197,13 @@ class DoEventsController extends AppController
                 ->leftJoin('units', 'units.id=do_object_items.unit_id')
                 ->group(['do_object_items.item_id', 'do_object_items.unit_id'])
                 ->order(['do_object_items.item_id' => 'DESC']);
-            $do_items=$do_items->toArray();
+            $do_items = $do_items->toArray();
 
 //echo "<pre>";print_r($do_items->toArray());die();
             foreach ($do_items as $row) {
 
                 $stocks = TableRegistry::get('stocks')->find()
-                    ->where(['manufacture_unit_id' => $row->unit_id, 'item_id' => $row->item_id,'warehouse_id'=>$data['warehouse_id']])
+                    ->where(['manufacture_unit_id' => $row->unit_id, 'item_id' => $row->item_id, 'warehouse_id' => $data['warehouse_id']])
                     ->first();
                 if ($stocks) {
                     $row['stock_amount'] = $stocks['quantity'];
@@ -216,21 +213,21 @@ class DoEventsController extends AppController
             }
 
             foreach ($do_items as $row) {
-                $r=$row['asked_quantity']-$row['stock_amount'];
-                if($r>0){
-                    if($row['unit_type']== array_flip(Configure::read('pack_size_units'))['gm']||$row['unit_type']== array_flip(Configure::read('pack_size_units'))['ml']){
-                        $row['require']=($r*($row['converted_quantity']?$row['converted_quantity']:1))/1000;
-                    }else{
-                        $row['require']=($r*($row['converted_quantity']?$row['converted_quantity']:1))/1;
+                $r = $row['asked_quantity'] - $row['stock_amount'];
+                if ($r > 0) {
+                    if ($row['unit_type'] == array_flip(Configure::read('pack_size_units'))['gm'] || $row['unit_type'] == array_flip(Configure::read('pack_size_units'))['ml']) {
+                        $row['require'] = ($r * ($row['converted_quantity'] ? $row['converted_quantity'] : 1)) / 1000;
+                    } else {
+                        $row['require'] = ($r * ($row['converted_quantity'] ? $row['converted_quantity'] : 1)) / 1;
                     }
-                }else{
-                    $row['require']=0;
+                } else {
+                    $row['require'] = 0;
                 }
 
-                if($r>0){
-                    $row['further_needed']=$r;
-                }else{
-                    $row['further_needed']=0;
+                if ($r > 0) {
+                    $row['further_needed'] = $r;
+                } else {
+                    $row['further_needed'] = 0;
                 }
             }
 
@@ -246,19 +243,193 @@ class DoEventsController extends AppController
             $warehouses->where('global_id -' . $userAdminGlobal['global_id'] . '>= ' . $limitStart);
             $warehouses->where('global_id -' . $userAdminGlobal['global_id'] . '< ' . $limitEnd);
             $warehouses->where('warehouses.status!= 99');
-            $this->set(compact('do_items','warehouses'));
+
+            $parent_warehouse_id = $data['warehouse_id'];
+            $this->set(compact('do_items', 'warehouses', 'do_object_ids', 'parent_warehouse_id'));
 
         }
     }
 
-    public function getItemName(){
+    public function getItemName()
+    {
         if ($this->request->is(['patch', 'post', 'put'])) {
             $data = $this->request->data;
-           // echo "<pre>";print_r($data);die();
+            // echo "<pre>";print_r($data);die();
             $items = $this->Common->item_name_resolver($data['warehouse_id']);
             $this->response->body(json_encode($items));
             return $this->response;
-          //  echo "<pre>";print_r($items);die();
+            //  echo "<pre>";print_r($items);die();
+        }
+    }
+
+    public function fixDoQuantities()
+    {
+        if ($this->request->is(['patch', 'post', 'put'])) {
+
+            $user = $this->Auth->user();
+            $time = time();
+            $data = $this->request->data;
+          // echo "<pre>";print_r($data);die();
+            $this->loadModel('ddos');
+            $this->loadModel('ddos_items');
+            $this->loadModel('dds');
+            $this->loadModel('do_events');
+
+            //serial number
+            $this->loadModel('do_events');
+            // Serials Table Insert/ update
+            $this->loadModel('Serials');
+            $serial_for = array_flip(Configure::read('serial_types'))['do_ds_object'];
+            $year = date('Y');
+
+            if ($user['user_group_id'] == Configure::read('depot_in_charge_ug')):
+                $trigger_type = array_flip(Configure::read('serial_trigger_types'))['depot'];
+                $trigger_id = $user['depot_id'];
+            elseif ($user['user_group_id'] == Configure::read('warehouse_in_charge_ug')):
+                $trigger_type = array_flip(Configure::read('serial_trigger_types'))['warehouse'];
+                $trigger_id = $user['warehouse_id'];
+            else:
+                $trigger_type = array_flip(Configure::read('serial_trigger_types'))['others'];
+                $trigger_id = $user['administrative_unit_id'];
+            endif;
+
+            $existence = $this->Serials->find('all', ['conditions' => ['serial_for' => $serial_for, 'year' => $year, 'trigger_type' => $trigger_type, 'trigger_id' => $trigger_id]])->first();
+            $serial_no = null;
+            if ($existence) {
+                $serial = TableRegistry::get('serials');
+                $query = $serial->query();
+                $query->update()->set(['serial_no' => $existence['serial_no'] + 1])->where(['id' => $existence['id']])->execute();
+                $serial_no = $existence['serial_no'] + 1;
+            } else {
+                $serial = $this->Serials->newEntity();
+                $serialData['trigger_type'] = $trigger_type;
+                $serialData['trigger_id'] = $trigger_id;
+                $serialData['serial_for'] = $serial_for;
+                $serialData['year'] = $year;
+                $serialData['serial_no'] = 1;
+                $serialData['created_by'] = $user['id'];
+                $serialData['created_date'] = $time;
+                $serial = $this->Serials->patchEntity($serial, $serialData);
+                $this->Serials->save($serial);
+                $serial_no = 1;
+
+            }
+         //   echo "<pre>";print_r($serial_no);die();
+
+            //End serial number
+            $dos_ids=[];
+            $dos_items_ids=[];
+            foreach ($data['do_object_items'] as $row) {
+
+                // validation test
+                if (!$this->checkWareHouseSuperVisorAvailability($row['destination_id'])) {
+                    $this->Flash->error('Sorry!! System Did Not Found  One Of WareHouses Incharge ID');
+                    return $this->redirect(['action' => 'index']);
+                }
+            }
+
+            // Khala shuru
+
+            foreach ($data['do_object_items'] as $row) {
+
+                $getDOs=TableRegistry::get('ddos')->find('all')->where(['do_delivering_warehouse'=>$row['warehouse_id'],'do_receiving_warehouse'=>$row['destination_id'],'created_date'=>$time])->first();
+                if($getDOs){
+                    $do_id=$getDOs['id'];
+                }else{
+                    $set_DOs = $this->ddos->newEntity();
+                    $dos_Data['date'] = $time;
+                    $dos_Data['do_delivering_warehouse'] = $row['warehouse_id'];
+                    $dos_Data['do_receiving_warehouse'] = $row['destination_id'];
+                    $dos_Data['do_ds_serial_number'] = $serial_no;
+                    $dos_Data['created_by'] = $user['id'];
+                    $dos_Data['created_date'] = $time;
+                    $set_DOs = $this->ddos->patchEntity($set_DOs, $dos_Data);
+                    $inserted_dos_data =   $this->ddos->save($set_DOs);
+                    $do_id= $inserted_dos_data['id'];
+                    $dos_ids[]=$do_id;
+
+                    //INSERT data into DO_events table for DO's
+
+                    $set_do_event = $this->do_events->newEntity();
+                    $do_event_Data['sender_id'] = $user['id'];
+                    $do_event_Data['recipient_id'] = $this->getWareHouseSuperVisorUserID($row['destination_id']);
+                    $do_event_Data['do_object_id'] = $do_id;
+                    $do_event_Data['events_tepe'] =  Configure::read('object_type')['DO'];
+                    $do_event_Data['action_status'] = Configure::read('do_object_event_action_status')['awaiting_delivery'];
+                    $do_event_Data['created_by'] = $user['id'];
+                    $do_event_Data['created_date'] = $time;
+                    $set_do_event = $this->do_events->patchEntity($set_do_event, $do_event_Data);
+                    $inserted_do_event_data =   $this->do_events->save($set_do_event);
+
+                }
+
+                //INSERT data in to do_items table
+
+                     $set_dos_item= $this->ddos_items->newEntity();
+                     $dos_item_data['ddo_id']=$do_id;
+                     $dos_item_data['item_id']=$row['item_id'];
+                     $dos_item_data['unit_id']=$row['do_unit'];
+                     $dos_item_data['quantity']=$row['do_unit'];
+                     $set_dos_item = $this->ddos_items->patchEntity($set_dos_item, $dos_item_data);
+                     $inserted_dos_item_data =   $this->ddos_items->save($set_dos_item);
+                     $dos_items_ids[]=$inserted_dos_item_data['id'];
+
+
+            }
+
+            //INSERT data in to ds table
+            $set_ds= $this->dds->newEntity();
+            $ds_data['date']=$time;
+            $ds_data['pi_ids']=json_encode($data['pi_ids']);
+            $ds_data['do_ids']=json_encode($dos_ids);
+            $ds_data['do_ds_serial_number']=$serial_no;
+            $set_ds = $this->dds->patchEntity($set_ds, $ds_data);
+            $inserted_ds_data =   $this->dds->save($set_ds);
+
+            //INSERT data into DO_events table for Ds's
+
+            $set_do_event = $this->do_events->newEntity();
+            $do_event_Data['sender_id'] = $user['id'];
+            $do_event_Data['recipient_id'] = $data['parent_warehouse_id'];
+            $do_event_Data['do_object_id'] = $inserted_ds_data['id'];
+            $do_event_Data['events_tepe'] =  Configure::read('object_type')['DS'];
+            $do_event_Data['action_status'] = Configure::read('do_object_event_action_status')['awaiting_delivery'];
+            $do_event_Data['created_by'] = $user['id'];
+            $do_event_Data['created_date'] = $time;
+            $set_do_event = $this->do_events->patchEntity($set_do_event, $do_event_Data);
+            $inserted_do_event_data =   $this->do_events->save($set_do_event);
+          //  $dos_items_ids[]=$inserted_dos_item_data['id'];
+          //  echo "<pre>";print_r($inserted_do_event_data);die();
+            echo "<pre>";print_r($inserted_ds_data);die();
+
+
+
+//            $id= $this->getWareHouseSuperVisorUserID(1);
+
+
+            echo "<pre>";
+            print_r($data);
+            die();
+        }
+    }
+
+    private function checkWareHouseSuperVisorAvailability($wareHouse_id)
+    {
+        $user = TableRegistry::get('users')->find('all')->where(['warehouse_id' => $wareHouse_id])->first();
+        if ($user) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    private function getWareHouseSuperVisorUserID($wareHouse_id)
+    {
+        $user = TableRegistry::get('users')->find('all')->where(['warehouse_id' => $wareHouse_id])->first();
+        if ($user) {
+            return $user['id'];
+        } else {
+            return false;
         }
     }
 }

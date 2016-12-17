@@ -86,11 +86,11 @@ class DoEventsTable extends Table
      * @param \Cake\ORM\RulesChecker $rules The rules object to be modified.
      * @return \Cake\ORM\RulesChecker
      */
-    public function buildRules(RulesChecker $rules)
-    {
-//        $rules->add($rules->existsIn(['sender_id'], 'Senders'));
-//        $rules->add($rules->existsIn(['recipient_id'], 'Recipients'));
-        $rules->add($rules->existsIn(['do_object_id'], 'DoObjects'));
-        return $rules;
-    }
+//    public function buildRules(RulesChecker $rules)
+//    {
+////        $rules->add($rules->existsIn(['sender_id'], 'Senders'));
+////        $rules->add($rules->existsIn(['recipient_id'], 'Recipients'));
+//      //  $rules->add($rules->existsIn(['do_object_id'], 'DoObjects'));
+//        return $rules;
+//    }
 }

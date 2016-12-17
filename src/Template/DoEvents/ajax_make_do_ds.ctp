@@ -1,5 +1,4 @@
-
-<?php  use Cake\Routing\Router;?>
+<?php use Cake\Routing\Router; ?>
 <?php if ($do_items) {
 
 
@@ -79,55 +78,72 @@
         <div class="panel-heading"><strong>Fix DO Quantities</strong></div>
         <div class="panel-body">
             <div class="table-scrollable">
-            <form class="form-horizontal" method="post"  action="<?php echo Router::url('/', true); ?>DoEvents/view/" enctype="multipart/form-data">
-                <table class="table table-striped table-bordered table-hover" id="file_wrapper" data-index_no="0">
-                   <thead>
-                   <tr>
-                       <td>Warehouse</td>
-                       <td>Items</td>
-                       <td>Further Needed</td>
-                       <td>Warehouse Bulk Stock</td>
-                       <td>DO Unit</td>
-                       <td>DO Quantity</td>
-                       <td>Destination</td>
-                       <td>Action</td>
-                   </tr>
-                   </thead>
-                    <tbody class="file_container">
-                    <tr class="single_row">
-                        <td><select name="do_object_items.0.warehouse_id" class="form-control warehouse_id" id="" required>
-                                <option value="">Select</option>
-                                <?php foreach ($warehouses as $row): ?>
-                                    <option value="<?= $row['id'] ?>"><?= $row['name'] ?></option>
-                                <?php endforeach; ?>
-                            </select>
-                        </td>
-                        <td><select name="do_object_items.0.item_id" class="form-control item_id" id="" required>
-                                <option value="">Select</option>
-                            </select>
-                        </td>
-                        <td><input type="text" name="do_object_items.0.further_needed" class="form-control further_needed" readonly ></td>
-                        <td><input type="text" name="do_object_items.0.warehouse_bulk_stock" class="form-control warehouse_bulk_stock" readonly value="100"></td>
-                        <td><input type="text" name="do_object_items.0.do_unit" class="form-control do_unit" required></td>
-                        <td><input type="text" name="do_object_items.0.do_quantity" class="form-control do_quantity" required></td>
-                        <td><select name="do_object_items.0.destination_id" class="form-control destination_id" required>
-                                <option value="">Select</option>
-                                <?php foreach ($warehouses as $row): ?>
-                                    <option value="<?= $row['id'] ?>"><?= $row['name'] ?></option>
-                                <?php endforeach; ?>
-                            </select>
-                        </td>
-                        <td>
-                            <button type="button" class="btn btn-success btn-sm add_file"><i class="fa fa-plus" aria-hidden="true"></i> </button>
-                            <button type="button" class="btn btn-danger btn-sm remove_file"><i class="fa fa-times"  aria-hidden="true"></i></button>
+                <form class="form-horizontal" method="post"
+                      action="<?php echo Router::url('/', true); ?>DoEvents/fixDoQuantities"
+                      enctype="multipart/form-data" id="fix_from">
+                    <?php foreach ($do_object_ids as $key => $val): ?>
+                        <input type="hidden" name="pi_ids[]" value="<?= $val ?>">
+                    <?php endforeach ?>
+                    <input type="hidden" name="parent_warehouse_id" value="<?= $parent_warehouse_id ?>">
 
-                        </td>
-                    </tr>
-                    </tbody>
-                </table>
+                    <table class="table table-striped table-bordered table-hover" id="file_wrapper" data-index_no="0">
+                        <thead>
+                        <tr>
+                            <td>Warehouse</td>
+                            <td>Items</td>
+                            <td>Further Needed</td>
+                            <td>Warehouse Bulk Stock</td>
+                            <td>DO Unit</td>
+                            <td>DO Quantity</td>
+                            <td>Destination</td>
+                            <td>Action</td>
+                        </tr>
+                        </thead>
+                        <tbody class="file_container">
+                        <tr class="single_row">
+                            <td><select name="do_object_items[0][warehouse_id]" class="form-control warehouse_id" id=""
+                                        required>
+                                    <option value="">Select</option>
+                                    <?php foreach ($warehouses as $row): ?>
+                                        <option value="<?= $row['id'] ?>"><?= $row['name'] ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </td>
+                            <td><select name="do_object_items[0][item_id]" class="form-control item_id" id="" required>
+                                    <option value="">Select</option>
+                                </select>
+                            </td>
+                            <td><input type="text" name="do_object_items[0][further_needed]"
+                                       class="form-control further_needed" readonly></td>
+                            <td><input type="text" name="do_object_items[0][warehouse_bulk_stock]"
+                                       class="form-control warehouse_bulk_stock" readonly value="100"></td>
+                            <td><input type="text" name="do_object_items[0][do_unit]" class="form-control do_unit"
+                                       required></td>
+                            <td><input type="text" name="do_object_items[0][do_quantity]"
+                                       class="form-control do_quantity" required></td>
+                            <td><select name="do_object_items[0][destination_id]" class="form-control destination_id"
+                                        required>
+                                    <option value="">Select</option>
+                                    <?php foreach ($warehouses as $row): ?>
+                                        <option value="<?= $row['id'] ?>"><?= $row['name'] ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </td>
+                            <td>
+                                <button type="button" class="btn btn-success btn-sm add_file"><i class="fa fa-plus"
+                                                                                                 aria-hidden="true"></i>
+                                </button>
+                                <button type="button" class="btn btn-danger btn-sm remove_file"><i class="fa fa-times"
+                                                                                                   aria-hidden="true"></i>
+                                </button>
 
-                <button class="btn blue pull-right" style="margin:20px" type="submit">Submit</button>
-            </form>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+
+                    <button class="btn blue pull-right" style="margin:20px" type="submit">Submit</button>
+                </form>
 
             </div>
 
@@ -143,6 +159,7 @@
 
 <script>
     $(document).ready(function () {
+
 
         $('.recipient_row').hide();
         $(document).on("keyup", ".numbersOnly", function (event) {
@@ -205,18 +222,17 @@
         $(document).on('change', '.item_id', function () {
             var item_id = $(this).val();
             var obj = $(this);
-            var id= '#'.concat(item_id);
+            var id = '#'.concat(item_id);
 
-           var data= $(id).val();
+            var data = $(id).val();
 
-            if(data){
+            if (data) {
                 obj.closest('.single_row').find('.further_needed').attr("value", data);
-            }else {
+            } else {
                 obj.closest('.single_row').find('.further_needed').attr("value", 0);
             }
 
         });
-
 
     })
 </script>

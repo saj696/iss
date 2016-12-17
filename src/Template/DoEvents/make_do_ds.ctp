@@ -66,19 +66,11 @@ use App\View\Helper\SystemHelper;
 <script>
     $(document).ready(function () {
 
+        var events = <?php echo json_encode($data); ?>;
 
         $(document).on('change', '#warehouse', function () {
             var warehouse_id = $(this).val();
-          //  var sender_warehouse_id = $('#sender_warehouse_id').val();
-//            var item_ids = $('input[name="item_id[]"]').map(function () {
-//                return $(this).val();
-//            }).get();
-//            var item_unit_ids = $('input[name="item_unit_id[]"]').map(function () {
-//                return $(this).val();
-//            }).get();
             var obj = $(this);
-            var events = <?php echo json_encode($data); ?>;
-
             $.ajax({
                 type: 'POST',
                 url: '<?= $this->Url->build("/DoEvents/ajaxMakeDoDs")?>',
@@ -94,5 +86,16 @@ use App\View\Helper\SystemHelper;
             });
 
         });
+
+
+//        $("#fix_from").submit( function(eventObj) {
+//            $('<input />').attr('type', 'hidden')
+//                .attr('name', "something[]")
+//                .attr('value','oi' )
+//                .appendTo('#fix_from');
+//            return true;
+//        });
+
+
     })
 </script>
