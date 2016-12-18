@@ -150,14 +150,25 @@ class UnitsController extends AppController
         $data = $this->request->data;
         $unit_level = $data['level'];
 
-        $constituent_unit = TableRegistry::get('units')->find('all', ['conditions' => ['unit_level' => $unit_level - 1, 'unit_size >' => 0, 'status' => 1], 'fields' => ['id', 'unit_name', 'unit_level', 'unit_size']])->hydrate(false)->toArray();
+        $constituent_unit = TableRegistry::get('units')->find('all', ['conditions' => ['unit_level' => $unit_level - 1, 'unit_size >' => 0, 'status' => 1], 'fields' => ['id', 'unit_name', 'unit_level', 'unit_size', 'unit_type']])->hydrate(false)->toArray();
         $unit_level = Configure::read("unit_levels");
+        $unit_types = Configure::read('pack_size_units');
         $dropArray = [];
         foreach ($constituent_unit as $unit):
-            $dropArray[$unit['id']] = __($unit_level[$unit['unit_level']]) . '__' . $unit['unit_name'] . '__' . $unit['unit_size'];
+            $dropArray[$unit['id']] = __($unit_level[$unit['unit_level']]) . '__' . $unit['unit_name'] . '__' . $unit['unit_size'] . '__' . __($unit_types[$unit['unit_type']]);
+
         endforeach;
         $this->viewBuilder()->layout('ajax');
-        $this->set(compact('dropArray'));
+        $this->set(compact('dropArray', 'unitType'));
+    }
+
+    public function setUnitType($unit_id)
+    {
+        $this->autoRender = false;
+        $constituent_unit_type = TableRegistry::get('units')->find('all', ['conditions' => ['id' => $unit_id, 'status' => 1], 'fields' => ['id', 'unit_type']])->hydrate(false)->first();
+        $result = [];
+        $result['unit_type'] = $constituent_unit_type['unit_type'];
+        $this->response->body(json_encode($result));
     }
 
     public function delete($id = null)

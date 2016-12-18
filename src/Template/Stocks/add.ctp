@@ -2,7 +2,10 @@
 use Cake\Core\Configure;
 
 $config_stock_types = Configure::read('stock_log_types');
-unset($config_stock_types[0], $config_stock_types[1], $config_stock_types[2],$config_stock_types[7],$config_stock_types[8]);
+unset($config_stock_types[0], $config_stock_types[1], $config_stock_types[2], $config_stock_types[7], $config_stock_types[8]
+    , $config_stock_types[9],
+    $config_stock_types[10]
+);
 
 ?>
 <div class="page-bar">
@@ -16,7 +19,7 @@ unset($config_stock_types[0], $config_stock_types[1], $config_stock_types[2],$co
             <?= $this->Html->link(__('Stocks'), ['action' => 'index']) ?>
             <i class="fa fa-angle-right"></i>
         </li>
-        <li><?= __('New Stock') ?></li>
+        <li><?= __('Add Stock') ?></li>
     </ul>
 </div>
 
@@ -25,7 +28,7 @@ unset($config_stock_types[0], $config_stock_types[1], $config_stock_types[2],$co
         <div class="portlet box blue-hoki">
             <div class="portlet-title">
                 <div class="caption">
-                    <i class="fa fa-plus-square-o fa-lg"></i><?= __('Add New Stock') ?>
+                    <i class="fa fa-plus-square-o fa-lg"></i><?= __('Add Stock') ?>
                 </div>
                 <div class="tools">
                     <?= $this->Html->link(__('Back'), ['action' => 'index'], ['class' => 'btn btn-sm btn-success']); ?>

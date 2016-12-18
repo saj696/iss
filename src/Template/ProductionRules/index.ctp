@@ -21,10 +21,10 @@ $quantity = \Cake\Core\Configure::read('pack_size_units');
         <div class="portlet box blue-hoki">
             <div class="portlet-title">
                 <div class="caption">
-                    <i class="fa fa-list-alt fa-lg"></i><?= __('Production Rule List') ?>
+                    <i class="fa fa-list-alt fa-lg"></i><?= __('Production Rules') ?>
                 </div>
                 <div class="tools">
-                    <?= $this->Html->link(__('New Production Rule'), ['action' => 'add'], ['class' => 'btn btn-sm btn-primary']); ?>
+                    <?= $this->Html->link(__('Add New Production Rule'), ['action' => 'add'], ['class' => 'btn btn-sm btn-primary']); ?>
                 </div>
             </div>
             <div class="portlet-body">
@@ -56,7 +56,7 @@ $quantity = \Cake\Core\Configure::read('pack_size_units');
                                             ->unit_display_name, ['controller' => 'Items',
                                             'action' => 'view', $productionRule->input_unit
                                                 ->id]) : '' ?></td>
-                                <td><?= __($quantity[$productionRule->input_quantity]) ?></td>
+                                <td><?= $this->Number->format($productionRule->input_quantity)?></td>
                                 <td><?= $productionRule->has('output_item') ?
                                         $this->Html->link($productionRule->output_item
                                             ->name, ['controller' => 'Items',
@@ -67,7 +67,7 @@ $quantity = \Cake\Core\Configure::read('pack_size_units');
                                             ->unit_display_name, ['controller' => 'Items',
                                             'action' => 'view', $productionRule->output_unit
                                                 ->id]) : '' ?></td>
-                                <td><?= __($quantity[$productionRule->output_quantity]) ?></td>
+                                <td><?= $this->Number->format($productionRule->output_quantity)?></td>
                                 <td class="actions">
                                     <?php
                                     echo $this->Html->link(__('View'), ['action' => 'view', $productionRule->id], ['class' => 'btn btn-sm btn-info']);

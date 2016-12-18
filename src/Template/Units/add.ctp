@@ -37,7 +37,7 @@ use Cake\Core\Configure;
                 <div class="row">
                     <div class="col-md-6 col-md-offset-3">
                         <?php
-                        echo $this->Form->input('unit_level', ['options' => Configure::read('unit_levels')]);
+                        echo $this->Form->input('unit_level', ['empty' => __('Select'), 'options' => Configure::read('unit_levels')]);
                         echo $this->Form->input('constituent_unit_id', ['label' => 'Constituent Level', 'required' => true]);
                         echo $this->Form->input('unit_name'); ?>
                         <?php
@@ -45,7 +45,7 @@ use Cake\Core\Configure;
 
                         echo $this->Form->input('unit_size', ['id' => 'unit-size', 'required' => true]);
                         echo $this->Form->input('unit_type', ['options' => Configure::read('pack_size_units')]);
-                        echo $this->Form->input('is_sales_unit', ['value' => 0, 'type' => 'checkbox', 'class' => 'form-control chk-sales-unit', 'templates' => ['inputContainer' => '<div class="form-group input {{required}}">{{content}}</div>', 'label' => '<label {{attrs}} class="col-sm-1 control-label text-right" >{{text}}</label>', 'input' => '<div class="col-sm-7 container_{{name}}"> <input {{attrs}} class="form-control" type="{{type}}" name="{{name}}"></div>']]);
+                        echo $this->Form->input('is_sales_unit', ['value' => '0', 'type' => 'checkbox', 'class' => 'form-control chk-sales-unit', 'templates' => ['inputContainer' => '<div class="form-group input {{required}}">{{content}}</div>', 'label' => '<label {{attrs}} class="col-sm-1 control-label text-right" >{{text}}</label>', 'input' => '<div class="col-sm-7 container_{{name}}"> <input {{attrs}} class="form-control" type="{{type}}" name="{{name}}"></div>']]);
 
                         ?>
                         <?= $this->Form->button(__('Submit'), ['class' => 'btn blue center-block', 'style' => 'margin-top:20px']) ?>
@@ -91,6 +91,18 @@ use Cake\Core\Configure;
 
         });
 
+        $(document).on("change", "#constituent-unit-id", function () {
+            $.ajax({
+                type: 'GET',
+                dataType: 'JSON',
+                url: '<?= $this->Url->build("/Units/setUnitType/")?>' + $(this).attr('value'),
+                success: function (data, status) {
+                    $("#unit-type").val(parseInt(data.unit_type));
+
+                }
+            });
+
+        });
         $('input[name="is_bulk"]').bind('change', function () {
             if ($(".chk").attr("checked")) {
                 $('input[name="is_bulk"]').val("1");

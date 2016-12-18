@@ -23,7 +23,7 @@ $unit_level = \Cake\Core\Configure::read('unit_levels');
                     <i class="fa fa-list-alt fa-lg"></i><?= __('Stock List') ?>
                 </div>
                 <div class="tools">
-                    <?= $this->Html->link(__('New Stock'), ['action' => 'add'], ['class' => 'btn btn-sm btn-primary']); ?>
+                    <?= $this->Html->link(__('Add Stock'), ['action' => 'add'], ['class' => 'btn btn-sm btn-primary']); ?>
                 </div>
             </div>
             <div class="portlet-body">

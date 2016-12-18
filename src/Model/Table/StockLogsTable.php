@@ -33,6 +33,14 @@ class StockLogsTable extends Table
             'foreignKey' => 'warehouse_id',
             'joinType' => 'INNER'
         ]);
+        $this->belongsTo('Items', [
+            'foreignKey' => 'item_id',
+            'joinType' => 'INNER'
+        ]);
+        $this->belongsTo('Units', [
+            'foreignKey' => 'manufacture_unit_id',
+            'joinType' => 'INNER'
+        ]);
 
     }
 
@@ -72,6 +80,8 @@ class StockLogsTable extends Table
     {
         $rules->add($rules->existsIn(['warehouse_id'], 'Warehouses'));
         $rules->add($rules->existsIn(['stock_id'], 'Stocks'));
+        $rules->add($rules->existsIn(['item_id'], 'Items'));
+        $rules->add($rules->existsIn(['manufacture_unit_id'], 'Units'));
         return $rules;
     }
 }

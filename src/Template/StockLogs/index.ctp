@@ -31,7 +31,8 @@ $status = \Cake\Core\Configure::read('status_options');
                         <tr>
                             <th><?= __('Sl. No.') ?></th>
                             <th><?= __('Warehouse') ?></th>
-                            <!--                            <th>--><? //= __('Stock') ?><!--</th>-->
+                            <th><?= __('Item') ?></th>
+                            <th><?= __('Unit') ?></th>
                             <th><?= __('Type') ?></th>
                             <th><?= __('Quantity') ?></th>
                             <th><?= __('Date') ?></th>
@@ -47,12 +48,14 @@ $status = \Cake\Core\Configure::read('status_options');
                                     $stocklog->has('warehouse') ? $this->Html->link(
                                         $stocklog->warehouse->name, ['controller' => 'Warehouses', 'action' => 'view', $stocklog->warehouse->id])
                                         : '' ?></td>
-                                <?php
-                                //$stocklog->has('stock') ? $this->Html->link(
-                                // $stocklog->stock->id, ['controller' => 'Stocks', 'action' => 'view', $stocklog->stock->id])
-                                //        : ''
-                                ?>
-
+                                <td><?=
+                                    $stocklog->has('item') ? $this->Html->link(
+                                        $stocklog->item->name, ['controller' => 'Items', 'action' => 'view', $stocklog->item->id])
+                                        : '' ?></td>
+                                <td><?=
+                                    $stocklog->has('unit') ? $this->Html->link(
+                                        $stocklog->unit->unit_display_name, ['controller' => 'Units', 'action' => 'view', $stocklog->unit->id])
+                                        : '' ?></td>
                                 <td><?= Cake\Core\Configure::read('stock_log_types')[$stocklog->type] ?></td>
                                 <td><?= $this->Number->format($stocklog->quantity) ?></td>
                                 <td><?= date('d-M-Y', $stocklog->created_date) ?></td>

@@ -14,7 +14,7 @@ $quantity = Configure::read('pack_size_units');
             <?= $this->Html->link(__('Production Rules'), ['action' => 'index']) ?>
             <i class="fa fa-angle-right"></i>
         </li>
-        <li><?= __('New Production Rule') ?></li>
+        <li><?= __('Add Production Rule') ?></li>
 
     </ul>
 </div>
@@ -39,31 +39,32 @@ $quantity = Configure::read('pack_size_units');
                     <div class="col-lg-12">
                         <div class="list" data-index_no="0">
                             <div class="itemWrapper">
-                                <table class="table table-bordered moreTable">
-                                    <tr>
-                                        <th><?= __('Input Item') ?></th>
-                                        <th><?= __('Input Unit') ?></th>
-                                        <th><?= __('Input Quantity') ?></th>
-                                        <th><?= __('Output Item') ?></th>
-                                        <th><?= __('Output Unit') ?></th>
-                                        <th><?= __('Output Quantity') ?></th>
-                                        <th></th>
-                                    </tr>
-                                    <tr class="item_tr single_list">
-                                        <td style="width:14%">
-                                            <?php echo $this->Form->input('ProductionRules.0.input_item_id', ['options' => $inputItems, 'required' => 'required', 'style' => 'max-width: 100%', 'class' => 'form-control input-items', 'empty' => __('Select'), 'templates' => ['label' => '']]); ?>
-                                        <td style="width:20%"><?php echo $this->Form->input('ProductionRules.0.input_unit_id', ['style' => 'width: 100%', 'empty' => __('Select'), 'required' => 'required', 'class' => 'form-control input-units', 'templates' => ['label' => '']]); ?></td>
-                                        <td><?php echo $this->Form->input('ProductionRules.0.input_quantity', ['options' => $quantity, 'style' => 'width: 100%', 'empty' => __('Select'), 'required' => 'required', 'class' => 'form-control numbersOnly', 'templates' => ['label' => '']]); ?></td>
+                                <div class="table-scrollable">
+                                    <table class="table table-bordered table-hover moreTable">
+                                        <tr>
+                                            <th><?= __('Input Item') ?></th>
+                                            <th><?= __('Input Unit') ?></th>
+                                            <th><?= __('Input Quantity') ?></th>
+                                            <th><?= __('Output Item') ?></th>
+                                            <th><?= __('Output Unit') ?></th>
+                                            <th><?= __('Output Quantity') ?></th>
+                                            <th></th>
+                                        </tr>
+                                        <tr class="item_tr single_list">
+                                           <td  width="190px;"><?php echo $this->Form->input('ProductionRules.0.input_item_id', ['options' => $inputItems, 'required' => 'required', 'class' => 'form-control input-items', 'empty' => __('Select'), 'templates' => ['label' => '']]); ?>
+                                            <td  width="190px;"><?php echo $this->Form->input('ProductionRules.0.input_unit_id', ['empty' => __('Select'), 'required' => 'required', 'class' => 'form-control input-units', 'templates' => ['label' => '']]); ?></td>
+                                            <td><?php echo $this->Form->input('ProductionRules.0.input_quantity', ['required' => 'required', 'class' => 'form-control numbersOnly', 'templates' => ['label' => '']]); ?></td>
 
-                                        <td style="width:14%">
-                                            <?php echo $this->Form->input('ProductionRules.0.output_item_id', ['options' => $outputItems, 'required' => 'required', 'style' => 'max-width: 100%', 'class' => 'form-control output-items', 'empty' => __('Select'), 'templates' => ['label' => '']]); ?>
-                                        <td style="width:20%"><?php echo $this->Form->input('ProductionRules.0.output_unit_id', ['style' => 'width: 100%', 'empty' => __('Select'), 'required' => 'required', 'class' => 'form-control output-units', 'templates' => ['label' => '']]); ?></td>
-                                        <td><?php echo $this->Form->input('ProductionRules.0.output_quantity', ['options' => $quantity, 'style' => 'width: 100%', 'empty' => __('Select'), 'required' => 'required', 'class' => 'form-control numbersOnly', 'templates' => ['label' => '']]); ?></td>
+                                            <td width="190px;"><?php echo $this->Form->input('ProductionRules.0.output_item_id', ['options' => $outputItems, 'required' => 'required','class' => 'form-control output-items', 'empty' => __('Select'), 'templates' => ['label' => '']]); ?>
+                                            <td  width="190px;"><?php echo $this->Form->input('ProductionRules.0.output_unit_id', ['empty' => __('Select'), 'required' => 'required', 'class' => 'form-control output-units', 'templates' => ['label' => '']]); ?></td>
+                                            <td><?php echo $this->Form->input('ProductionRules.0.output_quantity', ['required' => 'required', 'class' => 'form-control numbersOnly', 'templates' => ['label' => '']]); ?></td>
 
-                                        <td width="50px;"><span
-                                                class="btn btn-sm btn-circle btn-danger remove pull-right">X</span></td>
-                                    </tr>
-                                </table>
+                                            <td><span
+                                                    class="btn btn-sm btn-circle btn-danger remove pull-right">X</span>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
                             </div>
                         </div>
                     </div>

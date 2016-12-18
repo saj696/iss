@@ -30,7 +30,7 @@ class StockLogsController extends AppController
     public function index()
     {
         $stockLogs = $this->StockLogs->find('all', [
-                'contain' => ['Warehouses'],
+                'contain' => ['Warehouses','Items','Units'],
             'conditions' => ['StockLogs.status !=' => 99]
         ]);
         $this->set('stockLogs', $this->paginate($stockLogs));
@@ -91,22 +91,8 @@ class StockLogsController extends AppController
                         $data['created_by'] = $user['id'];
                         $data['created_date'] = $time;
                         $stockLogs = $this->StockLogs->patchEntity($stockLogs, $data);
-
                         $this->StockLogs->save($stockLogs);
                         $this->Stocks->save($stock);
-
-                        $stockLogs = $this->StockLogs->newEntity();
-                        $data['warehouse_id'] = $input['warehouse_id'];
-                        $data['stock_id'] = $detail['stock_id'];
-                        $data['type'] = $detail['type'];
-                        $data['quantity'] = $detail['quantity'];
-                        $data['item_id'] = $existing['item_id'];
-                        $data['manufacture_unit_id'] = $existing['manufacture_unit_id'];
-                        $data['created_by'] = $user['id'];
-                        $data['created_date'] = $time;
-                        $stockLogs = $this->StockLogs->patchEntity($stockLogs, $data);
-
-                        $this->StockLogs->save($stockLogs);
                     }
                 });
                 $this->Flash->success('The Stock has been updated. Thank you!');
