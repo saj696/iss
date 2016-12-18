@@ -63,9 +63,9 @@ unset($config_stock_types[0], $config_stock_types[1], $config_stock_types[2], $c
                                     </tr>
                                     <tr class="item_tr single_list">
                                         <td style="width:25%;">
-                                            <?php echo $this->Form->input('details.0.item_id', ['options' => $items, 'required' => 'required', 'style' => 'max-width: 100%', 'class' => 'form-control', 'empty' => __('Select'), 'templates' => ['label' => '']]); ?></td>
+                                            <?php echo $this->Form->input('details.0.item_id', ['options' => $items, 'required' => 'required', 'style' => 'max-width: 100%', 'class' => 'form-control items', 'empty' => __('Select'), 'templates' => ['label' => '']]); ?></td>
                                         <td style="width: 30%;">
-                                            <?php echo $this->Form->input('details.0.manufacture_unit_id', ['options' => $units, 'required' => 'required', 'style' => 'max-width: 100%', 'class' => 'form-control', 'empty' => __('Select'), 'templates' => ['label' => '']]); ?></td>
+                                            <?php echo $this->Form->input('details.0.manufacture_unit_id', ['required' => 'required', 'style' => 'max-width: 100%', 'class' => 'form-control units', 'empty' => __('Select'), 'templates' => ['label' => '']]); ?></td>
                                         <td style="width:20%"><?php echo $this->Form->input('details.0.type', ['options' => $config_stock_types, 'style' => 'width: 100%', 'required' => 'required', 'class' => 'form-control', 'templates' => ['label' => '']]); ?></td>
 
                                         <td style="width:25%"><?php echo $this->Form->input('details.0.quantity', ['type' => 'text', 'style' => 'width: 100%', 'required' => 'required', 'class' => 'form-control quantity numbersOnly', 'templates' => ['label' => '']]); ?></td>
@@ -124,6 +124,30 @@ unset($config_stock_types[0], $config_stock_types[1], $config_stock_types[2], $c
             if (count > 1) {
                 obj.closest('.single_list').remove();
             }
+        });
+        $(document).on('change', '.items', function () {
+            var obj = $(this);
+            $.ajax({
+                type: 'POST',
+                dataType: 'JSON',
+                data: {'item_id': parseInt(obj.val())},
+                url: '<?= $this->Url->build("/Stocks/ajax/units_from_item_units")?>',
+                success: function (data, status) {
+                    if (data != null) {
+                        obj.closest('tr').find('.units').empty();
+                        $.each(data, function (key, value) {
+                            console.log(value)
+                            console.log(key)
+                            obj.closest('tr').find('.units').append($('<option>').text(value).attr('value', key));
+                        });
+                    }
+                    else {
+                        obj.closest('tr').find('.units').empty();
+                        obj.closest('tr').find('.units').append($('<option>').text('Select').attr('value',''));
+                        return alert("Unit Not Found For Selected Item");
+                    }
+                }
+            });
         });
     });
 </script>

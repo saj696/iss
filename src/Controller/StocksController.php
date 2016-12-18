@@ -29,6 +29,8 @@ class StocksController extends AppController
      */
     public function index()
     {
+        // pr($this->Common->get_bulk_unit_sum_from_stock(1, 8));
+        //die;
         $user = $this->Auth->user();
         $stocks = $this->Stocks->find('all', [
             'conditions' => ['Stocks.status !=' => 99, 'Stocks.warehouse_id' => $user['warehouse_id']],
@@ -145,13 +147,7 @@ class StocksController extends AppController
             $item_name = $warehouse_item['use_alias'] == 1 ? $warehouse_item['item']['alias'] : $warehouse_item['item']['name'];
             $items[$warehouse_item['item']['id']] = $item_name;
         endforeach;
-
-        $units = $this->Units->find('list', [
-            'keyField' => 'id',
-            'valueField' => 'unit_display_name',
-            'conditions' => ['status' => 1]]);
-
-        $this->set(compact('stock', 'warehouses', 'items', 'units'));
+        $this->set(compact('stock', 'warehouses', 'items'));
         $this->set('_serialize', ['stock']);
     }
 
@@ -162,7 +158,29 @@ class StocksController extends AppController
      * @return void Redirects on successful edit, renders view otherwise.
      * @throws \Cake\Network\Exception\NotFoundException When record not found.
      */
-    public function edit($id = null)
+    public function ajax($param)
+    {
+        $this->autoRender = false;
+        if ($param == "units_from_item_units"):
+            $data = $this->request->data;
+            $item_id = $data['item_id'];
+            $units = TableRegistry::get('item_units')->find('all')->contain(['Items','Units'])
+                ->where(
+                ['item_id' => $item_id,
+                    'item_units.status' => 1, 'Units.status' => 1, 'Items.status' => 1])
+                ->hydrate(false)->toArray();
+            $dropArray = [];
+            if (!empty($units)) {
+                foreach ($units as $unit):
+                    $dropArray[$unit['unit']['id']] = $unit['unit']['unit_display_name'];
+                endforeach;
+                $this->response->body(json_encode($dropArray));
+            }
+        endif;
+    }
+
+    public
+    function edit($id = null)
     {
         die;
         $user = $this->Auth->user();
@@ -210,7 +228,8 @@ class StocksController extends AppController
      * @return void Redirects to index.
      * @throws \Cake\Network\Exception\NotFoundException When record not found.
      */
-    public function delete($id = null)
+    public
+    function delete($id = null)
     {
         $stock = $this->Stocks->get($id);
 
