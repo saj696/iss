@@ -209,7 +209,7 @@ class CommonComponent extends Component
         return array($closest_key, $array[$closest_key]);
         return $item;
     }
-
+// item name resolver
     public function item_name_resolver($warehouse_id)
     {
         $items = TableRegistry::get('warehouse_items')->find()
