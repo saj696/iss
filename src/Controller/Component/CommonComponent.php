@@ -44,6 +44,36 @@ class CommonComponent extends Component
             $security['alphabet']
         );
     }
+	  public function get_bulk_unit_sum_from_stock($warehouse_id, $item_id)
+    {
+        $stock_table = TableRegistry::get('stocks');
+        $stock_info = $stock_table->find('all')->contain(['Items', 'Units', 'Warehouses'])
+            ->where(['warehouse_id' => $warehouse_id, 'item_id' => $item_id,
+                'Units.is_sales_unit' => 0,
+                'Units.unit_size' => 0,
+                'Stocks.status' => 1,
+                'Units.status' => 1,
+                'Items.status' => 1,
+                'Warehouses.status' => 1])
+            ->hydrate(false)
+            ->toArray();
+        $sum = 0;
+
+        if (!empty($stock_info)) {
+            foreach ($stock_info as $stock):
+                if ($stock['unit']['unit_type'] == 1 || $stock['unit']['unit_type'] == 3) {
+                    $value = $stock['quantity'] * 1000;
+                    $sum += $value;
+                } else {
+                    $sum += $stock['quantity'];
+                }
+            endforeach;
+            return $sum;
+        } else {
+            echo "Stock Not found For Provided WareHouse and Item";
+            die;
+        }
+    }
     public function initiate_stock($warehouse_id, $item_id, $manufacture_unit_id, $quantity)
     {
         $time = time();
