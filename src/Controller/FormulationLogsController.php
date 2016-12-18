@@ -77,7 +77,6 @@ class FormulationLogsController extends AppController
                 $conn->transactional(function () use ($stockLog, $user, $time, &$saveStatus)
                 {
                     $data = $this->request->data;
-//                     echo '<pre>'; print_r($data);echo '</pre>';die();
                     $data['create_by'] = $user['id'];
                     $data['create_date'] = $time;
 
@@ -127,38 +126,38 @@ class FormulationLogsController extends AppController
                     endif;
 
 //                    add formulate product in stock log table
-                        $stockIDForLog = $this->Stocks->find('all',['conditions' => ['item_id' => $data['item_id'], 'manufacture_unit_id' => $data['manufacture_unit_id']], 'fields'=>['id'] ])->hydrate(false)->first();
+                    $stockIDForLog = $this->Stocks->find('all',['conditions' => ['item_id' => $data['item_id'], 'manufacture_unit_id' => $data['manufacture_unit_id']], 'fields'=>['id'] ])->hydrate(false)->first();
+                    $stockLog = $this->StockLogs->newEntity();
+                    $stockLogData['warehouse_id'] = $data['warehouse_id'];
+                    $stockLogData['manufacture_unit_id'] = $data['manufacture_unit_id'];
+                    $stockLogData['item_id'] = $data['item_id'];
+                    $stockLogData['stock_id'] = $stockIDForLog['id'];
+                    $stockLogData['type'] = 10;
+                    $stockLogData['quantity'] = $data['output_result'];
+                    $stockLogData['status'] = 1;
+                    $stockLogData['created_by'] = $user['id'];
+                    $stockLogData['created_date'] = $time;
+                    $stockLog = $this->StockLogs->patchEntity($stockLog, $stockLogData);
+                    $this->StockLogs->save($stockLog);
+
+                    if($data['output_gain']):
                         $stockLog = $this->StockLogs->newEntity();
-                        $stockLogData['warehouse_id'] = $data['warehouse_id'];
-                        $stockLogData['manufacture_unit_id'] = $data['manufacture_unit_id'];
-                        $stockLogData['item_id'] = $data['item_id'];
-                        $stockLogData['stock_id'] = $stockIDForLog['id'];
-                        $stockLogData['type'] = 10;
-                        $stockLogData['quantity'] = $data['output_result'];
-                        $stockLogData['status'] = 1;
-                        $stockLogData['created_by'] = $user['id'];
-                        $stockLogData['created_date'] = $time;
+                        $stockLogData['type'] = 5;
+                        $stockLogData['quantity'] = $data['output_gain'];
                         $stockLog = $this->StockLogs->patchEntity($stockLog, $stockLogData);
                         $this->StockLogs->save($stockLog);
-
-                        if($data['output_gain']):
-                            $stockLog = $this->StockLogs->newEntity();
-                            $stockLogData['type'] = 5;
-                            $stockLogData['quantity'] = $data['output_gain'];
-                            $stockLog = $this->StockLogs->patchEntity($stockLog, $stockLogData);
-                            $this->StockLogs->save($stockLog);
-                        endif;
+                    endif;
 
 
 //                        Formulation log table data insert
-                        $inputName =  $this->Common->specific_item_name_resolver($data['warehouse_id'],$data['Item']);
-                        $formulationLog = $this->FormulationLogs->newEntity();
-                        $formulationLogData['input_name'] = $inputName['name'];
-                        $formulationLogData['output_name'] = $data['item_name'];
-                        $formulationLogData['status'] = 1;
-                        $formulationLogData['output_gain'] = $data['output_gain'];
-                        $formulationLog = $this->FormulationLogs->patchEntity($formulationLog, $formulationLogData);
-                        $this->FormulationLogs->save($formulationLog);
+                    $inputName =  $this->Common->specific_item_name_resolver($data['warehouse_id'],$data['Item']);
+                    $formulationLog = $this->FormulationLogs->newEntity();
+                    $formulationLogData['input_name'] = $inputName['name'];
+                    $formulationLogData['output_name'] = $data['item_name'];
+                    $formulationLogData['status'] = 1;
+                    $formulationLogData['output_gain'] = $data['output_gain'];
+                    $formulationLog = $this->FormulationLogs->patchEntity($formulationLog, $formulationLogData);
+                    $this->FormulationLogs->save($formulationLog);
                 });
 
                 $this->Flash->success('Formulation Generation Successful');
@@ -309,36 +308,30 @@ class FormulationLogsController extends AppController
         $data = $this->request->data;
         $itemVal = $data['itemVal'];
         $totalAmount = $data['totalAmount'];
-        $itemIdData = TableRegistry::get('item_units')->find('all')->where(['id' => $itemVal])->first();
 
-        $bulkInfo = TableRegistry::get('units')->find('all')->where(['id' => $itemIdData['manufacture_unit_id']])->first();
-        $bulk = $bulkInfo['unit_type'];
-        $bulkResult = [];
-        if($bulk == 2 || $bulk == 1):
-            $bulkResult['id'] = 2;
-            $bulkResult['name'] = "KG";
-        else:
-            $bulkResult['id'] = 4;
-            $bulkResult['name'] = "L";
-        endif;
 //      output item id from production rule table
-        $resultInfo = TableRegistry::get('production_rules')->find('all')->where(['input_item_id' =>$itemIdData['item_id'] ])->first();
-        $outputItemID = $resultInfo['output_item_id'];
+        $resultInfo = TableRegistry::get('production_rules')->find('all')->where(['input_item_id' =>$itemVal ])->first();
 
-        $outputName = $this->Common->specific_item_name_resolver($wareHouseID, $outputItemID);
-        $result = ((float)($resultInfo['output_quantity']) * (float)$totalAmount) / (float)($resultInfo['input_quantity']);
-        $output = [
-            'itemId' => $outputName['id'],
-            'itemName' => $outputName['name'],
-            'bulkid' => $bulkResult['id'],
-            'bulkName' => $bulkResult['name'],
-            'resultName' => number_format($result,4),
-        ];
-
-        if($result):
+        if(empty($resultInfo['output_item_id'])){
+            $output = 0;
             $this->response->body(json_encode($output));
             return $this->response;
-        endif;
-
+        }
+        else{
+            $bulkResult = TableRegistry::get('units')->find('all')->where(['id' =>$resultInfo['output_unit_id'] ])->first();
+            $outputName = $this->Common->specific_item_name_resolver($wareHouseID, $resultInfo['output_item_id']);
+            $result = ((float)($resultInfo['output_quantity']) * (float)$totalAmount) / (float)($resultInfo['input_quantity']);
+            $output = [
+                'itemId' => $outputName['id'],
+                'itemName' => $outputName['name'],
+                'bulkid' => $bulkResult['id'],
+                'bulkName' => $bulkResult['unit_display_name'],
+                'resultName' => round($result,4),
+            ];
+            if($result):
+                $this->response->body(json_encode($output));
+                return $this->response;
+            endif;
+        }
     }
 }
