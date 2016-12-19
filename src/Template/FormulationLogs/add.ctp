@@ -169,7 +169,7 @@ use Cake\Core\Configure;
 
 //      allow only float value
         $(document).on('keyup','.numbersOnly',function(event){
-            this.value = this.value.replace(/[^0-9\.]/g, '');
+            this.value = this.value.replace(/[^0-9]/g, '');
         });
 
 
@@ -212,8 +212,8 @@ use Cake\Core\Configure;
                 var uniqueArrAfterSelection = uniqueArray(uniqueArr);
 
                 if(myArr.length != uniqueArrAfterSelection.length){
-                    // toastr.info('Duplicate Item Not Allowed!');
-                    alert('Duplicate Item Not Allowed!');
+                   // toastr.info('Duplicate Item Not Allowed!');
+                   alert('Duplicate Item Not Allowed!');
                 }
                 else{
                     $(this).closest('.item_tr').find('.stock').val('');
@@ -240,9 +240,9 @@ use Cake\Core\Configure;
             var amount = obj.val();
             var unitType = obj.closest('.item_tr').find('.stock').attr("unitType");
             var convertQuantity = obj.closest('.item_tr').find('.stock').attr("convertQuantity");
-            console.log(unitType);
-            console.log(amount);
-            console.log(convertQuantity );
+                        console.log(unitType);
+             console.log(amount);
+                          console.log(convertQuantity );
 
             if( unitType == 1 && convertQuantity == 0){
 //                gram converted quantity 0
@@ -257,12 +257,12 @@ use Cake\Core\Configure;
 
             else if (unitType == 2 && convertQuantity == 0 || unitType == 2 && convertQuantity == null) {
 //                kg converted quantity 0
-                var final = amount * 1;
-                console.log(final);
+	 	var final = amount * 1;
+	 	console.log(final);
                 obj.closest('.item_tr').find('.amount').val(final);
             }
             else if(unitType == 2 && convertQuantity != 0){
-                //                kg converted quantity !0
+ //                kg converted quantity !0
                 var final = amount*convertQuantity;
                 obj.closest('.item_tr').find('.amount').val(final);
             }
@@ -280,7 +280,7 @@ use Cake\Core\Configure;
 
             else if(unitType == 4 && convertQuantity == 0){
 //                liter converted quantity 0
-                var final = amount * 1;
+		var final = amount * 1;
                 obj.closest('.item_tr').find('.amount').val(final);
             }
             else if(unitType == 4 && convertQuantity != 0){
@@ -310,22 +310,22 @@ use Cake\Core\Configure;
             var itemVal = $('.item').val();
             var totalAmount = $('.sumResult').val();
             $.ajax({
-                type: 'POST',
+                type: 'POST', 
                 url: '<?= $this->Url->build("/FormulationLogs/outputGeneration")?>',
                 data: {itemVal: itemVal, totalAmount: totalAmount},
                 success: function (data, status) {
 
-                    if(data == 0){
-                        alert("First Produce A production Rules");
-                    }
-                    else{
-                        var result = JSON.parse(data);
-                        $('.outputInputName').val(result.itemName);
-                        $('.output_item_id').val(result.itemId);
-                        $('.outputbulk').val(result.bulkName);
-                        $('.output_manufacture_unit_id').val(result.bulkid);
-                        $('.outputresult').val(result.resultName);
-                    }
+                	if(data == 0){
+                		alert("First Produce A production Rules");
+                	}
+                	else{
+                  		var result = JSON.parse(data);
+                   		$('.outputInputName').val(result.itemName);
+                  		$('.output_item_id').val(result.itemId);
+                   		$('.outputbulk').val(result.bulkName);
+                   		$('.output_manufacture_unit_id').val(result.bulkid);
+                   		$('.outputresult').val(result.resultName);
+            		}
                 }
             });
         });
@@ -334,10 +334,10 @@ use Cake\Core\Configure;
             var outputItemCheck = $('.outputInputName').val();
             if(outputItemCheck == '')
             {
-                alert('You Have To Formulate First!');
-                return false;
-                // toastr.info('You Have To Formulate First!');
-                // return false;
+            	alert('You Have To Formulate First!');
+            	return false;
+               // toastr.info('You Have To Formulate First!');
+               // return false;
             }
 
         });

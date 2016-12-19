@@ -9,7 +9,7 @@ $status = \Cake\Core\Configure::read('status_options');
             <a href="<?= $this->Url->build(('/Dashboard'), true); ?>"><?= __('Dashboard') ?></a>
             <i class="fa fa-angle-right"></i>
         </li>
-        <li><?= $this->Html->link(__('Depots'), ['action' => 'index']) ?></li>
+        <li><?= $this->Html->link(__('Sales Points'), ['action' => 'index']) ?></li>
     </ul>
 </div>
 
@@ -18,10 +18,10 @@ $status = \Cake\Core\Configure::read('status_options');
         <div class="portlet box blue-hoki">
             <div class="portlet-title">
                 <div class="caption">
-                    <i class="fa fa-list-alt fa-lg"></i><?= __('Depot List') ?>
+                    <i class="fa fa-list-alt fa-lg"></i><?= __('Sales Point List') ?>
                 </div>
                 <div class="tools">
-                    <?= $this->Html->link(__('New Depot'), ['action' => 'add'], ['class' => 'btn btn-sm btn-primary']); ?>
+                    <?= $this->Html->link(__('New Sales Point'), ['action' => 'add'], ['class' => 'btn btn-sm btn-primary']); ?>
                 </div>
             </div>
 
@@ -34,6 +34,7 @@ $status = \Cake\Core\Configure::read('status_options');
                             <th><?= __('Name') ?></th>
                             <th><?= __('Level') ?></th>
                             <th><?= __('Location') ?></th>
+                            <th><?= __('Address') ?></th>
                             <th><?= __('Actions') ?></th>
                         </tr>
                         </thead>
@@ -44,6 +45,7 @@ $status = \Cake\Core\Configure::read('status_options');
                                 <td><?= h($depot->name) ?></td>
                                 <td><?= $this->System->get_level_name($depot->level_no) ?></td>
                                 <td><?= $this->System->get_unit_name($depot->unit_id) ?></td>
+                                <td><?= substr(($depot->address),0,50) ?></td>
                                 <td class="actions">
                                     <?php
                                     echo $this->Html->link(__('View'), ['action' => 'view', $depot->id], ['class' => 'btn btn-sm btn-info']);

@@ -55,10 +55,10 @@ $unit_levels = \Cake\Core\Configure::read('unit_levels');
                                     $price->has('unit') ? $this->Html->link(
                                      $price->unit->unit_display_name, ['controller' => 'Units', 'action' => 'view', $price->unit->id])
                                         : '' ?></td>
-                                <td><?= h($price->unit_display_name) ?></td>
                                 <td><?= $this->Number->format($price->cash_sales_price) ?></td>
                                 <td><?= $this->Number->format($price->credit_sales_price) ?></td>
                                 <td><?= $this->Number->format($price->retail_price) ?></td>
+                                
 
                                 <td class="actions">
                                     <?php
@@ -71,7 +71,7 @@ $unit_levels = \Cake\Core\Configure::read('unit_levels');
                                     ?>
 
                                 </td>
-                            </tr>
+                            </tr> 
 
                         <?php } ?>
                         </tbody>

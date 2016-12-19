@@ -33,6 +33,7 @@ $status = \Cake\Core\Configure::read('status_options');
                                 <th><?= __('Name') ?></th>
                                 <th><?= __('Level') ?></th>
                                 <th><?= __('Location') ?></th>
+								<th><?= __('Address')?></th>
                                 <th><?= __('Actions') ?></th>
                             </tr>
                         </thead>
@@ -43,6 +44,7 @@ $status = \Cake\Core\Configure::read('status_options');
                                 <td><?= h($warehouse->name) ?></td>
                                 <td><?= $this->System->get_level_name($warehouse->level_no) ?></td>
                                 <td><?= $this->System->get_unit_name($warehouse->unit_id) ?></td>
+                                <td><?= substr(($warehouse->address),0,50) ?></td>
                                 <td class="actions">
                                     <?php
                                     echo $this->Html->link(__('View'), ['action' => 'view', $warehouse->id], ['class' => 'btn btn-sm btn-info']);

@@ -17,7 +17,7 @@ use Cake\Core\Configure;
     </ul>
 </div>
 
-<div class="row">
+<div class="row invoiceCycle">
     <div class="col-md-12">
         <div class="portlet box blue-hoki">
             <div class="portlet-title">

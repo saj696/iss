@@ -20,7 +20,7 @@ use Cake\Core\Configure;
 <div class="row">
     <div class="col-md-12">
         <div class="portlet box grey-cascade">
-            <div class="portlet-title">
+            <div class="portlet-title poHeading">
                 <div class="caption">
                     <i class="fa fa-plus-square-o fa-lg"></i><?= __('Add New PO') ?>
                 </div>

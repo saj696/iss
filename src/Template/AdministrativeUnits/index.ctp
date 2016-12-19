@@ -33,8 +33,7 @@ $status = \Cake\Core\Configure::read('status_options');
                             <th><?= __('Administrative Level') ?></th>
                             <th><?= __('Unit Name') ?></th>
                             <th><?= __('Parent') ?></th>
-                            <th><?= __('Local ID') ?></th>
-                            <th><?= __('Global ID') ?></th>
+							<th><?= __('Address')?></th>
                             <th><?= __('Actions') ?></th>
                         </tr>
                         </thead>
@@ -49,8 +48,8 @@ $status = \Cake\Core\Configure::read('status_options');
                                                 ->id]) : '' ?></td>
                                 <td><?= h($administrativeUnit->unit_name) ?></td>
                                 <td><?= $this->System->get_unit_name($administrativeUnit->parent) ?></td>
-                                <td><?= $administrativeUnit->local_id ?></td>
-                                <td><?= $administrativeUnit->global_id ?></td>
+								<td><?= substr(($administrativeUnit->address),0,50) ?></td>
+   
                                 <td class="actions">
                                     <?php
                                     echo $this->Html->link(__('View'), ['action' => 'view', $administrativeUnit->id], ['class' => 'btn btn-sm btn-info']);
