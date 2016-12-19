@@ -62,15 +62,15 @@ use Cake\Core\Configure;
                     <div class="col-md-12">
                         <table class="table table-bordered">
                             <tbody class="appendTr">
-                            <tr class="portlet box grey-silver" style="color: white">
-                                <th>Name</th>
-                                <th>Quantity</th>
-                                <th>Unit Price</th>
-                                <th>Bonus</th>
-                                <th>Cash Discount</th>
-                                <th>Item Net Total</th>
-                                <th style="width: 2%;">Cancel</th>
-                            </tr>
+                                <tr class="portlet box grey-silver" style="color: white">
+                                    <th>Name</th>
+                                    <th>Quantity</th>
+                                    <th>Unit Price</th>
+                                    <th>Bonus</th>
+                                    <th>Cash Discount</th>
+                                    <th>Item Net Total</th>
+                                    <th style="width: 2%;">Cancel</th>
+                                </tr>
                             </tbody>
                         </table>
                         <table class="table">
