@@ -115,10 +115,15 @@
                             </td>
                             <td><input type="text" name="do_object_items[0][further_needed]"
                                        class="form-control further_needed" readonly></td>
+
                             <td><input type="text" name="do_object_items[0][warehouse_bulk_stock]"
-                                       class="form-control warehouse_bulk_stock" readonly value="100"></td>
-                            <td><input type="text" name="do_object_items[0][do_unit]" class="form-control do_unit"
-                                       required></td>
+                                       class="form-control warehouse_bulk_stock" readonly ></td>
+
+                            <td><select name="do_object_items[0][do_unit]" class="form-control do_unit" id="" required>
+                                    <option value="">Select</option>
+                                </select></td>
+
+
                             <td><input type="text" name="do_object_items[0][do_quantity]"
                                        class="form-control do_quantity" required></td>
                             <td><select name="do_object_items[0][destination_id]" class="form-control destination_id"
@@ -220,8 +225,9 @@
         });
 
         $(document).on('change', '.item_id', function () {
-            var item_id = $(this).val();
             var obj = $(this);
+            var item_id = $(this).val();
+            var warehouse_id= obj.closest('.single_row').find('.warehouse_id').val();
             var id = '#'.concat(item_id);
 
             var data = $(id).val();
@@ -230,6 +236,36 @@
                 obj.closest('.single_row').find('.further_needed').attr("value", data);
             } else {
                 obj.closest('.single_row').find('.further_needed').attr("value", 0);
+            }
+
+            if (item_id) {
+
+                $.ajax({
+                    type: 'POST',
+                    url: '<?= $this->Url->build("/DoEvents/getItemUnits")?>',
+                    data: {item_id: item_id},
+                    dataType: 'json',
+
+                    success: function (data, status) {
+                        obj.closest('.single_row').find('.do_unit').html('');
+                        obj.closest('.single_row').find('.do_unit').append("<option value=''><?= __('Select') ?></option>");
+                        $.each(data, function (key, value) {
+                            obj.closest('.single_row').find('.do_unit').append($("<option></option>").attr("value", key).text(value));
+                        });
+
+
+                        $.ajax({
+                            type: 'POST',
+                            url: '<?= $this->Url->build("/DoEvents/getWarehouseBulkStock")?>',
+                            data: {item_id: item_id,warehouse_id:warehouse_id},
+                            dataType: 'json',
+
+                            success: function (data, status) {
+                                obj.closest('.single_row').find('.warehouse_bulk_stock').attr("value", data);
+                            }
+                        });
+                    }
+                });
             }
 
         });

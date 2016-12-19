@@ -48,7 +48,7 @@ use Cake\Core\Configure;
                         <?php foreach ($doEvents as $key => $doEvent) { ?>
                             <tr>
                                 <td><?= $this->Number->format($key + 1) ?></td>
-                                <td><?= $doEvent->sender->full_name_bn ?></td>
+                                <td><?= $doEvent->sender->full_name_en ?></td>
                                 <td><?= date('d-M-Y',$doEvent->created_date)?></td>
                                 <td class="actions">
                                     <?php

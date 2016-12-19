@@ -34,7 +34,6 @@ class DoEventsController extends AppController
         ])
             ->where(['DoEvents.action_status' => Configure::read('do_object_event_action_status')['awaiting_approval']])
             ->orWhere(['DoEvents.action_status' => Configure::read('do_object_event_action_status')['approved']]);
-        // echo "<pre>";print_r($doEvents->toArray());die();
         $this->set('doEvents', $doEvents);
         $this->set('_serialize', ['doEvents']);
     }
@@ -66,6 +65,12 @@ class DoEventsController extends AppController
                     ->execute();
 
             }
+            $do_objects = TableRegistry::get('do_objects');
+            $query = $do_objects->query();
+            $query->update()
+                ->set(['action_status' => Configure::read('do_object_action_status')['Approved']])
+                ->where(['id' => $doEvent->do_object_id])
+                ->execute();
 
             $do_event = TableRegistry::get('do_events');
             $q = $do_event->query();
@@ -140,24 +145,29 @@ class DoEventsController extends AppController
 
     public function makeDoDs()
     {
-        $data = $this->request->data;
-        $user = $this->Auth->user();
+        if ($this->request->is(['patch', 'post', 'put'])) {
+            $data = $this->request->data;
+            $user = $this->Auth->user();
 
 
-        $userAdmin = $user['administrative_unit_id'];
-        $this->loadModel('AdministrativeUnits');
+            $userAdmin = $user['administrative_unit_id'];
+            $this->loadModel('AdministrativeUnits');
 
-        $userAdminGlobal = $this->AdministrativeUnits->get($userAdmin);
-        $limitStart = pow(2, (Configure::read('max_level_no') - $user['level_no'] - 1) * 5);
-        $limitEnd = pow(2, (Configure::read('max_level_no') - $user['level_no']) * 5);
+            $userAdminGlobal = $this->AdministrativeUnits->get($userAdmin);
+            $limitStart = pow(2, (Configure::read('max_level_no') - $user['level_no'] - 1) * 5);
+            $limitEnd = pow(2, (Configure::read('max_level_no') - $user['level_no']) * 5);
 
-        $warehouses = TableRegistry::get('warehouses')->query();
-        //  $warehouses->contain('AdministrativeUnits');
-        $warehouses->where('global_id -' . $userAdminGlobal['global_id'] . '>= ' . $limitStart);
-        $warehouses->where('global_id -' . $userAdminGlobal['global_id'] . '< ' . $limitEnd);
-        $warehouses->where('warehouses.status!= 99');
+            $warehouses = TableRegistry::get('warehouses')->query();
+            //  $warehouses->contain('AdministrativeUnits');
+            $warehouses->where('global_id -' . $userAdminGlobal['global_id'] . '>= ' . $limitStart);
+            $warehouses->where('global_id -' . $userAdminGlobal['global_id'] . '< ' . $limitEnd);
+            $warehouses->where('warehouses.status!= 99');
 
-        $this->set(compact('warehouses', 'data'));
+            $this->set(compact('warehouses', 'data'));
+        }else{
+            $this->Flash->error('Sorry!! Please try again');
+            return $this->redirect(['action' => 'index']);
+        }
 //
 //            echo "<pre>";
 //            print_r($do_items->toArray());
@@ -319,15 +329,19 @@ class DoEventsController extends AppController
             //End serial number
             $dos_ids=[];
             $dos_items_ids=[];
+            $pi_ids=[];
             foreach ($data['do_object_items'] as $row) {
 
                 // validation test
-                if (!$this->checkWareHouseSuperVisorAvailability($row['destination_id'])) {
+                if (!$this->checkWareHouseSuperVisorAvailability($row['warehouse_id'])) {
                     $this->Flash->error('Sorry!! System Did Not Found  One Of WareHouses Incharge ID');
                     return $this->redirect(['action' => 'index']);
                 }
             }
-
+            foreach($data['pi_ids'] as $key=>$id){
+                $pi_ids[$key]['id']=$id;
+                $pi_ids[$key]['status']='false';
+            }
             // Khala shuru
 
             foreach ($data['do_object_items'] as $row) {
@@ -352,10 +366,10 @@ class DoEventsController extends AppController
 
                     $set_do_event = $this->do_events->newEntity();
                     $do_event_Data['sender_id'] = $user['id'];
-                    $do_event_Data['recipient_id'] = $this->getWareHouseSuperVisorUserID($row['destination_id']);
+                    $do_event_Data['recipient_id'] = $this->getWareHouseSuperVisorUserID($row['warehouse_id']);
                     $do_event_Data['do_object_id'] = $do_id;
                     $do_event_Data['events_tepe'] =  Configure::read('object_type')['DO'];
-                    $do_event_Data['action_status'] = Configure::read('do_object_event_action_status')['awaiting_delivery'];
+                    $do_event_Data['action_status'] = Configure::read('do_object_event_action_status')['awaiting_do_delivery'];
                     $do_event_Data['created_by'] = $user['id'];
                     $do_event_Data['created_date'] = $time;
                     $set_do_event = $this->do_events->patchEntity($set_do_event, $do_event_Data);
@@ -369,7 +383,7 @@ class DoEventsController extends AppController
                      $dos_item_data['ddo_id']=$do_id;
                      $dos_item_data['item_id']=$row['item_id'];
                      $dos_item_data['unit_id']=$row['do_unit'];
-                     $dos_item_data['quantity']=$row['do_unit'];
+                     $dos_item_data['quantity']=$row['do_quantity'];
                      $set_dos_item = $this->ddos_items->patchEntity($set_dos_item, $dos_item_data);
                      $inserted_dos_item_data =   $this->ddos_items->save($set_dos_item);
                      $dos_items_ids[]=$inserted_dos_item_data['id'];
@@ -380,7 +394,7 @@ class DoEventsController extends AppController
             //INSERT data in to ds table
             $set_ds= $this->dds->newEntity();
             $ds_data['date']=$time;
-            $ds_data['pi_ids']=json_encode($data['pi_ids']);
+            $ds_data['pi_ids']=json_encode($pi_ids);
             $ds_data['do_ids']=json_encode($dos_ids);
             $ds_data['do_ds_serial_number']=$serial_no;
             $set_ds = $this->dds->patchEntity($set_ds, $ds_data);
@@ -390,26 +404,19 @@ class DoEventsController extends AppController
 
             $set_do_event = $this->do_events->newEntity();
             $do_event_Data['sender_id'] = $user['id'];
-            $do_event_Data['recipient_id'] = $data['parent_warehouse_id'];
+            $do_event_Data['recipient_id'] =$this->getWareHouseSuperVisorUserID($data['parent_warehouse_id']);
             $do_event_Data['do_object_id'] = $inserted_ds_data['id'];
             $do_event_Data['events_tepe'] =  Configure::read('object_type')['DS'];
-            $do_event_Data['action_status'] = Configure::read('do_object_event_action_status')['awaiting_delivery'];
+            $do_event_Data['action_status'] = Configure::read('do_object_event_action_status')['awaiting_ds_delivery'];
             $do_event_Data['created_by'] = $user['id'];
             $do_event_Data['created_date'] = $time;
             $set_do_event = $this->do_events->patchEntity($set_do_event, $do_event_Data);
             $inserted_do_event_data =   $this->do_events->save($set_do_event);
-          //  $dos_items_ids[]=$inserted_dos_item_data['id'];
-          //  echo "<pre>";print_r($inserted_do_event_data);die();
-            echo "<pre>";print_r($inserted_ds_data);die();
 
 
+            $this->Flash->success('SUCCESS!! All information is saved');
+            return $this->redirect(['action' => 'index']);
 
-//            $id= $this->getWareHouseSuperVisorUserID(1);
-
-
-            echo "<pre>";
-            print_r($data);
-            die();
         }
     }
 
@@ -431,6 +438,38 @@ class DoEventsController extends AppController
         } else {
             return false;
         }
+    }
+
+    public function getItemUnits()
+    {
+        if ($this->request->is(['patch', 'post', 'put'])) {
+
+            $data = $this->request->data;
+            $item_unit = TableRegistry::get('item_units')->find('all',
+                ['conditions' => ['item_id' => $data['item_id']]])
+                ->contain(['Units'])
+                ->hydrate(false)->toArray();
+            //   echo "<pre>";print_r($item_unit);die();
+            $item_units = [];
+            foreach ($item_unit as $unit):
+                $item_units[$unit['unit']['id']] = $unit['unit']['unit_display_name'];
+            endforeach;
+
+            $this->response->body(json_encode($item_units));
+            return $this->response;
+        }
+    }
+
+    public function getWarehouseBulkStock(){
+        if ($this->request->is(['patch', 'post', 'put'])) {
+
+            $data = $this->request->data;
+            $quantity  = $this->Common->get_bulk_unit_sum_from_stock($data['warehouse_id'],$data['item_id']);
+
+            $this->response->body($quantity);
+            return $this->response;
+        }
+
     }
 }
 

@@ -38,18 +38,18 @@ class DdosItemsTable extends Table
         $this->displayField('id');
         $this->primaryKey('id');
 
-//        $this->belongsTo('Ddos', [
-//            'foreignKey' => 'ddo_id',
-//            'joinType' => 'INNER'
-//        ]);
-//        $this->belongsTo('Items', [
-//            'foreignKey' => 'item_id',
-//            'joinType' => 'INNER'
-//        ]);
-//        $this->belongsTo('Units', [
-//            'foreignKey' => 'unit_id',
-//            'joinType' => 'INNER'
-//        ]);
+        $this->belongsTo('Ddos', [
+            'foreignKey' => 'ddo_id',
+            'joinType' => 'INNER'
+        ]);
+        $this->belongsTo('Items', [
+            'foreignKey' => 'item_id',
+            'joinType' => 'LEFT'
+        ]);
+        $this->belongsTo('Units', [
+            'foreignKey' => 'unit_id',
+            'joinType' => 'LEFT'
+        ]);
     }
 
     /**
