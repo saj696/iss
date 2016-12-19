@@ -28,26 +28,49 @@ class FunctionHelper extends Helper
 
     public function postfix_converter($array){
         $ca = str_split($array); // condition array
+
+        $o2n = [
+            '+'=>0,
+            '-'=>1,
+            '*'=>2,
+            '/'=>3,
+            '>'=>4,
+            '>='=>5,
+            '<'=>6,
+            '<='=>7,
+            '=='=>8,
+            '&&'=>9,
+            '||'=>10,
+            '='=>11,
+            '&'=>12,
+        ];
+
+        $precedence = [
+            0=>2,
+            1=>2,
+            2=>3,
+            3=>3,
+            4=>1,
+            5=>1,
+            6=>1,
+            7=>1,
+            8=>1,
+            9=>1,
+            10=>1,
+            11=>1,
+            12=>1,
+        ];
+
         $fn = []; // function name
         $fa = []; // function array
         $cn=[];
         $stack = [];
         $stack[0] = '$';
         $indexOfStackTop = 0;
-        $precedence = [];
-        $precedence['%'] = 3;
-        $precedence['*'] = 3;
-        $precedence['+'] = 2;
-        $precedence['-'] = 2;
-        $precedence['&'] = 1;
-        $precedence['|'] = 1;
-        $precedence['>'] = 1;
-        $precedence['<'] = 1;
-        $precedence['='] = 1;
         $postfix = [];
         $postfixCurrentIndex=0;
         $functionSerial = 0;
-        $operators = ['+', '-', '*', '%', '&', '|', '>', '<', '='];
+        $operators = ['+', '-', '*', '/', '&', '|', '>', '<', '='];
 
         for($i=0; $i<sizeof($ca); $i++){
             if($ca[$i]=='(') {
@@ -86,23 +109,30 @@ class FunctionHelper extends Helper
                 $postfixCurrentIndex++;
                 $i--;
             } elseif(in_array($ca[$i], $operators)){
+                if(in_array($ca[$i+1], $operators)){
+                    $currentOperator = $o2n[$ca[$i].$ca[$i+1]];
+                    $i++;
+                }else{
+                    $currentOperator = $o2n[$ca[$i]];
+                }
                 if($stack[$indexOfStackTop]=='$'){
                     $indexOfStackTop++;
-                    $stack[$indexOfStackTop] = $ca[$i];
-                }elseif(in_array($stack[$indexOfStackTop], $operators)){
+                    $stack[$indexOfStackTop] = $currentOperator;
+                }elseif(preg_match('/[0-9\s.]/i',$stack[$indexOfStackTop])){
                     do{
-                        if($precedence[$ca[$i]]>$precedence[$stack[$indexOfStackTop]]){
+                        if($precedence[$currentOperator]>$precedence[$stack[$indexOfStackTop]]){
                             $indexOfStackTop++;
-                            $stack[$indexOfStackTop] = $ca[$i];
+                            $stack[$indexOfStackTop] = $currentOperator;
                             break;
                         }else{
                             $postfix[$postfixCurrentIndex]['type'] = Configure::read('postfix_elements_types')['operator'];
                             $postfix[$postfixCurrentIndex]['operator'] = $stack[$indexOfStackTop];
+
                             $postfixCurrentIndex++;
                             $indexOfStackTop--;
-                            if(!in_array($stack[$indexOfStackTop], $operators)) {
+                            if(!in_array($stack[$indexOfStackTop], $o2n)) {
                                 $indexOfStackTop++;
-                                $stack[$indexOfStackTop] = $ca[$i];
+                                $stack[$indexOfStackTop] = $currentOperator;
                                 break;
                             }
                         }
@@ -116,7 +146,8 @@ class FunctionHelper extends Helper
                 do{
                     $stop=$stack[$indexOfStackTop];
                     $postfix[$postfixCurrentIndex]['type'] = Configure::read('postfix_elements_types')['operator'];
-                    $postfix[$postfixCurrentIndex]['operator'] = $stop;
+                    $postfix[$postfixCurrentIndex]['operator'] = $o2n[$stop];
+
                     $postfixCurrentIndex++;
                     $indexOfStackTop--;
                     $stop=$stack[$indexOfStackTop];
@@ -127,12 +158,114 @@ class FunctionHelper extends Helper
                 while($indexOfStackTop>0){
                     $postfix[$postfixCurrentIndex]['type'] = Configure::read('postfix_elements_types')['operator'];
                     $postfix[$postfixCurrentIndex]['operator'] = $stack[$indexOfStackTop];
+
                     $indexOfStackTop--;
                     $postfixCurrentIndex++;
                 }
             }
         }
         return $postfix;
+    }
+
+    public function postfix_evaluator($postfixArray){
+        $indexOfTopStack = -1;
+        $eStack = [];
+
+        for($i=0; $i<sizeof($postfixArray); $i++){
+            if($postfixArray[$i]['type']=='number'){
+                $indexOfTopStack++;
+                $eStack[$indexOfTopStack] = $postfixArray[$i]['number'];
+            }else{
+                $operand2 = $eStack[$indexOfTopStack];
+                $indexOfTopStack--;
+                $operand1 = $eStack[$indexOfTopStack];
+
+                $result = $this->execute($operand1, $operand2, $postfixArray[$i]['operator']);
+
+                $eStack[$indexOfTopStack] = $result;
+            }
+        }
+        return $result;
+    }
+
+    public function execute($operand1, $operand2, $operator){
+        $o2n = [
+            '+'=>0,
+            '-'=>1,
+            '*'=>2,
+            '/'=>3,
+            '>'=>4,
+            '>='=>5,
+            '<'=>6,
+            '<='=>7,
+            '=='=>8,
+            '&&'=>9,
+            '||'=>10,
+            '='=>11,
+            '&'=>12,
+        ];
+
+        $char = array_flip($o2n)[$operator];
+            switch($char){
+                case "+":
+                    $result = $operand1 + $operand2;
+                    break;
+                case "-";
+                    $result = $operand1 - $operand2;
+                    break;
+                case "*";
+                    $result = $operand1 * $operand2;
+                    break;
+                case "/";
+                    $result = $operand1 / $operand2;
+                    break;
+                case ">";
+                    if($operand1 > $operand2){
+                        $result = 1;
+                    }else{
+                        $result = 0;
+                    }
+                    break;
+                case ">=";
+                    if($operand1 >= $operand2){
+                        $result = 1;
+                    }else{
+                        $result = 0;
+                    }
+                    break;
+                case "<";
+                    if($operand1 < $operand2){
+                        $result = 1;
+                    }else{
+                        $result = 0;
+                    }
+                    break;
+                case "<=";
+                    if($operand1 <= $operand2){
+                        $result = 1;
+                    }else{
+                        $result = 0;
+                    }
+                    break;
+                case "==";
+                    if($operand1 == $operand2){
+                        $result = 1;
+                    }else{
+                        $result = 0;
+                    }
+                    break;
+                case "&&";
+                    $result = $operand1 && $operand2;
+                    break;
+                case "||";
+                    $result = $operand1 || $operand2;
+                    break;
+                case "&";
+                    $result = $operand1 & $operand2;
+                    break;
+            }
+
+        return $result;
     }
 
     public function credit_closing_percentage($period_start, $period_end, $payment_start, $payment_end, $level, $unit=null, $contextArray = []){
@@ -552,8 +685,8 @@ class FunctionHelper extends Helper
 //        return $invoice['invoice_date'];
     }
 
-    public function is_mango($customer){
-        $customer_info = TableRegistry::get('customers')->find('all', ['conditions'=>['id'=>$customer]])->first();
+    public function is_mango_customer($contextArray = []){
+        $customer_info = TableRegistry::get('customers')->find('all', ['conditions'=>['id'=>$contextArray['current_customer']]])->first();
         return $customer_info['is_mango'];
     }
 
@@ -609,15 +742,11 @@ class FunctionHelper extends Helper
         return $payment_info['payment_collection_date'];
     }
 
-    public function is_current_item($contextArray = [], $item = [], $unit= []){
-        if(sizeof($contextArray)>0){
-            if($item==$contextArray['current_item_id'] && $unit==$contextArray['current_item_unit_id']){
-                return true;
-            }
-        }
+    public function is_current_item($itemName, $unitName = null, $contextArray = []){
+        return 'not needed';
     }
 
-    public function current_quantity($contextArray = [], $itemName, $unitName = null){
+    public function item_quantity($itemName, $unitName = null, $contextArray = []){
         $item_info = TableRegistry::get('items')->find('all', ['conditions'=>['name'=>$itemName]])->first();
         $unit_info = TableRegistry::get('units')->find('all', ['conditions'=>['unit_display_name'=>$unitName]])->first();
         $item_id = $item_info['id'];
@@ -635,5 +764,18 @@ class FunctionHelper extends Helper
             }
         }
         return $sum?$sum:0;
+    }
+
+    public function is_cash_invoice($contextArray = []){
+        $current_invoice_id = $contextArray['current_invoice_id'];
+        $invoice = TableRegistry::get('invoices')->get($current_invoice_id);
+    }
+
+    public function invoice_payment_age($contextArray = []){
+
+    }
+
+    public function execution_time($contextArray = []){
+
     }
 }

@@ -46,20 +46,6 @@ use Cake\Core\Configure;
                 <div class="row">
                     <div class="col-md-7">
                         <div class="general condition_div">
-                            <table class="table table-bordered magic_table">
-                                <tr>
-                                    <td class="text-center">
-                                        <span class="label label-warning">General Conditions</span>
-                                        <span class="pull-right"><input type="checkbox" class="condition_check" name="general_check" value="1"></span>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td><?= $this->Form->input('general_conditions', ['type'=>'textarea', 'style'=>'width:100%', 'rows'=>8, 'class'=>'form-control condition', 'templates'=>['label'=>'', 'textarea' => '<div class="col-sm-12"><textarea class="form-control condition" name="{{name}}"{{attrs}}>{{value}}</textarea></div>']]);?></td>
-                                </tr>
-                            </table>
-                        </div>
-
-                        <div class="general condition_div">
                             <div class="list" data-index_no="0">
                                 <div class="conditionWrapper">
                                     <div class="moreTable">
@@ -68,19 +54,42 @@ use Cake\Core\Configure;
                                                 <tr>
                                                     <td colspan="2" class="text-center">
                                                         <span style="padding: 0 6px;" class="pull-left btn btn-sm btn-circle btn-danger remove">X</span>
-                                                        <span class="label label-success">Specific Conditions</span>
+                                                        <span class="label label-success">Conditions</span>
                                                         <span class="pull-right"><input type="checkbox" style="height: 14px; border: 1px solid lightgrey" class="form-control condition_check noUniform" name="general_check" value="1"></span>
                                                     </td>
                                                 </tr>
+                                                <tr>
+                                                    <td><?= $this->Form->input('condition.0.level', ['options'=>$levels, 'empty'=>'Select Level', 'style'=>'width:100%', 'templates'=>['label'=>'', 'select' => '<div id="container_{{name}}" class="col-sm-12"><select name="{{name}}"{{attrs}} class="form-control">{{content}}</select></div>']]);?></td>
+                                                    <td><?= $this->Form->input('condition.0.context', ['options'=>Configure::read('offer_contexts'), 'empty'=>'Select Context', 'style'=>'width:100%', 'templates'=>['label'=>'', 'select' => '<div id="container_{{name}}" class="col-sm-12"><select name="{{name}}"{{attrs}} class="form-control">{{content}}</select></div>']]);?></td>
+                                                </tr>
+                                                <tr class="pull-center">
+                                                    <td colspan="2">
+                                                        <?= $this->Form->input('condition.0.time_level', ['options'=>Configure::read('offer_time_level'), 'empty'=>'Select Time Level', 'style'=>'width:60%', 'templates'=>['label'=>'', 'select' => '<div id="container_{{name}}" class="col-sm-10 col-lg-offset-3"><select name="{{name}}"{{attrs}} class="form-control">{{content}}</select></div>']]);?>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="text-center" colspan="2">
+                                                        <span class="label label-warning">General Conditions</span>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td colspan="2"><?= $this->Form->input('condition.0.general_conditions', ['type'=>'textarea', 'style'=>'width:100%', 'rows'=>4, 'class'=>'form-control condition', 'templates'=>['label'=>'', 'textarea' => '<div class="col-sm-12"><textarea class="form-control condition" name="{{name}}"{{attrs}}>{{value}}</textarea></div>']]);?></td>
+                                                </tr>
+                                                <tr>
+                                                    <td colspan="2" class="text-center">
+                                                        <span class="label label-success">Specific Conditions</span>
+                                                    </td>
+                                                </tr>
                                                 <tr class="ctr">
-                                                    <td width="60%"><?= $this->Form->input('specific.0.conditions', ['type'=>'textarea', 'placeholder'=>'Conditions', 'rows'=>13, 'templates'=>['label'=>'', 'textarea' => '<div class="col-sm-12"><textarea class="multi form-control textareaStyle condition spec_condition noUniform" name="{{name}}"{{attrs}}>{{value}}</textarea></div>']]);?></td>
+                                                    <td width="60%"><?= $this->Form->input('condition.0.specific', ['type'=>'textarea', 'placeholder'=>'Conditions', 'rows'=>16, 'templates'=>['label'=>'', 'textarea' => '<div class="col-sm-12"><textarea class="multi form-control textareaStyle condition spec_condition noUniform" name="{{name}}"{{attrs}}>{{value}}</textarea></div>']]);?></td>
                                                     <td width="40%">
-                                                        <?= $this->Form->input('specific.0.offer_type', ['type'=>'text', 'style'=>'width:100%', 'placeholder'=>'Offer Type', 'templates'=>['label'=>'', 'input' => '<div class="col-sm-12 container_{{name}}"> <input {{attrs}} class="form-control" type="{{type}}" name="{{name}}"></div>']]);?>
-                                                        <?= $this->Form->input('specific.0.offer_name', ['type'=>'text', 'style'=>'width:100%', 'placeholder'=>'Offer Name', 'templates'=>['label'=>'', 'input' => '<div class="col-sm-12 container_{{name}}"> <input {{attrs}} class="form-control" type="{{type}}" name="{{name}}"></div>']]);?>
-                                                        <?= $this->Form->input('specific.0.offer_unit_name', ['type'=>'text', 'style'=>'width:100%', 'placeholder'=>'Offer Unit Name', 'templates'=>['label'=>'', 'input' => '<div class="col-sm-12 container_{{name}}"> <input {{attrs}} class="form-control" type="{{type}}" name="{{name}}"></div>']]);?>
-                                                        <?= $this->Form->input('specific.0.amount_type', ['type'=>'text', 'style'=>'width:100%', 'placeholder'=>'Amount Type', 'templates'=>['label'=>'', 'input' => '<div class="col-sm-12 container_{{name}}"> <input {{attrs}} class="form-control" type="{{type}}" name="{{name}}"></div>']]);?>
-                                                        <?= $this->Form->input('specific.0.payment_mode', ['type'=>'text', 'style'=>'width:100%', 'placeholder'=>'Payment Mode', 'templates'=>['label'=>'', 'input' => '<div class="col-sm-12 container_{{name}}"> <input {{attrs}} class="form-control" type="{{type}}" name="{{name}}"></div>']]);?>
-                                                        <textarea name="specific[0][amount]" placeholder="Amount" rows="1" class="multi form-control" style="width: 100%"></textarea>
+                                                        <?= $this->Form->input('condition.0.offer_type', ['type'=>'text', 'style'=>'width:100%', 'placeholder'=>'Offer Type', 'templates'=>['label'=>'', 'input' => '<div class="col-sm-12 container_{{name}}"> <input {{attrs}} class="form-control" type="{{type}}" name="{{name}}"></div>']]);?>
+                                                        <?= $this->Form->input('condition.0.offer_name', ['type'=>'text', 'style'=>'width:100%', 'placeholder'=>'Offer Name', 'templates'=>['label'=>'', 'input' => '<div class="col-sm-12 container_{{name}}"> <input {{attrs}} class="form-control" type="{{type}}" name="{{name}}"></div>']]);?>
+                                                        <?= $this->Form->input('condition.0.offer_unit_name', ['type'=>'text', 'style'=>'width:100%', 'placeholder'=>'Offer Unit Name', 'templates'=>['label'=>'', 'input' => '<div class="col-sm-12 container_{{name}}"> <input {{attrs}} class="form-control" type="{{type}}" name="{{name}}"></div>']]);?>
+                                                        <?= $this->Form->input('condition.0.amount_type', ['type'=>'text', 'style'=>'width:100%', 'placeholder'=>'Amount Type', 'templates'=>['label'=>'', 'input' => '<div class="col-sm-12 container_{{name}}"> <input {{attrs}} class="form-control" type="{{type}}" name="{{name}}"></div>']]);?>
+                                                        <?= $this->Form->input('condition.0.payment_mode', ['type'=>'text', 'style'=>'width:100%', 'placeholder'=>'Payment Mode', 'templates'=>['label'=>'', 'input' => '<div class="col-sm-12 container_{{name}}"> <input {{attrs}} class="form-control" type="{{type}}" name="{{name}}"></div>']]);?>
+                                                        <?= $this->Form->input('condition.0.amount_unit', ['options'=>Configure::read('offer_amount_unit'), 'empty'=>'Select Amount Unit', 'style'=>'width:100%', 'templates'=>['label'=>'', 'select' => '<div id="container_{{name}}" class="col-sm-12"><select name="{{name}}"{{attrs}} class="form-control">{{content}}</select></div>']]);?>
+                                                        <textarea name="condition[0][amount]" placeholder="Amount" rows="1" class="multi form-control" style="width: 100%"></textarea>
                                                     </td>
                                                 </tr>
                                             </table>
@@ -89,8 +98,26 @@ use Cake\Core\Configure;
                                 </div>
                             </div>
                         </div>
-                        <div class="row" style="margin-left: 2px;">
+
+                        <div class="row" style="margin-left: 2px; margin-bottom: 20px;">
                             <input type="button" class="btn btn-circle default yellow-stripe add_more" value="Add" />
+                        </div>
+
+                        <div class="row text-center">
+                            <div class="col-lg-12">
+                                <table class="table table-bordered">
+                                    <tr>
+                                        <td class="text-center" colspan="2">
+                                            <span class="label label-info">Offer Items</span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-center" colspan="2">
+                                            <?= $this->Form->input('offer_items[]', ['options'=>$items, 'multiple', 'empty'=>'Select Items', 'style'=>'width:100%', 'templates'=>['label'=>'', 'select' => '<div id="container_{{name}}" class="col-sm-12"><select name="{{name}}"{{attrs}} class="form-control">{{content}}</select></div>']]);?>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
                         </div>
                     </div>
 

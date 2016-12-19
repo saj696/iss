@@ -7,6 +7,7 @@ use App\View\Helper\StackHelper;
 use App\View\Helper\SystemHelper;
 use Cake\Core\App;
 use Cake\Core\Configure;
+use Cake\Datasource\ConnectionManager;
 use Cake\ORM\TableRegistry;
 use Cake\View\View;
 
@@ -35,6 +36,18 @@ class OffersController extends AppController
         $offers = $this->Offers->find('all', [
             'conditions' => ['Offers.status !=' => 99]
         ]);
+
+//        $offers = $this->Offers->find('all', [
+//            'conditions' => ['Offers.status !=' => 99]
+//        ])->toArray();
+
+//        App::import('Helper', 'FunctionHelper');
+//        $FunctionHelper = new FunctionHelper(new View());
+//
+//        echo '<pre>';
+//        print_r(json_decode($offers[0]['conditions'], true));
+//        echo '</pre>';
+//        exit;
 
         $this->set('offers', $this->paginate($offers));
         $this->set('_serialize', ['offers']);
@@ -71,32 +84,63 @@ class OffersController extends AppController
         $FunctionHelper = new FunctionHelper(new View());
 
         if ($this->request->is('post')) {
+            try {
+                $saveStatus = 0;
+                $conn = ConnectionManager::get('default');
+                $conn->transactional(function () use ($offer, $FunctionHelper, $user, $time, &$saveStatus)
+                {
+                    $input = $this->request->data;
+                    $data['program_name'] = $input['program_name'];
+                    $data['offer_payment_mode'] = $input['offer_payment_mode'];
+                    $data['invoicing'] = $input['invoicing'];
+                    $data['program_period_start'] = strtotime($input['program_period_start']);
+                    $data['program_period_end'] = strtotime($input['program_period_end']);
+                    $data['conditions'] = json_encode($input['condition']);
 
-            $input = $this->request->data;
-            $data['program_name'] = $input['program_name'];
-            $data['offer_payment_mode'] = $input['offer_payment_mode'];
-            $data['invoicing'] = $input['invoicing'];
-            $data['program_period_start'] = strtotime($input['program_period_start']);
-            $data['program_period_end'] = strtotime($input['program_period_end']);
+                    $conditionPostfix = [];
+                    foreach($input['condition'] as $k=>$condition):
+                        $conditionPostfix[$k]['general'] = $FunctionHelper->postfix_converter($condition['general_conditions'].'$');
+                        $conditionPostfix[$k]['specific'] = $FunctionHelper->postfix_converter($condition['specific'].'$');
+                        $conditionPostfix[$k]['amount'] = $FunctionHelper->postfix_converter($condition['amount'].'$');
+                    endforeach;
 
-            $data['general_conditions'] = json_encode($input['general_conditions']);
-            $paramGenArray = $data['general_conditions'].'$';
-            $data['general_postfix'] = json_encode($FunctionHelper->postfix_converter($paramGenArray));
-            $data['specific_conditions'] = json_encode($input['specific']);
-            $specificPostfix = [];
-            foreach($input['specific'] as $specific){
-                $specificPostfix[] = $FunctionHelper->postfix_converter($specific['amount']);
-            }
-            $data['specific_postfix'] = json_encode($specificPostfix);
+                    $data['condition_postfix'] = json_encode($conditionPostfix);
 
-            $data['created_by'] = $user['id'];
-            $data['created_date'] = $time;
-            $offer = $this->Offers->patchEntity($offer, $data);
-            if ($this->Offers->save($offer)) {
-                $this->Flash->success('The offer has been saved.');
+                    $data['created_by'] = $user['id'];
+                    $data['created_date'] = $time;
+                    $offer = $this->Offers->patchEntity($offer, $data);
+                    $result = $this->Offers->save($offer);
+
+                    // Offer Items Insertion
+                    $this->loadModel('OfferItems');
+                    $this->loadModel('ItemUnits');
+                    foreach($input['offer_items'] as $item){
+                        $offerItem = $this->OfferItems->newEntity();
+                        $itemUnitInfo = $this->ItemUnits->get($item);
+                        $offerItemData['offer_id'] = $result['id'];
+                        $offerItemData['item_id'] = $itemUnitInfo['item_id'];
+                        $offerItemData['manufacture_unit_id'] = $itemUnitInfo['manufacture_unit_id'];
+                        $offerItemData['item_unit_id'] = $item;
+                        $offerItemData['offer_payment_mode'] = $input['offer_payment_mode'];
+                        $offerItemData['invoicing'] = $input['invoicing'];
+                        $offerItemData['program_period_start'] = strtotime($input['program_period_start']);
+                        $offerItemData['program_period_end'] = strtotime($input['program_period_end']);
+                        $offerItemData['created_by'] = $user['id'];
+                        $offerItemData['created_date'] = $time;
+                        $offerItem = $this->OfferItems->patchEntity($offerItem, $offerItemData);
+                        $this->OfferItems->save($offerItem);
+                    }
+                });
+
+                $this->Flash->success('Offer Creation Successful');
                 return $this->redirect(['action' => 'index']);
-            } else {
-                $this->Flash->error('The offer could not be saved. Please, try again.');
+            } catch (\Exception $e) {
+                echo '<pre>';
+                print_r($e);
+                echo '</pre>';
+                exit;
+                $this->Flash->error('Offer Creation Failed');
+                return $this->redirect(['action' => 'index']);
             }
         }
 
@@ -111,7 +155,7 @@ class OffersController extends AppController
         $awards = $this->Awards->find('all', ['conditions'=>['status'=>1]]);
 
         $this->loadModel('AccountHeads');
-        $accounts = $this->AccountHeads->find('list', ['conditions'=>['status'=>1, 'parent'=>9]])->orWhere(['parent'=>10]);
+        $accounts = $this->AccountHeads->find('list', ['conditions'=>['status'=>1, 'parent'=>300000]]);
 
         App::import('Helper', 'SystemHelper');
         $SystemHelper = new SystemHelper(new View());
@@ -125,7 +169,10 @@ class OffersController extends AppController
         }
         $recipients[sizeof($forces->toArray())] = 'Customer';
 
-        $this->set(compact('offer', 'functionArray', 'awards', 'accounts', 'items', 'recipients'));
+        $this->loadModel('AdministrativeLevels');
+        $levels = $this->AdministrativeLevels->find('list', ['keyField' => 'level_no', 'keyValue' => 'level_name'])->toArray();
+        $levels[5] = 'Customer';
+        $this->set(compact('offer', 'functionArray', 'awards', 'accounts', 'items', 'recipients', 'levels'));
         $this->set('_serialize', ['offer']);
     }
 

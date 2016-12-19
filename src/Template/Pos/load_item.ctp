@@ -14,4 +14,5 @@
     <td><input type="text" name="detail[<?= $item_unit_id?>][item_bonus]" class="form-control item_bonus" readonly value="0" /></td>
     <td><input type="text" name="detail[<?= $item_unit_id?>][item_cash_discount]" class="form-control item_cash_discount" readonly value="0" /></td>
     <td><input type="text" name="detail[<?= $item_unit_id?>][item_net_total]" class="form-control item_net_total" readonly value="" /></td>
+    <td width="50px;"><span class="btn btn-sm btn-circle btn-danger remove pull-right">X</span></td>
 </tr>

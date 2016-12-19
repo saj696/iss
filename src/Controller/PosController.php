@@ -318,6 +318,7 @@ class PosController extends AppController
 
         $item_unit_id = $data['item_unit_id'];
         $invoice_type = $data['invoice_type'];
+
         $itemPrices = $this->Prices->find('all', ['conditions'=>['item_unit_id'=>$item_unit_id]])->first();
 
         if ($invoice_type == 1) {
@@ -335,6 +336,89 @@ class PosController extends AppController
         $itemName = $itemArray[$item_unit_id];
         $this->viewBuilder()->layout('ajax');
         $this->set(compact('itemName', 'item_unit_id', 'unit_price'));
+    }
+
+    public function loadOffer(){
+        $data = $this->request->data;
+        $item_unit_id = $data['item_unit_id'];
+        $invoice_type = $data['invoice_type'];
+        $customer_id = $data['customer_id'];
+        $item_quantity = $data['item_quantity'];
+        $customer_level_no = $data['level_no'];
+        $customer_unit = $data['customer_unit'];
+
+        $this->loadModel('AdministrativeUnits');
+        $this->loadModel('Customers');
+        $this->loadModel('ItemUnits');
+        $ItemUnitInfo = $this->ItemUnits->get($item_unit_id);
+        $customerUnitInfo = $this->AdministrativeUnits->get($customer_unit);
+        $customerInfo = $this->Customers->get($customer_id);
+
+        $invoiceArray = [];
+
+        $invoiceArray['customer_level_no'] = $customer_level_no;
+        $invoiceArray['customer_unit_global_id'] = $customerUnitInfo['global_id'];
+        if($customerInfo['is_mango']==1):
+            $invoiceArray['customer_type'] = array_flip(Configure::read('po_customer_type'))['mango'];
+        else:
+            $invoiceArray['customer_type'] = array_flip(Configure::read('po_customer_type'))['general'];
+        endif;
+        $invoiceArray['customer_id'] = $customer_id;
+        $invoiceArray['delivery_date'] = time();
+        $invoiceArray['invoice_type'] = $invoice_type;
+        $invoiceArray['invoice_date'] = time();
+        $invoiceArray['invoiced_products'][0]['customer_level_no'] = $customer_level_no;
+        $invoiceArray['invoiced_products'][0]['customer_unit_global_id'] = $customerUnitInfo['global_id'];
+        $invoiceArray['invoiced_products'][0]['customer_type'] = $invoiceArray['customer_type'];
+        $invoiceArray['invoiced_products'][0]['customer_id'] = $customer_id;
+        $invoiceArray['invoiced_products'][0]['invoice_date'] = time();
+        $invoiceArray['invoiced_products'][0]['delivery_date'] = time();
+        $invoiceArray['invoiced_products'][0]['item_id'] = $ItemUnitInfo['item_id'];
+        $invoiceArray['invoiced_products'][0]['manufacture_unit_id'] = $ItemUnitInfo['manufacture_unit_id'];
+        $invoiceArray['invoiced_products'][0]['product_quantity'] = $item_quantity;
+
+
+        echo '<pre>';
+        print_r($invoiceArray);
+        echo '</pre>';
+        exit;
+    }
+
+    public function checkOffer(){
+        $data = $this->request->data;
+        echo '<pre>';
+        print_r($data);
+        echo '</pre>';
+        exit;
+    }
+
+    public function checkInvoiceTypeEligibility(){
+        $data = $this->request->data;
+        $invoice_type = $data['invoice_type'];
+        $customer_id = $data['customer_id'];
+        $cash_invoice_days = $data['cash_invoice_days'];
+        $credit_invoice_days = $data['credit_invoice_days'];
+
+        $this->loadModel('Invoices');
+        $oldest = $this->Invoices->find('all', ['conditions'=>['customer_id'=>$customer_id, 'due >'=>0, 'delivery_status'=>array_flip(Configure::read('invoice_delivery_status'))['delivered'], 'status'=>1], 'order'=>['delivery_date ASC'], 'limit'=>1])->first();
+
+        if(sizeof($oldest)>0){
+            $dateDiff = (time()-$oldest['delivery_date'])/(60*60*24);
+            if($invoice_type==1 && $dateDiff > $cash_invoice_days){
+                $arr = json_encode(0);
+                $this->response->body($arr);
+            }elseif($invoice_type==2 && $dateDiff > $credit_invoice_days){
+                $arr = json_encode(0);
+                $this->response->body($arr);
+            }else{
+                $arr = json_encode(1);
+                $this->response->body($arr);
+            }
+        }else{
+            $arr = json_encode(1);
+            $this->response->body($arr);
+        }
+        return $this->response;
     }
 
     public function forward($id)
@@ -357,22 +441,22 @@ class PosController extends AppController
 
                 $poEvent = $this->PoEvents->newEntity();
                 $customerLevel = $poInfo['customer_level_no'];
-                $customerLevelDepotCoverage = $this->DepotCoverages->find('all', ['conditions'=>['level_no'=>$customerLevel]])->first();
-                $depotInCharge = $this->Users->find('all', ['conditions'=>['depot_id'=>$customerLevelDepotCoverage['depot_id']]])->first();
+                $customerLevelDepotCoverage = $this->DepotCoverages->find('all', ['conditions'=>['status'=>1, 'level_no'=>$customerLevel]])->first();
+                $depotInCharge = $this->Users->find('all', ['conditions'=>['status'=>1, 'depot_id'=>$customerLevelDepotCoverage['depot_id']]])->first();
 
                 if($depotInCharge['id']):
                     $recipient_id = $depotInCharge['id'];
                 else:
-                    $customerLevelDepot = $this->Depots->find('all', ['conditions'=>['status !='=>99, 'level_no'=>$customerLevel]])->first();
+                    $customerLevelDepot = $this->Depots->find('all', ['conditions'=>['status'=>1, 'level_no'=>$customerLevel]])->first();
                     $customerLevelDepotId = $customerLevelDepot['id'];
                     if($customerLevelDepotId):
-                        $depotInCharge = $this->Users->find('all', ['conditions'=>['depot_id'=>$customerLevelDepotId]])->first();
+                        $depotInCharge = $this->Users->find('all', ['conditions'=>['status'=>1, 'depot_id'=>$customerLevelDepotId]])->first();
                         $recipient_id = $depotInCharge['id'];
                     else:
                         for($i=$customerLevel; $i>=0; $i--):
-                            $customerLevelDepot = $this->Depots->find('all', ['conditions'=>['status !='=>99, 'level_no'=>$i]])->first();
+                            $customerLevelDepot = $this->Depots->find('all', ['conditions'=>['status'=>1, 'level_no'=>$i]])->first();
                             $customerLevelDepotId = $customerLevelDepot['id'];
-                            $depotInCharge = $this->Users->find('all', ['conditions'=>['depot_id'=>$customerLevelDepotId]])->first();
+                            $depotInCharge = $this->Users->find('all', ['status'=>1, 'conditions'=>['depot_id'=>$customerLevelDepotId]])->first();
                             $recipient_id = $depotInCharge['id'];
                             if($recipient_id>0):
                                 break;
