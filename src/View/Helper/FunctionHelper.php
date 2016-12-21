@@ -685,14 +685,12 @@ class FunctionHelper extends Helper
 //        return $invoice['invoice_date'];
     }
 
-    public function is_mango_customer($contextArray = []){
-        $customer_info = TableRegistry::get('customers')->find('all', ['conditions'=>['id'=>$contextArray['current_customer']]])->first();
-        return $customer_info['is_mango'];
-    }
-
-    public function payment_date($payment){
-        $payment_info = TableRegistry::get('payments')->find('all', ['conditions'=>['id'=>$payment]])->first();
-        return $payment_info['collection_date'];
+    public function payment_date($contextArray = []){
+        if($contextArray['due']>0){
+            return strtotime('01-01-2020');
+        }else{
+            return $contextArray['updated_date'];
+        }
     }
 
     public function invoice_quantity($itemArray){
@@ -737,9 +735,41 @@ class FunctionHelper extends Helper
         return $location_info['no_of_direct_successors'];
     }
 
-    public function payment_age($invoice){
-        $payment_info = TableRegistry::get('invoice_payments')->find('all', ['conditions'=>['invoice_id'=>$invoice]])->first();
-        return $payment_info['payment_collection_date'];
+    public function invoice_item_payment_age($itemName, $unitName, $invoice){
+        $item_info = TableRegistry::get('items')->find('all', ['conditions'=>['name'=>$itemName]])->first();
+        $unit_info = TableRegistry::get('units')->find('all', ['conditions'=>['unit_display_name'=>$unitName]])->first();
+        $item_id = $item_info['id'];
+        $unit_id = $unit_info['id'];
+
+        if(sizeof($invoice)>0){
+            foreach($invoice['invoiced_products'] as $invoiced_product){
+                if($invoiced_product['item_id']==$item_id && $invoiced_product['manufacture_unit_id']==$unit_id){
+                    if($invoice['invoice_type']==1){
+                        if($invoiced_product['due']==0){
+                            return ($invoiced_product['updated_date']-$invoiced_product['delivery_date'])/3600*24;
+                        }else{
+                            return 999999;
+                        }
+                    }elseif($invoice['invoice_type']==2){
+                        if($invoiced_product['due']==0){
+                            return ($invoiced_product['updated_date']-$invoiced_product['delivery_date'])/3600*24;
+                        }else{
+                            return 999999;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    public function is_mango_customer($contextArray = []){
+        $customer_info = TableRegistry::get('customers')->find('all', ['conditions'=>['id'=>$contextArray['customer_id']]])->first();
+
+        if($customer_info['is_mango']==1){
+            return $customer_info['is_mango'];
+        }else{
+            return 0;
+        }
     }
 
     public function is_current_item($itemName, $unitName = null, $contextArray = []){
@@ -752,14 +782,15 @@ class FunctionHelper extends Helper
         $item_id = $item_info['id'];
         $unit_id = $unit_info['id'];
         $sum = 0;
+
         if(sizeof($contextArray)>0){
             if($item_id>0 && $unitName==null){
-                if (false !== $key = array_search($item_id, $contextArray['current_item_id'])) {
-                    $sum += $contextArray['current_item_quantity'][$key];
+                if (false !== $key = array_search($item_id, $contextArray['item_id'])) {
+                    $sum += $contextArray['product_quantity'][$key];
                 }
             }elseif($item_id>0 && $unit_id>0){
-                if ((false !== $key = array_search($item_id, $contextArray['current_item_id'])) && (false !== $key = array_search($unit_id, $contextArray['current_item_quantity']))) {
-                    $sum += $contextArray['current_item_quantity'][$key];
+                if ((false !== $key = array_search($item_id, $contextArray['item_id'])) && (false !== $key = array_search($unit_id, $contextArray['manufacture_unit_id']))) {
+                    $sum += $contextArray['product_quantity'][$key];
                 }
             }
         }
@@ -767,12 +798,11 @@ class FunctionHelper extends Helper
     }
 
     public function is_cash_invoice($contextArray = []){
-        $current_invoice_id = $contextArray['current_invoice_id'];
-        $invoice = TableRegistry::get('invoices')->get($current_invoice_id);
-    }
-
-    public function invoice_payment_age($contextArray = []){
-
+        if($contextArray['invoice_type']==1){
+            return 1;
+        }else{
+            return 0;
+        }
     }
 
     public function execution_time($contextArray = []){

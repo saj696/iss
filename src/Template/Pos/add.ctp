@@ -84,6 +84,7 @@ use Cake\Core\Configure;
                     </div>
                 </div>
                 <div class="row text-center">
+                    <span class="btn default red-stripe check_offer" style="margin-top:20px; margin-bottom:20px">Check Offer</span>
                     <?= $this->Form->button(__('Save'), ['name'=>'save', 'class' => 'btn default green-stripe', 'style' => 'margin-top:20px; margin-bottom:20px']) ?>
                     <?= $this->Form->button(__('Forward'), ['name'=>'forward', 'class' => 'btn default yellow-stripe', 'style' => 'margin-top:20px; margin-bottom:20px']) ?>
                 </div>
@@ -102,6 +103,39 @@ use Cake\Core\Configure;
         $(document).on("focus",".datepicker", function() {
             $(this).removeClass('hasDatepicker').datepicker({
                 dateFormat: 'dd-mm-yy'
+            });
+        });
+
+        $(document).on('click', '.check_offer', function(){
+            var myArr = {};
+            var i = 0;
+            $( ".itemUnitId" ).each(function(index) {
+                myArr[i] = {
+                    "item_unit_id":$(this).val(),
+                    "item_quantity":$(this).closest('.itemTr').find('.item_quantity').val()
+                }
+                i++;
+            });
+
+            // check offer ajax
+            var level_no = $('.level_no').val();
+            var customer_unit = $('.customer_unit').val();
+            var invoice_type = $('.invoice_type').val();
+            var customer_id = $('.customer_id').val();
+
+            $.ajax({
+                type: 'POST',
+                url: '<?= $this->Url->build("/Pos/checkOffer")?>',
+                data: {
+                    item_array: myArr,
+                    invoice_type:invoice_type,
+                    customer_id:customer_id,
+                    level_no: level_no,
+                    customer_unit: customer_unit,
+                },
+                success: function (data, status) {
+                    console.log(data);
+                }
             });
         });
 
@@ -261,7 +295,7 @@ use Cake\Core\Configure;
                     customer_unit: customer_unit,
                 },
                 success: function (data, status) {
-                    $('.appendTr').append(data);
+                    //$('.appendTr').append(data);
                 }
             });
         });

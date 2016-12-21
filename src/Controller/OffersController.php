@@ -93,6 +93,7 @@ class OffersController extends AppController
                     $data['program_name'] = $input['program_name'];
                     $data['offer_payment_mode'] = $input['offer_payment_mode'];
                     $data['invoicing'] = $input['invoicing'];
+                    $data['invoice_type'] = $input['invoice_type'];
                     $data['program_period_start'] = strtotime($input['program_period_start']);
                     $data['program_period_end'] = strtotime($input['program_period_end']);
                     $data['conditions'] = json_encode($input['condition']);
@@ -100,8 +101,16 @@ class OffersController extends AppController
                     $conditionPostfix = [];
                     foreach($input['condition'] as $k=>$condition):
                         $conditionPostfix[$k]['general'] = $FunctionHelper->postfix_converter($condition['general_conditions'].'$');
-                        $conditionPostfix[$k]['specific'] = $FunctionHelper->postfix_converter($condition['specific'].'$');
-                        $conditionPostfix[$k]['amount'] = $FunctionHelper->postfix_converter($condition['amount'].'$');
+                        foreach($condition['specific'] as $s=>$specific){
+                            $conditionPostfix[$k]['specific'][$s]['condition'] = $FunctionHelper->postfix_converter($specific['specific_condition'].'$');
+                            $conditionPostfix[$k]['specific'][$s]['amount'] = $FunctionHelper->postfix_converter($specific['amount'].'$');
+                            $conditionPostfix[$k]['specific'][$s]['offer_type'] = $specific['offer_type'];
+                            $conditionPostfix[$k]['specific'][$s]['offer_name'] = $specific['offer_name'];
+                            $conditionPostfix[$k]['specific'][$s]['offer_unit_name'] = $specific['offer_unit_name'];
+                            $conditionPostfix[$k]['specific'][$s]['amount_type'] = $specific['amount_type'];
+                            $conditionPostfix[$k]['specific'][$s]['payment_mode'] = $specific['payment_mode'];
+                            $conditionPostfix[$k]['specific'][$s]['amount_unit'] = $specific['amount_unit'];
+                        }
                     endforeach;
 
                     $data['condition_postfix'] = json_encode($conditionPostfix);
@@ -123,6 +132,7 @@ class OffersController extends AppController
                         $offerItemData['item_unit_id'] = $item;
                         $offerItemData['offer_payment_mode'] = $input['offer_payment_mode'];
                         $offerItemData['invoicing'] = $input['invoicing'];
+                        $offerItemData['invoice_type'] = $input['invoice_type'];
                         $offerItemData['program_period_start'] = strtotime($input['program_period_start']);
                         $offerItemData['program_period_end'] = strtotime($input['program_period_end']);
                         $offerItemData['created_by'] = $user['id'];
