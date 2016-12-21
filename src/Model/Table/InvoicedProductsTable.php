@@ -53,6 +53,12 @@ class InvoicedProductsTable extends Table
             'foreignKey' => 'depot_id',
             'joinType' => 'INNER'
         ]);
+        $this->belongsTo('Items', [
+            'foreignKey' => 'item_id'
+        ]);
+        $this->belongsTo('Units', [
+            'foreignKey' => 'manufacture_unit_id'
+        ]);
     }
 
     /**
