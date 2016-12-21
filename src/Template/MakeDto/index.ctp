@@ -55,7 +55,7 @@ use App\View\Helper\SystemHelper;
                                         <td><?php echo $this->Form->input('item.0.item_id', ['options' => $items, 'required' => 'required', 'class' => 'item form-control', 'empty' => __('Select'), 'templates' => ['label' => '']]); ?></td>
                                         <td><?php echo $this->Form->input('item.0.unit_id', ['options' => '', 'class' => 'unit form-control','required' => 'required', 'templates' => ['label' => '']]); ?></td>
                                         <td><?php echo $this->Form->input('item.0.stock_quantity', ['required' => 'required', 'class' => 'stock_quantity form-control', 'templates' => ['label' => ''], 'readonly']);  ?></td>
-                                        <td><?php echo $this->Form->input('item.0.quantity', ['required' => 'required', 'class' => 'form-control', 'templates' => ['label' => '']]); ?></td>
+                                        <td><?php echo $this->Form->input('item.0.quantity', ['type'=>'number','required' => 'required', 'class' => 'quantity form-control', 'templates' => ['label' => '']]); ?></td>
                                         <td>
                                             <button type="button" class="btn btn-success btn-sm add_file"><i class="fa fa-plus" aria-hidden="true"></i> </button>
                                             <button type="button" class="btn btn-danger btn-sm remove_file"><i class="fa fa-times"  aria-hidden="true"></i></button>
@@ -71,7 +71,7 @@ use App\View\Helper\SystemHelper;
                                 <div class="form-group input select required">
                                     <label for="" class="col-sm-3  control-label">Warehouse</label>
                                     <div id="" class="col-sm-6">
-                                        <select  name="warehouse" required="required" class="item form-control" id="">
+                                        <select  name="warehouse" required="required" class="form-control" id="">
                                             <option value="">Select</option>
                                             <?php foreach($warehouses as $row):?>
                                                 <option value="<?= $row['id']?>"><?= $row['warehouse_name']?></option>
@@ -152,6 +152,7 @@ use App\View\Helper\SystemHelper;
                         console.log(data);
                         obj.closest('.single_row').find('.stock_quantity').html('');
                         obj.closest('.single_row').find('.stock_quantity').attr("value", data);
+                        obj.closest('.single_row').find('.quantity').attr("max", data);
 
                     }
                 });
