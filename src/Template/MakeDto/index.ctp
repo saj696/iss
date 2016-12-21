@@ -30,49 +30,154 @@ use App\View\Helper\SystemHelper;
                 </div>
 
             </div>
+
+
             <div class="portlet-body">
-                    <form class="form-horizontal" method="post"  action="<?php echo Router::url('/', true); ?>MakeDto/index" enctype="multipart/form-data">
-                    <table class="table table-bordered table-hover">
-                        <tr>
-                            <td>SL:</td>
-                            <td>Item Name</td>
-                            <td>Unit</td>
-                            <td>Stock Quantity</td>
-                            <td>Transfer Quantity</td>
-                        </tr>
-                        <?php foreach ($items as $key => $row): ?>
-                            <tr>
-                                <td><?= $key + 1 ?></td>
-                                <td><input type="hidden" name="item[<?=$key?>][item_id]" value="<?=$row['item_id']?>"><?php echo SystemHelper::getItemAlias($row['item_id'],$user_warehouse_id); ?></td>
-                                <td><input type="hidden" name="item[<?=$key?>][unit_id]" value="<?=$row['unit_id']?>"><?= $row['unit_name'] ?></td>
-                                <td><input type="hidden" name="item[<?=$key?>][stock_id]" value="<?=$row['stock_id']?>"><?= $row['stock_quantity'] ?></td>
-                                <td><input class="form-control" name="item[<?=$key?>][quantity]" type="number" value="0" max="<?=$row['stock_quantity']?>"></td>
-                            </tr>
-                        <?php endforeach; ?>
+                <form class="form-horizontal" method="post"  action="<?php echo Router::url('/', true); ?>MakeDto/index" enctype="multipart/form-data">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="row">
 
-                    </table>
+                            <div class="col-md-12" id="file_wrapper" data-index_no="0">
+                                <table class="table table-bordered ">
+                                    <thead>
+                                    <tr>
+                                        <td>Itme</td>
+                                        <td>Unit</td>
+                                        <td>Stock Quantity</td>
+                                        <td>Quantity</td>
+                                        <td>Action</td>
+                                    </tr>
+                                    </thead>
 
+                                    <tbody class="file_container">
+                                    <tr class="single_row">
+                                        <td><?php echo $this->Form->input('item.0.item_id', ['options' => $items, 'required' => 'required', 'class' => 'item form-control', 'empty' => __('Select'), 'templates' => ['label' => '']]); ?></td>
+                                        <td><?php echo $this->Form->input('item.0.unit_id', ['options' => '', 'class' => 'unit form-control','required' => 'required', 'templates' => ['label' => '']]); ?></td>
+                                        <td><?php echo $this->Form->input('item.0.stock_quantity', ['required' => 'required', 'class' => 'stock_quantity form-control', 'templates' => ['label' => ''], 'readonly']);  ?></td>
+                                        <td><?php echo $this->Form->input('item.0.quantity', ['required' => 'required', 'class' => 'form-control', 'templates' => ['label' => '']]); ?></td>
+                                        <td>
+                                            <button type="button" class="btn btn-success btn-sm add_file"><i class="fa fa-plus" aria-hidden="true"></i> </button>
+                                            <button type="button" class="btn btn-danger btn-sm remove_file"><i class="fa fa-times"  aria-hidden="true"></i></button>
+                                        </td>
+                                    </tr>
+                                    </tbody>
 
+                                </table>
 
-                    <div class="form-group input select required">
-                        <label for="" class="col-sm-1 col-sm-offset-3 control-label">Warehouse</label>
-                        <div id="" class="col-sm-3">
-                            <select  name="warehouse" required="required" class="item form-control" id="">
-                                <option value="">Select</option>
-                                <?php foreach($warehouses as $row):?>
-                                    <option value="<?= $row['id']?>"><?= $row['warehouse_name']?></option>
-                                <?php endforeach;?>
-                            </select></div>
-                    </div>
-                    <div class="form-group">
-                        <div class="col-sm-offset-5 col-sm-3">
-                            <button type="submit" class="btn btn-primary btn-lg">Make Deliver</button>
+                            </div>
+
+                            <div class="col-md-6 col-md-offset-3">
+                                <div class="form-group input select required">
+                                    <label for="" class="col-sm-3  control-label">Warehouse</label>
+                                    <div id="" class="col-sm-6">
+                                        <select  name="warehouse" required="required" class="item form-control" id="">
+                                            <option value="">Select</option>
+                                            <?php foreach($warehouses as $row):?>
+                                                <option value="<?= $row['id']?>"><?= $row['warehouse_name']?></option>
+                                            <?php endforeach;?>
+                                        </select></div>
+                                </div>
+
+                            </div>
+
                         </div>
+
+                        <button class="btn blue pull-right save" style="margin:20px" type="submit">Save</button>
+
                     </div>
+
+
+                </div>
                 </form>
+
             </div>
         </div>
         <!-- END BORDERED TABLE PORTLET-->
     </div>
 </div>
 
+<script>
+    $(document).ready(function () {
+
+        $(document).on("keyup", ".numbersOnly", function (event) {
+            this.value = this.value.replace(/[^0-9\.]/g, '');
+        });
+
+        $(document).on("focus", ".datepicker", function () {
+            $(this).removeClass('hasDatepicker').datepicker({
+                dateFormat: 'dd-mm-yy'
+            });
+        });
+
+        $(document).on('click', '.add_file', function () {
+
+            var qq = $('#file_wrapper').attr('data-index_no');
+            var index = parseInt(qq);
+
+            $('#file_wrapper').attr('data-index_no', index + 1);
+
+            var html = $('tr:last').clone().find('.form-control').each(function () {
+                this.name = this.name.replace(/\d+/, index + 1);
+                this.id = this.id.replace(/\d+/, index + 1);
+                this.value = '';
+            }).end();
+            $('.file_container').append(html);
+        });
+
+        $(document).on('click', '.remove_file', function () {
+            var obj = $(this);
+            var count = $('.single_row').length;
+            if (count > 1) {
+                obj.closest('.single_row').remove();
+            }
+        });
+
+
+        $(document).on('change', '.unit', function () {
+            var unit_id = $(this).val();
+            var item_id = $(this).closest('.single_row').find('.item').val();
+
+
+
+            var obj = $(this);
+            if (item_id) {
+                $.ajax({
+                    type: 'POST',
+                    url: '<?= $this->Url->build("/MakeDto/getItemUnitStockAmount")?>',
+                    data: {item_id: item_id,unit_id:unit_id},
+                    dataType: 'json',
+
+                    success: function (data, status) {
+                        console.log(data);
+                        obj.closest('.single_row').find('.stock_quantity').html('');
+                        obj.closest('.single_row').find('.stock_quantity').attr("value", data);
+
+                    }
+                });
+            }
+        });
+
+        $(document).on('change', '.item', function () {
+            var item_id = $(this).val();
+            var obj = $(this);
+            if (item_id) {
+                $.ajax({
+                    type: 'POST',
+                    url: '<?= $this->Url->build("/MakeDto/getItemUnits")?>',
+                    data: {item_id: item_id},
+                    dataType: 'json',
+
+                    success: function (data, status) {
+                        obj.closest('.single_row').find('.unit').html('');
+                        obj.closest('.single_row').find('.unit').append("<option value=''><?= __('Select') ?></option>");
+                        $.each(data, function (key, value) {
+                            obj.closest('.single_row').find('.unit').append($("<option></option>").attr("value", key).text(value));
+                        });
+                    }
+                });
+            }
+        });
+
+    })
+</script>

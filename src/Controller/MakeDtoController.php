@@ -21,27 +21,22 @@ class MakeDtoController extends AppController
     public function index()
     {
         $user = $this->Auth->user();
-        $time=time();
+        $time = time();
 
-        $user_warehouse_id=$user['warehouse_id'];
+        $user_warehouse_id = $user['warehouse_id'];
+
         if ($this->request->is('post')) {
             $data = $this->request->data;
             //echo "<pre>";print_r($data);die();
             $this->loadModel('dto_events');
             $this->loadModel('dto_event_items');
             foreach ($data['item'] as $item) {
-              if($item['quantity']>0){
-                  $stock = TableRegistry::get('stocks')->find('all')
-                      ->where(['id' =>  $item['stock_id']])
-                      ->first();
-                  //echo "<pre>";print_r($stock);die();
 
-                  $quantity = ($stock->quantity) - ($item['quantity']);
-                  $set_stock = TableRegistry::get('stocks');
-                  $query = $set_stock->query();
-                  $query->update()->set(['quantity' => $quantity, 'updated_by' => $user['id'], 'updated_date' => $time])
-                      ->where(['id' => $item['stock_id']])->execute();
-              }
+                    $set_stock = TableRegistry::get('stocks');
+                    $query = $set_stock->query();
+                    $query->update()->set(['quantity' => $item['stock_quantity']-$item['quantity'], 'updated_by' => $user['id'], 'updated_date' => $time])
+                        ->where(['warehouse_id' => $user_warehouse_id,'manufacture_unit_id'=>$item['unit_id'],'item_id'=>$item['item_id']])->execute();
+
             }
 
             $set_dto_event = $this->dto_events->newEntity();
@@ -52,11 +47,11 @@ class MakeDtoController extends AppController
             $dto_event_Data['created_date'] = $time;
             $set_dto_event = $this->dto_events->patchEntity($set_dto_event, $dto_event_Data);
 
-            $dto_event_data=  $this->dto_events->save($set_dto_event);
-         //   echo "<pre>";print_r($dto_event_data->id);die();
-            $dto_items_ids=[];
+            $dto_event_data = $this->dto_events->save($set_dto_event);
+            //   echo "<pre>";print_r($dto_event_data->id);die();
+            $dto_items_ids = [];
             foreach ($data['item'] as $item) {
-                if($item['quantity']>0) {
+                if ($item['quantity'] > 0) {
                     $set_dto_item = $this->dto_event_items->newEntity();
                     $dos_item_data['dto_event_id'] = $dto_event_data->id;
                     $dos_item_data['item_id'] = $item['item_id'];
@@ -77,24 +72,17 @@ class MakeDtoController extends AppController
             }
 
         }
+
+
         $warehouses = TableRegistry::get('direct_transfer_permissions')->find('all')
             ->select(['id' => 'warehouses.id', 'warehouse_name' => 'warehouses.name'])
             ->leftJoin('warehouses', 'warehouses.id=direct_transfer_permissions.to_warehouse')
             ->where(['direct_transfer_permissions.from_warehouse' => $user['warehouse_id']])
             ->hydrate(false);
 
-
-        $items = TableRegistry::get('stocks')->find('all')
-            ->select(['stock_quantity' => 'stocks.quantity','stock_id' => 'stocks.id', 'item_id' => 'items.id', 'item_name' => 'items.name', 'unit_id' => 'units.id', 'unit_name' => 'units.unit_display_name'])
-            ->leftJoin('items', 'items.id=stocks.item_id')
-            ->leftJoin('units', 'units.id=stocks.manufacture_unit_id')
-            ->where(['stocks.warehouse_id' => $user['warehouse_id']])
-            ->hydrate(false);
-//echo "<pre>";print_r($items->toArray());die();
-
-
-
-        $this->set(compact('warehouses','items','user_warehouse_id'));
+        $items = $this->Common->item_name_resolver($user_warehouse_id);
+//echo "<pre>";print_r($items);die();
+        $this->set(compact('warehouses', 'items', 'user_warehouse_id'));
         $this->set('_serialize', ['makeDto']);
     }
 
@@ -120,22 +108,22 @@ class MakeDtoController extends AppController
      *
      * @return \Cake\Network\Response|void Redirects on successful add, renders view otherwise.
      */
-    public function add()
-    {
-        $makeDto = $this->MakeDto->newEntity();
-        if ($this->request->is('post')) {
-            $makeDto = $this->MakeDto->patchEntity($makeDto, $this->request->data);
-            if ($this->MakeDto->save($makeDto)) {
-                $this->Flash->success(__('The make dto has been saved.'));
-
-                return $this->redirect(['action' => 'index']);
-            } else {
-                $this->Flash->error(__('The make dto could not be saved. Please, try again.'));
-            }
-        }
-        $this->set(compact('makeDto'));
-        $this->set('_serialize', ['makeDto']);
-    }
+//    public function add()
+//    {
+//        $makeDto = $this->MakeDto->newEntity();
+//        if ($this->request->is('post')) {
+//            $makeDto = $this->MakeDto->patchEntity($makeDto, $this->request->data);
+//            if ($this->MakeDto->save($makeDto)) {
+//                $this->Flash->success(__('The make dto has been saved.'));
+//
+//                return $this->redirect(['action' => 'index']);
+//            } else {
+//                $this->Flash->error(__('The make dto could not be saved. Please, try again.'));
+//            }
+//        }
+//        $this->set(compact('makeDto'));
+//        $this->set('_serialize', ['makeDto']);
+//    }
 
     private function getWareHouseSuperVisorUserID($wareHouse_id)
     {
@@ -145,5 +133,41 @@ class MakeDtoController extends AppController
         } else {
             return false;
         }
+    }
+
+    public function getItemUnits()
+    {
+        if ($this->request->is(['patch', 'post', 'put'])) {
+
+            $data = $this->request->data;
+
+            $item_unit = TableRegistry::get('item_units')->find('all',
+                ['conditions' => ['item_id' => $data['item_id']]])
+                ->contain(['Units'])
+                ->hydrate(false)->toArray();
+            //   echo "<pre>";print_r($item_unit);die();
+            $item_units = [];
+            foreach ($item_unit as $unit):
+                $item_units[$unit['unit']['id']] = $unit['unit']['unit_display_name'];
+            endforeach;
+            //   echo "<pre>";print_r($item_units);die();
+            $this->response->body(json_encode($item_units));
+            return $this->response;
+
+
+        }
+    }
+
+    public function getItemUnitStockAmount()
+    {
+        if ($this->request->is(['patch', 'post', 'put'])) {
+            $data = $this->request->data;
+            $user = $this->Auth->user();
+            $stocks=TableRegistry::get('stocks')->find('all')
+                ->where(['warehouse_id'=>$user['warehouse_id'],'manufacture_unit_id'=>$data['unit_id'],'item_id'=>$data['item_id']])->first();
+            $this->response->body($stocks->quantity);
+            return $this->response;
+        }
+
     }
 }
