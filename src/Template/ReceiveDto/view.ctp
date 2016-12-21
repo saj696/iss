@@ -46,31 +46,21 @@ use App\View\Helper\SystemHelper;
                             <td>Unit</td>
                             <td>Quantity</td>
                         </tr>
-                        <?php foreach ($do_object_items as $key => $row): ?>
+                        <?php foreach ($dto_event_items as $key => $row): ?>
                             <tr>
                                 <td><?= $key + 1 ?></td>
-                                <td><?php echo SystemHelper::getItemAlias($row['item_id'], $warehouses[0]['id']); ?></td>
+                                <td><?php echo SystemHelper::getItemAlias($row['item_id'], $warehouses_id ); ?></td>
                                 <td><?= $row['unit_name'] ?></td>
-                                <td><?= $row['approved_quantity'] ?></td>
+                                <td><?= $row['quantity'] ?></td>
                             </tr>
                         <?php endforeach; ?>
 
                     </table>
                 </div>
 
-                <form class="form-horizontal" method="post"  action="<?php echo Router::url('/', true); ?>ReceivePiDelivery/view/<?= $id ?>"
+                <form class="form-horizontal" method="post"  action="<?php echo Router::url('/', true); ?>ReceiveDto/view/<?= $id ?>"
                       enctype="multipart/form-data">
 
-                    <div class="form-group input select required">
-                            <label for="" class="col-sm-1 col-sm-offset-3 control-label">Warehouse</label>
-                        <div id="" class="col-sm-3">
-                            <select  name="warehouse" required="required" class="item form-control" id="">
-                                <option value="">Select</option>
-                                <?php foreach($warehouses as $row):?>
-                                    <option value="<?= $row['id']?>"><?= $row['name']?></option>
-                                <?php endforeach;?>
-                            </select></div>
-                    </div>
                     <div class="form-group">
                         <div class="col-sm-offset-5 col-sm-3">
                             <button type="submit" class="btn btn-primary btn-lg">Accept</button>

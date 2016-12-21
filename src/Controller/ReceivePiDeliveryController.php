@@ -55,22 +55,33 @@ class ReceivePiDeliveryController extends AppController
         } else {
             $warehouses = TableRegistry::get('warehouses')->find('all')->where(['id' => $user['warehouse_id']])->toArray();
         }
-
-        $items = TableRegistry::get('ddos_items')->find('all')
-            ->where(['ddo_id' => $do_events->do_object_id])
-            ->contain(['Items', 'Units', 'Ddos'])->toArray();
-        // echo "<pre>";print_r($items[0]['ddo']['do_receiving_warehouse']);die();
+        $do_object_items = TableRegistry::get('do_object_items')->find('all');
+        $do_object_items->select(['id' => 'do_object_items.id',
+            'approved_quantity' => 'do_object_items.approved_quantity',
+            'item_id' => 'do_object_items.item_id',
+            'item_name' => 'items.name',
+            'unit_id' => 'units.id',
+            'unit_name' => 'units.unit_display_name'])
+            ->leftJoin('items', 'items.id=do_object_items.item_id')
+            ->leftJoin('units', 'units.id=do_object_items.unit_id')
+            ->where(['do_object_items.do_object_id' => $do_events->do_object_id]);
+//        echo "<pre>";
+//        print_r($do_object_items->toArray());
+//        die();
 
         if ($this->request->is('post')) {
-
+            $data = $this->request->data;
+            //   echo "<pre>";print_r($data);die();
             $time = time();
             //   echo "<pre>";print_r($items);die();
+            $items = TableRegistry::get('do_object_items')->find('all')->where(['do_object_id'=>$do_events->do_object_id]);
             foreach ($items as $item) {
                 $stock = TableRegistry::get('stocks')->find('all')
-                    ->where(['warehouse_id' => $item['ddo']['do_receiving_warehouse'],
-                        'item_id' => $item['item']['id'],
-                        'manufacture_unit_id' => $item['unit']['id']])
+                    ->where(['warehouse_id' => $data['warehouse'],
+                        'item_id' => $item['item_id'],
+                        'manufacture_unit_id' => $item['unit_id']])
                     ->first();
+              //  echo "<pre>";print_r($stock);die();
 
                 $quantity = ($stock->quantity) + ($item['quantity']);
                 $set_stock = TableRegistry::get('stocks');
@@ -91,12 +102,13 @@ class ReceivePiDeliveryController extends AppController
 
         }
 
-     //   $warehouse_id = $user['warehouse_id'];
+        //   $warehouse_id = $user['warehouse_id'];
 
         $this->set('warehouses', $warehouses);
-        $this->set('items', $items);
+        $this->set('do_object_items', $do_object_items);
+        //  $this->set('items', $items);
         $this->set('id', $id);
-     //   $this->set('warehouse_id', $warehouse_id);
+        //   $this->set('warehouse_id', $warehouse_id);
         $this->set('_serialize', ['items']);
     }
 
