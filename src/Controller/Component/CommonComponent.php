@@ -44,12 +44,9 @@ class CommonComponent extends Component
             $security['alphabet']
         );
     }
-<<<<<<< .mine
-    public function get_bulk_unit_sum_from_stock($warehouse_id, $item_id)
-=======
+
 	
    public function get_bulk_unit_sum_from_stock($warehouse_id, $item_id)
->>>>>>> .r129
     {
         $stock_table = TableRegistry::get('stocks');
         $stock_info = $stock_table->find('all')->contain(['Items', 'Units', 'Warehouses'])
@@ -83,12 +80,8 @@ class CommonComponent extends Component
             endforeach;
             return $sum;
         } else {
-<<<<<<< .mine
             return 0;
-=======
-            return 0;
-          
->>>>>>> .r129
+
         }
     }
     public function initiate_stock($warehouse_id, $item_id, $manufacture_unit_id, $quantity)
