@@ -90,7 +90,7 @@ class DeliverDoController extends AppController
             $do_event_Data['sender_id'] = $user['id'];
             $do_event_Data['recipient_id'] = $this->getWareHouseSuperVisorUserID($items[0]['ddo']['do_receiving_warehouse']);
             $do_event_Data['do_object_id'] = $items[0]['ddo']['id'];
-            $do_event_Data['events_tepe'] = Configure::read('object_type')['DELIVERED_PI'];
+            $do_event_Data['events_tepe'] = Configure::read('object_type')['DOD'];
             $do_event_Data['action_status'] = Configure::read('do_object_event_action_status')['awaiting_reception'];
             $do_event_Data['created_by'] = $user['id'];
             $do_event_Data['created_date'] = $time;
@@ -111,73 +111,6 @@ class DeliverDoController extends AppController
         $this->set('_serialize', ['items']);
     }
 
-    /**
-     * Add method
-     *
-     * @return \Cake\Network\Response|void Redirects on successful add, renders view otherwise.
-     */
-//    public function add()
-//    {
-//        $deliverDo = $this->DeliverDo->newEntity();
-//        if ($this->request->is('post')) {
-//            $deliverDo = $this->DeliverDo->patchEntity($deliverDo, $this->request->data);
-//            if ($this->DeliverDo->save($deliverDo)) {
-//                $this->Flash->success(__('The deliver do has been saved.'));
-//
-//                return $this->redirect(['action' => 'index']);
-//            } else {
-//                $this->Flash->error(__('The deliver do could not be saved. Please, try again.'));
-//            }
-//        }
-//        $this->set(compact('deliverDo'));
-//        $this->set('_serialize', ['deliverDo']);
-//    }
-
-    /**
-     * Edit method
-     *
-     * @param string|null $id Deliver Do id.
-     * @return \Cake\Network\Response|void Redirects on successful edit, renders view otherwise.
-     * @throws \Cake\Network\Exception\NotFoundException When record not found.
-     */
-//    public function edit($id = null)
-//    {
-//        $deliverDo = $this->DeliverDo->get($id, [
-//            'contain' => []
-//        ]);
-//        if ($this->request->is(['patch', 'post', 'put'])) {
-//            $deliverDo = $this->DeliverDo->patchEntity($deliverDo, $this->request->data);
-//            if ($this->DeliverDo->save($deliverDo)) {
-//                $this->Flash->success(__('The deliver do has been saved.'));
-//
-//                return $this->redirect(['action' => 'index']);
-//            } else {
-//                $this->Flash->error(__('The deliver do could not be saved. Please, try again.'));
-//            }
-//        }
-//        $this->set(compact('deliverDo'));
-//        $this->set('_serialize', ['deliverDo']);
-//    }
-
-    /**
-     * Delete method
-     *
-     * @param string|null $id Deliver Do id.
-     * @return \Cake\Network\Response|null Redirects to index.
-     * @throws \Cake\Datasource\Exception\RecordNotFoundException When record not found.
-     */
-//    public function delete($id = null)
-//    {
-//        $this->request->allowMethod(['post', 'delete']);
-//        $deliverDo = $this->DeliverDo->get($id);
-//        if ($this->DeliverDo->delete($deliverDo)) {
-//            $this->Flash->success(__('The deliver do has been deleted.'));
-//        } else {
-//            $this->Flash->error(__('The deliver do could not be deleted. Please, try again.'));
-//        }
-//
-//        return $this->redirect(['action' => 'index']);
-//    }
 
 
     private function getWareHouseSuperVisorUserID($wareHouse_id)

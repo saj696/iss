@@ -60,6 +60,8 @@ class ReceiveDtoController extends AppController
 //        die();
 
         if ($this->request->is('post')) {
+            $this->loadModel('stocks');
+
             $data = $this->request->data;
             //   echo "<pre>";print_r($data);die();
             $time = time();
@@ -80,6 +82,18 @@ class ReceiveDtoController extends AppController
                     $query = $set_stock->query();
                     $query->update()->set(['quantity' => $quantity, 'updated_by' => $user['id'], 'updated_date' => $time])
                         ->where(['id' => $stock['id']])->execute();
+                }else{
+
+                        $stock = $this->stocks->newEntity();
+                        $data['warehouse_id'] = $user['warehouse_id'];
+                        $data['item_id'] = $item['item_id'];
+                        $data['manufacture_unit_id'] = $item['unit_id'];
+                        $data['quantity'] = $item['quantity'];
+                        $data['approved_quantity'] = 0;
+                        $data['created_by'] = $user['id'];
+                        $data['created_date'] = $time;
+                        $stock = $this->stocks->patchEntity($stock, $data);
+                        $this->stocks->save($stock);
                 }
 
             }

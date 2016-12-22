@@ -52,7 +52,7 @@ class CommonComponent extends Component
         $stock_info = $stock_table->find('all')->contain(['Items', 'Units', 'Warehouses'])
             ->where(['warehouse_id' => $warehouse_id, 'item_id' => $item_id,
                 'Units.is_sales_unit' => 0,
-                'Stocks.status' => 1,
+                'stocks.status' => 1,
                 'Units.status' => 1,
                 'Items.status' => 1,
                 'Warehouses.status' => 1])

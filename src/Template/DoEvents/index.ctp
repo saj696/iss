@@ -12,7 +12,7 @@ use Cake\Core\Configure;
             <a href="<?= $this->Url->build(('/Dashboard'), true); ?>"><?= __('Dashboard') ?></a>
             <i class="fa fa-angle-right"></i>
         </li>
-        <li><?= $this->Html->link(__('Do Events'), ['action' => 'index']) ?></li>
+        <li><?= $this->Html->link(__('Product Indents'), ['action' => 'index']) ?></li>
     </ul>
 </div>
 
@@ -25,10 +25,10 @@ use Cake\Core\Configure;
         <div class="portlet box blue-hoki">
             <div class="portlet-title">
                 <div class="caption">
-                    <i class="fa fa-list-alt fa-lg"></i><?= __('Do Event List') ?>
+                    <i class="fa fa-list-alt fa-lg"></i><?= __('Product Indents') ?>
                 </div>
                 <div class="tools">
-                    <button type="submit" class="btn btn-danger">Make...</button>
+                    <button type="submit" class="btn btn-danger">Make DO-DS</button>
                 </div>
 
             </div>
@@ -40,7 +40,7 @@ use Cake\Core\Configure;
                             <th><?= __('Sl. No.') ?></th>
                             <th><?= __('Sender') ?></th>
 
-                            <th><?= __('Created Date') ?></th>
+                            <th><?= __('Sending Date') ?></th>
                             <th><?= __('Actions') ?></th>
                         </tr>
                         </thead>
@@ -49,7 +49,7 @@ use Cake\Core\Configure;
                             <tr>
                                 <td><?= $this->Number->format($key + 1) ?></td>
                                 <td><?= $doEvent->sender->full_name_en ?></td>
-                                <td><?= date('d-M-Y',$doEvent->created_date)?></td>
+                                <td><?= date('d-M-Y',$doEvent->do_object->date)?></td>
                                 <td class="actions">
                                     <?php
                                     if($doEvent['action_status']==Configure::read('do_object_event_action_status')['awaiting_approval']) {

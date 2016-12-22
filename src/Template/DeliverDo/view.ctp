@@ -63,7 +63,7 @@ use App\View\Helper\SystemHelper;
 
                     <div class="form-group">
                         <div class="col-sm-offset-5 col-sm-3">
-                            <button type="submit" class="btn btn-primary btn-lg">Male Deliver</button>
+                            <button type="submit" class="btn btn-primary btn-lg">Deliver</button>
                         </div>
                     </div>
                 </form>

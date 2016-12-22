@@ -3,7 +3,7 @@ $status = \Cake\Core\Configure::read('status_options');
 use Cake\Routing\Router;
 use App\View\Helper\SystemHelper;
 
-//echo "<pre>";print_r($do_items);die();
+//echo "<pre>";print_r();die();
 ?>
 
 <div class="page-bar">
@@ -28,7 +28,7 @@ use App\View\Helper\SystemHelper;
         <div class="portlet box blue-hoki">
             <div class="portlet-title">
                 <div class="caption">
-                    <i class="fa fa-picture-o fa-lg"></i><?= __('Do Event Details') ?>
+                    <i class="fa fa-picture-o fa-lg"></i>Product Indent Details : Sender: <?php echo $doEvent->sender->full_name_en.'   ('.date('d-M-Y',$doEvent->do_object->date).')'?>
                 </div>
                 <div class="tools">
                     <?= $this->Html->link(__('Back'), ['action' => 'index'], ['class' => 'btn btn-sm btn-success']); ?>

@@ -71,7 +71,7 @@ class ReceivePiDeliveryController extends AppController
 
         if ($this->request->is('post')) {
             $data = $this->request->data;
-            //   echo "<pre>";print_r($data);die();
+            $this->loadModel('stocks');
             $time = time();
             //   echo "<pre>";print_r($items);die();
             $items = TableRegistry::get('do_object_items')->find('all')->where(['do_object_id'=>$do_events->do_object_id]);
@@ -82,12 +82,25 @@ class ReceivePiDeliveryController extends AppController
                         'manufacture_unit_id' => $item['unit_id']])
                     ->first();
               //  echo "<pre>";print_r($stock);die();
+                if($stock){
+                    $quantity = ($stock->quantity) + ($item['quantity']);
+                    $set_stock = TableRegistry::get('stocks');
+                    $query = $set_stock->query();
+                    $query->update()->set(['quantity' => $quantity, 'updated_by' => $user['id'], 'updated_date' => $time])
+                        ->where(['id' => $stock['id']])->execute();
+                }else{
+                    $stock = $this->stocks->newEntity();
+                    $data['warehouse_id'] = $data['warehouse'];
+                    $data['item_id'] =$item['item_id'];
+                    $data['manufacture_unit_id'] = $item['unit_id'];
+                    $data['quantity'] = $item['quantity'];
+                    $data['approved_quantity'] = 0;
+                    $data['created_by'] = $user['id'];
+                    $data['created_date'] = $time;
+                    $stock = $this->stocks->patchEntity($stock, $data);
+                    $this->stocks->save($stock);
+                }
 
-                $quantity = ($stock->quantity) + ($item['quantity']);
-                $set_stock = TableRegistry::get('stocks');
-                $query = $set_stock->query();
-                $query->update()->set(['quantity' => $quantity, 'updated_by' => $user['id'], 'updated_date' => $time])
-                    ->where(['id' => $stock['id']])->execute();
             }
             //   echo "<pre>";print_r($query);die();
 

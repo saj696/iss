@@ -48,7 +48,10 @@ class DoEventsController extends AppController
     public function view($id = null)
     {
         $user = $this->Auth->user();
-        $doEvent = $this->DoEvents->get($id);
+        $doEvent = $this->DoEvents->get($id, [
+            'contain' => ['Senders','DoObjects']
+        ]);
+      //  echo "<pre>";print_r($doEvent);die();
         if ($this->request->is('post')) {
 //echo "<pre>";print_r( Configure::read('do_object_event_action_status')['approved']);die();
             $data = $this->request->data;
@@ -87,7 +90,7 @@ class DoEventsController extends AppController
             }
         }
 
-        $doEvent = $this->DoEvents->get($id);
+      //  $doEvent = $this->DoEvents->get($id);
         $do_items = TableRegistry::get('do_object_items')
             ->find('all', ['conditions' => ['do_object_id' => $doEvent->do_object_id]])
             ->contain(['Items.ItemUnits.Units', 'DoObjects'])
@@ -108,11 +111,10 @@ class DoEventsController extends AppController
         $userAdminGlobal = $this->AdministrativeUnits->get($userAdmin);
         $limitStart = pow(2, (Configure::read('max_level_no') - $user['level_no'] - 1) * 5);
         $limitEnd = pow(2, (Configure::read('max_level_no') - $user['level_no']) * 5);
-
         $warehouses = TableRegistry::get('warehouses')->query();
         //  $warehouses->contain('AdministrativeUnits');
-        $warehouses->where('global_id -' . $userAdminGlobal['global_id'] . '>= ' . $limitStart);
-        $warehouses->where('global_id -' . $userAdminGlobal['global_id'] . '< ' . $limitEnd);
+        $warehouses->where('global_id -' . $userAdminGlobal['global_id'] . '>= ' . 0);
+        $warehouses->where('global_id -' . $userAdminGlobal['global_id'] . '<= ' . $limitEnd);
         $warehouses->where('warehouses.status!= 99');
 //echo "<pre>";print_r($warehouses->toArray());die();
         $this->set('id', $id);
@@ -159,7 +161,7 @@ class DoEventsController extends AppController
 
             $warehouses = TableRegistry::get('warehouses')->query();
             //  $warehouses->contain('AdministrativeUnits');
-            $warehouses->where('global_id -' . $userAdminGlobal['global_id'] . '>= ' . $limitStart);
+            $warehouses->where('global_id -' . $userAdminGlobal['global_id'] . '>= ' . 0);
             $warehouses->where('global_id -' . $userAdminGlobal['global_id'] . '< ' . $limitEnd);
             $warehouses->where('warehouses.status!= 99');
 
@@ -207,9 +209,10 @@ class DoEventsController extends AppController
                 ->leftJoin('units', 'units.id=do_object_items.unit_id')
                 ->group(['do_object_items.item_id', 'do_object_items.unit_id'])
                 ->order(['do_object_items.item_id' => 'DESC']);
+         //   ->hydrate(false);
             $do_items = $do_items->toArray();
 
-//echo "<pre>";print_r($do_items->toArray());die();
+//echo "<pre>";print_r($do_items);die();
             foreach ($do_items as $row) {
 
                 $stocks = TableRegistry::get('stocks')->find()
@@ -240,7 +243,7 @@ class DoEventsController extends AppController
                     $row['further_needed'] = 0;
                 }
             }
-
+//echo "<pre>";print_r($do_items);die();
             $userAdmin = $user['administrative_unit_id'];
             $this->loadModel('AdministrativeUnits');
 
@@ -250,7 +253,7 @@ class DoEventsController extends AppController
 
             $warehouses = TableRegistry::get('warehouses')->query();
             //  $warehouses->contain('AdministrativeUnits');
-            $warehouses->where('global_id -' . $userAdminGlobal['global_id'] . '>= ' . $limitStart);
+            $warehouses->where('global_id -' . $userAdminGlobal['global_id'] . '>= ' . 0);
             $warehouses->where('global_id -' . $userAdminGlobal['global_id'] . '< ' . $limitEnd);
             $warehouses->where('warehouses.status!= 99');
 

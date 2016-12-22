@@ -52,7 +52,7 @@
                 </tr>
 
                 <?php
-                $my_id = 0;
+                $my_id = $row['item_id'];
                 $my_item_sum = 0;
                 $my_item_sum = $row['require'];
             } ?>
