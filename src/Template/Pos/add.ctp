@@ -83,6 +83,10 @@ use Cake\Core\Configure;
                         </table>
                     </div>
                 </div>
+
+                <div class="row popContainer" style="display: none; width: 500px; max-height: 600px; overflow: auto;">
+                </div>
+
                 <div class="row text-center">
                     <span class="btn default red-stripe check_offer" style="margin-top:20px; margin-bottom:20px">Check Offer</span>
                     <?= $this->Form->button(__('Save'), ['name'=>'save', 'class' => 'btn default green-stripe', 'style' => 'margin-top:20px; margin-bottom:20px']) ?>
@@ -134,9 +138,18 @@ use Cake\Core\Configure;
                     customer_unit: customer_unit,
                 },
                 success: function (data, status) {
-                    console.log(data);
+                    //console.log(data);
+                    $(".popContainer").hide();
+                    $('.popContainer').html('');
+                    $('.popContainer').html(data);
+                    $('.popContainer').show();
                 }
             });
+        });
+
+        $(document).on("click",".crossSpan",function()
+        {
+            $(".popContainer").hide();
         });
 
         $(document).on('change', '.level_no', function () {
@@ -248,15 +261,78 @@ use Cake\Core\Configure;
             }
         });
 
-        $(document).on('keyup', '.item_quantity', function(){
-            var item_quantity = parseFloat($(this).val());
-            var unit_price = parseFloat($(this).closest('.itemTr').find('.unit_price').val());
-            var item_cash_discount = parseFloat($(this).closest('.itemTr').find('.item_cash_discount').val());
-            var item_net_total = item_quantity*unit_price-item_cash_discount;
-
+        $(document).on('blur', '.item_quantity', function(){
+            var obj = $(this);
+            // bonus check
+            var level_no = $('.level_no').val();
+            var customer_unit = $('.customer_unit').val();
             var invoice_type = $('.invoice_type').val();
             var customer_id = $('.customer_id').val();
             var itemUnitId = $(this).closest('.itemTr').find('.itemUnitId').val();
+            var item_quantity = parseFloat($(this).val());
+
+            if(item_quantity>0){
+                $.ajax({
+                    type: 'POST',
+                    url: '<?= $this->Url->build("/Pos/loadOffer")?>',
+                    data: {
+                        item_unit_id: itemUnitId,
+                        invoice_type:invoice_type,
+                        customer_id:customer_id,
+                        item_quantity: item_quantity,
+                        level_no: level_no,
+                        customer_unit: customer_unit
+                    },
+                    success: function (data, status) {
+                        console.log(data);
+                        if(data.length>0){
+                            var res = JSON.parse(data);
+                            if(res.value_or_quantity>0){
+                                obj.closest('.itemTr').find('.item_cash_discount').val(res.value_or_quantity);
+                                obj.closest('.itemTr').find('.item_bonus').val(res.value_or_quantity);
+
+                                // redo
+                                // other calculation
+                                var unit_price = parseFloat(obj.closest('.itemTr').find('.unit_price').val());
+                                var item_cash_discount = parseFloat(obj.closest('.itemTr').find('.item_cash_discount').val());
+                                var item_net_total = item_quantity*unit_price-item_cash_discount;
+
+                                if(item_net_total){
+                                    obj.closest('.itemTr').find('.item_net_total').val(item_net_total);
+                                }else{
+                                    obj.closest('.itemTr').find('.item_net_total').val(0);
+                                }
+
+                                // calculate total amount
+                                var total_amount = 0;
+                                $( ".item_net_total" ).each(function( index ) {
+                                    if(parseFloat($(this).val())>0){
+                                        total_amount += parseFloat($(this).val());
+                                    }
+                                });
+                                if(total_amount){
+                                    $('.total_amount').html(total_amount);
+                                    $('.total_amount_hidden').val(total_amount);
+                                }else{
+                                    $('.total_amount').html(0);
+                                    $('.total_amount_hidden').val(0);
+                                }
+                            }else{
+                                obj.closest('.itemTr').find('.item_cash_discount').val(0);
+                                obj.closest('.itemTr').find('.item_bonus').val(0);
+                            }
+                        }else{
+                            obj.closest('.itemTr').find('.item_cash_discount').val(0);
+                            obj.closest('.itemTr').find('.item_bonus').val(0);
+                        }
+                    }
+                });
+            }
+
+            // other calculation
+            var unit_price = parseFloat($(this).closest('.itemTr').find('.unit_price').val());
+            var item_cash_discount = parseFloat($(this).closest('.itemTr').find('.item_cash_discount').val());
+            var item_net_total = item_quantity*unit_price-item_cash_discount;
 
             if(item_net_total){
                 $(this).closest('.itemTr').find('.item_net_total').val(item_net_total);
@@ -279,25 +355,6 @@ use Cake\Core\Configure;
                 $('.total_amount_hidden').val(0);
             }
 
-            // bonus check
-            var level_no = $('.level_no').val();
-            var customer_unit = $('.customer_unit').val();
-
-            $.ajax({
-                type: 'POST',
-                url: '<?= $this->Url->build("/Pos/loadOffer")?>',
-                data: {
-                    item_unit_id: itemUnitId,
-                    invoice_type:invoice_type,
-                    customer_id:customer_id,
-                    item_quantity: item_quantity,
-                    level_no: level_no,
-                    customer_unit: customer_unit,
-                },
-                success: function (data, status) {
-                    //$('.appendTr').append(data);
-                }
-            });
         });
 
         $(document).on('change', '.invoice_type', function(){

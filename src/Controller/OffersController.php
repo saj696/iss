@@ -43,6 +43,13 @@ class OffersController extends AppController
 
 //        App::import('Helper', 'FunctionHelper');
 //        $FunctionHelper = new FunctionHelper(new View());
+//        $as = 'payment_age[]';
+//        $res = $FunctionHelper->postfix_converter($as.'$');
+//        echo '<pre>';
+//        print_r($res);
+//        echo '</pre>';
+//        exit;
+
 //
 //        echo '<pre>';
 //        print_r(json_decode($offers[0]['conditions'], true));
@@ -101,6 +108,7 @@ class OffersController extends AppController
                     $conditionPostfix = [];
                     foreach($input['condition'] as $k=>$condition):
                         $conditionPostfix[$k]['general'] = $FunctionHelper->postfix_converter($condition['general_conditions'].'$');
+
                         foreach($condition['specific'] as $s=>$specific){
                             $conditionPostfix[$k]['specific'][$s]['condition'] = $FunctionHelper->postfix_converter($specific['specific_condition'].'$');
                             $conditionPostfix[$k]['specific'][$s]['amount'] = $FunctionHelper->postfix_converter($specific['amount'].'$');

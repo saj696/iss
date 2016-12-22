@@ -40,9 +40,7 @@ class FunctionHelper extends Helper
             '<='=>7,
             '=='=>8,
             '&&'=>9,
-            '||'=>10,
-            '='=>11,
-            '&'=>12,
+            '||'=>10
         ];
 
         $precedence = [
@@ -56,9 +54,7 @@ class FunctionHelper extends Helper
             7=>1,
             8=>1,
             9=>1,
-            10=>1,
-            11=>1,
-            12=>1,
+            10=>1
         ];
 
         $fn = []; // function name
@@ -130,7 +126,7 @@ class FunctionHelper extends Helper
 
                             $postfixCurrentIndex++;
                             $indexOfStackTop--;
-                            if(!in_array($stack[$indexOfStackTop], $o2n)) {
+                            if($stack[$indexOfStackTop]=='$') {
                                 $indexOfStackTop++;
                                 $stack[$indexOfStackTop] = $currentOperator;
                                 break;
@@ -140,13 +136,13 @@ class FunctionHelper extends Helper
 
                 }elseif($stack[$indexOfStackTop] == '('){
                     $indexOfStackTop++;
-                    $stack[$indexOfStackTop] = $ca[$i];
+                    $stack[$indexOfStackTop] = $currentOperator;
                 }
             } elseif($ca[$i]==')'){
                 do{
                     $stop=$stack[$indexOfStackTop];
                     $postfix[$postfixCurrentIndex]['type'] = Configure::read('postfix_elements_types')['operator'];
-                    $postfix[$postfixCurrentIndex]['operator'] = $o2n[$stop];
+                    $postfix[$postfixCurrentIndex]['operator'] = $stop;
 
                     $postfixCurrentIndex++;
                     $indexOfStackTop--;
@@ -171,19 +167,23 @@ class FunctionHelper extends Helper
         $indexOfTopStack = -1;
         $eStack = [];
 
-        for($i=0; $i<sizeof($postfixArray); $i++){
-            if($postfixArray[$i]['type']=='number'){
-                $indexOfTopStack++;
-                $eStack[$indexOfTopStack] = $postfixArray[$i]['number'];
-            }else{
-                $operand2 = $eStack[$indexOfTopStack];
-                $indexOfTopStack--;
-                $operand1 = $eStack[$indexOfTopStack];
+        if(sizeof($postfixArray)>1){
+            for($i=0; $i<sizeof($postfixArray); $i++){
+                if($postfixArray[$i]['type']=='number'){
+                    $indexOfTopStack++;
+                    $eStack[$indexOfTopStack] = $postfixArray[$i]['number'];
+                }else{
+                    $operand2 = $eStack[$indexOfTopStack];
+                    $indexOfTopStack--;
+                    $operand1 = $eStack[$indexOfTopStack];
 
-                $result = $this->execute($operand1, $operand2, $postfixArray[$i]['operator']);
+                    $result = $this->execute($operand1, $operand2, $postfixArray[$i]['operator']);
 
-                $eStack[$indexOfTopStack] = $result;
+                    $eStack[$indexOfTopStack] = $result;
+                }
             }
+        }else{
+            $result = $postfixArray[0]['number'];
         }
         return $result;
     }
@@ -200,9 +200,7 @@ class FunctionHelper extends Helper
             '<='=>7,
             '=='=>8,
             '&&'=>9,
-            '||'=>10,
-            '='=>11,
-            '&'=>12,
+            '||'=>10
         ];
 
         $char = array_flip($o2n)[$operator];
@@ -736,8 +734,8 @@ class FunctionHelper extends Helper
     }
 
     public function invoice_item_payment_age($itemName, $unitName, $invoice){
-        $item_info = TableRegistry::get('items')->find('all', ['conditions'=>['name'=>$itemName]])->first();
-        $unit_info = TableRegistry::get('units')->find('all', ['conditions'=>['unit_display_name'=>$unitName]])->first();
+        $item_info = TableRegistry::get('items')->find('all', ['conditions'=>['name'=>str_replace("'", '', $itemName)]])->first();
+        $unit_info = TableRegistry::get('units')->find('all', ['conditions'=>['unit_display_name'=>str_replace("'", '', $unitName)]])->first();
         $item_id = $item_info['id'];
         $unit_id = $unit_info['id'];
 
@@ -746,17 +744,27 @@ class FunctionHelper extends Helper
                 if($invoiced_product['item_id']==$item_id && $invoiced_product['manufacture_unit_id']==$unit_id){
                     if($invoice['invoice_type']==1){
                         if($invoiced_product['due']==0){
-                            return ($invoiced_product['updated_date']-$invoiced_product['delivery_date'])/3600*24;
+                            if($invoiced_product['updated_date']-$invoiced_product['delivery_date']==0){
+                                return 0;
+                            }else{
+                                return ($invoiced_product['updated_date']-$invoiced_product['delivery_date'])/3600*24;
+                            }
                         }else{
                             return 999999;
                         }
                     }elseif($invoice['invoice_type']==2){
                         if($invoiced_product['due']==0){
-                            return ($invoiced_product['updated_date']-$invoiced_product['delivery_date'])/3600*24;
+                            if($invoiced_product['updated_date']-$invoiced_product['delivery_date']==0){
+                                return 0;
+                            }else{
+                                return ($invoiced_product['updated_date']-$invoiced_product['delivery_date'])/3600*24;
+                            }
                         }else{
                             return 999999;
                         }
                     }
+                }else{
+                    return 0;
                 }
             }
         }
@@ -776,24 +784,72 @@ class FunctionHelper extends Helper
         return 'not needed';
     }
 
-    public function item_quantity($itemName, $unitName = null, $contextArray = []){
-        $item_info = TableRegistry::get('items')->find('all', ['conditions'=>['name'=>$itemName]])->first();
-        $unit_info = TableRegistry::get('units')->find('all', ['conditions'=>['unit_display_name'=>$unitName]])->first();
+    public function item_unit_quantity($itemName, $unitName = null, $contextArray = []){
+        $item_info = TableRegistry::get('items')->find('all', ['conditions'=>['name'=>str_replace("'", '', $itemName)]])->first();
+        $unit_info = TableRegistry::get('units')->find('all', ['conditions'=>['unit_display_name'=>str_replace("'", '', $unitName)]])->first();
         $item_id = $item_info['id'];
         $unit_id = $unit_info['id'];
         $sum = 0;
 
         if(sizeof($contextArray)>0){
-            if($item_id>0 && $unitName==null){
-                if (false !== $key = array_search($item_id, $contextArray['item_id'])) {
-                    $sum += $contextArray['product_quantity'][$key];
-                }
-            }elseif($item_id>0 && $unit_id>0){
-                if ((false !== $key = array_search($item_id, $contextArray['item_id'])) && (false !== $key = array_search($unit_id, $contextArray['manufacture_unit_id']))) {
-                    $sum += $contextArray['product_quantity'][$key];
+            foreach($contextArray['invoiced_products'] as $invoiced_product){
+                if($item_id>0 && $unit_id==null){
+                    if($invoiced_product['item_id']==$item_id){
+                        $sum += $invoiced_product['product_quantity'];
+                    }
+                }elseif($item_id>0 && $unit_id>0){
+                    if($invoiced_product['item_id']==$item_id && $invoiced_product['manufacture_unit_id']==$unit_id){
+                        $sum += $invoiced_product['product_quantity'];
+                    }
                 }
             }
         }
+        return $sum?$sum:0;
+    }
+
+    public function item_bulk_quantity($itemName, $unitName = null, $contextArray = []){
+        $item_info = TableRegistry::get('items')->find('all', ['conditions'=>['name'=>str_replace("'", '', $itemName)]])->first();
+        $unit_info = TableRegistry::get('units')->find('all', ['conditions'=>['unit_display_name'=>str_replace("'", '', $unitName)]])->first();
+        $item_id = $item_info['id'];
+        $unit_id = $unit_info['id'];
+        $converted_quantity = $unit_info['converted_quantity'];
+        $unit_type = $unit_info['unit_type'];
+
+        $sum = 0;
+
+        if(sizeof($contextArray)>0){
+            foreach($contextArray['invoiced_products'] as $invoiced_product){
+                if($item_id>0 && $unit_id==null){
+                    if($invoiced_product['item_id']==$item_id){
+                        $sum += $invoiced_product['product_quantity'];
+                    }
+                }elseif($item_id>0 && $unit_id>0){
+                    if($invoiced_product['item_id']==$item_id && $invoiced_product['manufacture_unit_id']==$unit_id){
+                        $sum += $invoiced_product['product_quantity'];
+                    }
+                }
+            }
+        }
+
+        // convert to kg/ltr
+        if($unit_type == 1 && $converted_quantity == 0){
+            $sum = $sum/1000;
+        } elseif( $unit_type == 1 && $converted_quantity != 0){
+            $sum = ($sum*$converted_quantity)/1000;
+        } elseif ($unit_type == 2 && $converted_quantity == 0 || $unit_type == 2 && $converted_quantity == null) {
+            $sum = $sum * 1;
+        } elseif($unit_type == 2 && $converted_quantity != 0){
+            $sum = $sum*$converted_quantity;
+        } elseif( $unit_type == 3 && $converted_quantity == 0){
+            $sum = $sum/1000;
+        } else if( $unit_type == 3 && $converted_quantity != 0){
+            $sum = ($sum*$converted_quantity)/1000;
+        } else if($unit_type == 4 && $converted_quantity == 0){
+            $sum = $sum*1;
+        } else if($unit_type == 4 && $converted_quantity != 0){
+            $sum = $sum*$converted_quantity;
+        }
+
         return $sum?$sum:0;
     }
 
