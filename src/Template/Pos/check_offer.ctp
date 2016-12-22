@@ -10,6 +10,7 @@
 <table class="table table-bordered">
     <tr><td colspan="12" class="text-center"><span class="label label-success crossSpan">Offer Detail</span></td></tr>
     <?php
+    if(sizeof($wonOffers)>0):
     foreach($wonOffers as $wonOffer):
     ?>
         <tr>
@@ -46,6 +47,11 @@
                 </table>
             </td>
         </tr>
-    <?php endforeach;?>
+    <?php
+    endforeach;
+    else:
+    ?>
+        <tr><td colspan="12" class="text-center"><span class="label label-warning crossSpan">No Offer</span></td></tr>
+    <?php endif;?>
     <tr><td colspan="12" class="text-center"><span style="cursor: pointer;" class="label label-danger crossSpan">Close</span></td></tr>
 </table>
