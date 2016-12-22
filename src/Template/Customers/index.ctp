@@ -26,8 +26,8 @@ $status = \Cake\Core\Configure::read('status_options');
             </div>
 
             <div class="portlet-body">
-                <div class="table-scrollable">
-                    <table class="table table-bordered table-hover">
+                <div class="">
+                    <table class="table table-striped table-bordered table-hover table-checkable order-column" id="table_id">
                         <thead>
                         <tr>
                             <th><?= __('Sl. No.') ?></th>
@@ -64,15 +64,21 @@ $status = \Cake\Core\Configure::read('status_options');
                         </tbody>
                     </table>
                 </div>
-                <ul class="pagination">
-                    <?php
-                    echo $this->Paginator->prev('<<');
-                    echo $this->Paginator->numbers();
-                    echo $this->Paginator->next('>>');
-                    ?>
-                </ul>
+<!--                <ul class="pagination">-->
+<!--                    --><?php
+//                    echo $this->Paginator->prev('<<');
+//                    echo $this->Paginator->numbers();
+//                    echo $this->Paginator->next('>>');
+//                    ?>
+<!--                </ul>-->
             </div>
         </div>
     </div>
 </div>
+
+<script>
+    $(document).ready( function () {
+        $('#table_id').DataTable();
+    } );
+</script>
 

@@ -19,12 +19,12 @@ use Cake\View\View;
 class CustomersController extends AppController
 {
 
-    public $paginate = [
-        'limit' => 15,
-        'order' => [
-            'Customers.id' => 'desc'
-        ]
-    ];
+//    public $paginate = [
+//        'limit' => 15,
+//        'order' => [
+//            'Customers.id' => 'desc'
+//        ]
+//    ];
 
     /**
      * Index method
@@ -46,8 +46,7 @@ class CustomersController extends AppController
         $customers->where('unit_global_id -'. $userAdminGlobal['global_id'] .'>= '.$limitStart);
         $customers->where('unit_global_id -'. $userAdminGlobal['global_id'] .'< '.$limitEnd);
         $customers->where('customers.status!= 99');
-
-        $this->set('customers', $this->paginate($customers));
+        $this->set('customers', $customers);
         $this->set('_serialize', ['customers']);
     }
 

@@ -31,9 +31,13 @@ $status = \Cake\Core\Configure::read('status_options');
                         <thead>
                         <tr>
                             <th><?= __('Sl. No.') ?></th>
-                            <th><?= __('Input Name') ?></th>
-                            <th><?= __('Output Name') ?></th>
+                            <th><?= __('Date') ?></th>
+                            <th><?= __('Input Item') ?></th>
+                            <th><?= __('input Bulk Total') ?></th>
+                            <th><?= __('Output Item') ?></th>
+                            <th><?= __('Output Bulk Total') ?></th>
                             <th><?= __('Gain') ?></th>
+                            <th><?= __('Total') ?></th>
                             <th><?= __('Actions') ?></th>
                         </tr>
                         </thead>
@@ -41,15 +45,18 @@ $status = \Cake\Core\Configure::read('status_options');
                         <?php foreach ($formulationLogs as $key => $formulationLog) {  ?>
                             <tr>
                                 <td><?= $this->Number->format($key+1) ?></td>
-                                <td><?= $formulationLog->input_name ?></td>
-                                <td><?= $formulationLog->output_name ?></td>
-                                <td><?= $formulationLog->output_gain ?></td>
+                                <td><?= ($formulationLog->transaction_id)?date('d-m-y',$formulationLog->transaction_id):"" ?></td>
+                                <td><?= $formulationLog->input_item ?></td>
+                                <td><?= $formulationLog->input_bulk_total ?></td>
+                                <td><?= $formulationLog->output_item ?></td>
+                                <td><?= $formulationLog->output_bulk_total ?></td>
+                                <td><?= $formulationLog->gain ?></td>
+                                <td><?= $formulationLog->total ?></td>
                                 <td class="actions">
                                     <?php
                                     echo $this->Html->link(__('View'), ['action' => 'view', $formulationLog->id],['class'=>'btn btn-sm btn-info']);
                                     echo $this->Html->link(__('Edit'), ['action' => 'edit', $formulationLog->id],['class'=>'btn btn-sm btn-warning']);
                                     echo $this->Form->postLink(__('Delete'), ['action' => 'delete', $formulationLog->id],['class'=>'btn btn-sm btn-danger','confirm' => __('Are you sure you want to delete # {0}?', $formulationLog->id)]);
-
                                     ?>
 
                                 </td>

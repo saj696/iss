@@ -94,6 +94,7 @@ class FormulationLogsController extends AppController
                         $stockLogData['manufacture_unit_id'] = $itemUnit['manufacture_unit_id'];
                         $stockLogData['item_id'] = $itemUnit['item_id'];
                         $stockLogData['stock_id'] = $stockID['id'];
+                        $stockLogData['transaction_id'] = $time;
                         $stockLogData['type'] = 9;
                         $stockLogData['quantity'] = $stockDetails['amount'];
                         $stockLogData['status'] = 1;
@@ -152,10 +153,14 @@ class FormulationLogsController extends AppController
 //                        Formulation log table data insert
                         $inputName =  $this->Common->specific_item_name_resolver($data['warehouse_id'],$data['Item']);
                         $formulationLog = $this->FormulationLogs->newEntity();
-                        $formulationLogData['input_name'] = $inputName['name'];
-                        $formulationLogData['output_name'] = $data['item_name'];
+                        $formulationLogData['transaction_id'] = $time;
+                        $formulationLogData['input_item'] = $inputName['name'];
+                        $formulationLogData['input_bulk_total'] = $data['total_amount'];
+                        $formulationLogData['output_item'] = $data['item_name'];
+                        $formulationLogData['output_bulk_total'] = $data['output_result'];
+                        $formulationLogData['gain'] = $data['output_gain'];
+                        $formulationLogData['total'] = $data['output_result'] + $data['output_gain'];
                         $formulationLogData['status'] = 1;
-                        $formulationLogData['output_gain'] = $data['output_gain'];
                         $formulationLog = $this->FormulationLogs->patchEntity($formulationLog, $formulationLogData);
                         $this->FormulationLogs->save($formulationLog);
                 });

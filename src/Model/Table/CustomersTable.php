@@ -29,6 +29,18 @@ class CustomersTable extends Table
             'joinType' => 'INNER'
         ]);
 
+//        $this->hasMany('CustomerCreditLimits',[
+//            'foreignKey' => 'customer_id'
+//        ]);
+
+        $this->hasMany('BankInformations',[
+            'foreignKey' => 'customer_id'
+        ]);
+
+        $this->hasMany('CustomerCreditLimits',[
+            'foreignKey' => 'customer_id'
+        ]);
+
         $this->addBehavior('Xety/Cake3Upload.Upload', [
                 'fields' => [
                     'picture' => [

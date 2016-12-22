@@ -73,6 +73,14 @@ License: You must have a valid license purchased only from softbd
     <link href="<?= $this->request->webroot; ?>assets/admin/layout4/css/custom.css" rel="stylesheet" type="text/css"/>
     <link href="<?= $this->request->webroot; ?>css/common.css" rel="stylesheet" type="text/css"/>
 
+    <!-- BEGIN DATATABLE PLUGINS -->
+    <link href="<?= $this->request->webroot; ?>assets/global/plugins/datatables/datatables.min.css" rel="stylesheet" type="text/css" />
+    <link href="<?= $this->request->webroot; ?>assets/global/plugins/datatables/plugins/bootstrap/datatables.bootstrap.css" rel="stylesheet" type="text/css" />
+    <script src="<?= $this->request->webroot; ?>assets/global/scripts/datatable.js" type="text/javascript"></script>
+    <script src="<?= $this->request->webroot; ?>assets/global/plugins/datatables/datatables.min.js" type="text/javascript"></script>
+    <script src="<?= $this->request->webroot; ?>assets/global/plugins/datatables/plugins/bootstrap/datatables.bootstrap.js" type="text/javascript"></script>
+    <!-- END DATATABLE PLUGINS -->
+
     <!-- END THEME STYLES -->
     <link rel="shortcut icon" href="favicon.ico"/>
 

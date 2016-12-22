@@ -238,11 +238,14 @@ use Cake\Core\Configure;
         $(document).on('keyup','.inputAmount',function(){
             var obj = $(this);
             var amount = obj.val();
+            var stockVal = obj.closest('.item_tr').find('.stock').val();
             var unitType = obj.closest('.item_tr').find('.stock').attr("unitType");
             var convertQuantity = obj.closest('.item_tr').find('.stock').attr("convertQuantity");
-                        console.log(unitType);
-             console.log(amount);
-                          console.log(convertQuantity );
+
+            if(parseFloat(amount)>parseFloat(stockVal)){
+                alert('Out Of Stock!');
+                return false;
+            }
 
             if( unitType == 1 && convertQuantity == 0){
 //                gram converted quantity 0
@@ -257,8 +260,7 @@ use Cake\Core\Configure;
 
             else if (unitType == 2 && convertQuantity == 0 || unitType == 2 && convertQuantity == null) {
 //                kg converted quantity 0
-	 	var final = amount * 1;
-	 	console.log(final);
+	 	        var final = amount * 1;
                 obj.closest('.item_tr').find('.amount').val(final);
             }
             else if(unitType == 2 && convertQuantity != 0){
@@ -280,7 +282,7 @@ use Cake\Core\Configure;
 
             else if(unitType == 4 && convertQuantity == 0){
 //                liter converted quantity 0
-		var final = amount * 1;
+		        var final = amount * 1;
                 obj.closest('.item_tr').find('.amount').val(final);
             }
             else if(unitType == 4 && convertQuantity != 0){
@@ -293,6 +295,7 @@ use Cake\Core\Configure;
 //                each
             }
 
+//
 
             //        Sum Result
             var sumResult = 0;
@@ -307,6 +310,7 @@ use Cake\Core\Configure;
 
 //        output generation
         $(document).on('click','.formulateOutpute',function(){
+
             var itemVal = $('.item').val();
             var totalAmount = $('.sumResult').val();
             $.ajax({
