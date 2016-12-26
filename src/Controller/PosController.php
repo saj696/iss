@@ -353,11 +353,19 @@ class PosController extends AppController
         $this->loadModel('ItemUnits');
         $this->loadModel('OfferItems');
         $this->loadModel('Offers');
+        $this->loadModel('Offers');
+        $this->loadModel('ItemBonuses');
 
         App::import('Helper', 'FunctionHelper');
         $FunctionHelper = new FunctionHelper(new View());
 
         $ItemUnitInfo = $this->ItemUnits->get($item_unit_id);
+        $bonusQuantityInfo = $this->ItemBonuses->find('all', ['conditions'=>[
+            'item_id'=>$ItemUnitInfo['item_id'],
+            'manufacture_unit_id'=>$ItemUnitInfo['manufacture_unit_id'],
+            'order_quantity_from <='=>$item_quantity,
+            'order_quantity_to >='=>$item_quantity
+        ]])->where(['invoice_type IN'=>[$invoice_type, 3]])->first();
 
         $customerUnitInfo = $this->AdministrativeUnits->get($customer_unit);
         $customerInfo = $this->Customers->get($customer_id);
@@ -543,6 +551,7 @@ class PosController extends AppController
         }
 
         if(isset($wonOffers[0])){
+            $wonOffers[0]['bonus_quantity'] = isset($bonusQuantityInfo->bonus_quantity)?$bonusQuantityInfo->bonus_quantity:0;
             $arr = json_encode($wonOffers[0]);
         }else{
             $arr = json_encode(0);

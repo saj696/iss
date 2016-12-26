@@ -284,12 +284,12 @@ use Cake\Core\Configure;
                         customer_unit: customer_unit
                     },
                     success: function (data, status) {
-                        console.log(data);
+//                        console.log(data);
                         if(data.length>0){
                             var res = JSON.parse(data);
                             if(res.value_or_quantity>0){
                                 obj.closest('.itemTr').find('.item_cash_discount').val(res.value_or_quantity);
-                                obj.closest('.itemTr').find('.item_bonus').val(res.value_or_quantity);
+                                obj.closest('.itemTr').find('.item_bonus').val(res.bonus_quantity);
 
                                 // redo
                                 // other calculation

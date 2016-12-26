@@ -38,7 +38,8 @@ $invoice_type = \Cake\Core\Configure::read('invoice_type');
                         <?php
                         echo $this->Form->input('item_id', ['options' => $items, 'required', 'empty' => __('Select')]);
                         echo $this->Form->input('manufacture_unit_id', ['options' => $units, 'required', 'empty' => __('Select')]);
-                        echo $this->Form->input('order_quantity', ['class' => 'numbersOnly form-control', 'required']);
+                        echo $this->Form->input('order_quantity_from', ['class' => 'numbersOnly form-control', 'required']);
+                        echo $this->Form->input('order_quantity_to', ['class' => 'numbersOnly form-control', 'required']);
                         echo $this->Form->input('bonus_quantity', ['class' => 'numbersOnly form-control', 'required']);
                         echo $this->Form->input('invoice_type', ['options' => Configure::read('invoice_type'), 'required']);
                         echo $this->Form->input('status', ['options' => Configure::read('status_options')]);

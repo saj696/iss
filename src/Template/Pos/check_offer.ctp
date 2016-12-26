@@ -15,7 +15,6 @@
         <?php
     foreach($wonOffers as $wonOffer):
     ?>
-
         <tr>
             <td>
                 <table class="table table-bordered">
