@@ -68,6 +68,7 @@ use Cake\Core\Configure;
                                 <th>Quantity</th>
                                 <th>Unit Price</th>
                                 <th>Bonus</th>
+                                <th>Special Offer Bonus</th>
                                 <th>Cash Discount</th>
                                 <th>Item Net Total</th>
                             </tr>
@@ -82,6 +83,7 @@ use Cake\Core\Configure;
                                         <td><input type="text" name="detail[<?= $item['item_unit_id']?>][item_quantity]" class="form-control item_quantity" value="<?= $item['product_quantity']?>" /><input type="hidden" class="itemId" name="itemId[]" value="<?=$item['item_unit_id']?>?>"></td>
                                         <td><input type="text" name="detail[<?= $item['item_unit_id']?>][unit_price]" class="form-control unit_price" readonly value="<?= $itemUnitPriceArray[$item['item_unit_id']]?>" /></td>
                                         <td><input type="text" name="detail[<?= $item['item_unit_id']?>][item_bonus]" class="form-control item_bonus" readonly value="<?= $item['bonus_quantity']?>" /></td>
+                                        <td><input type="text" name="detail[<?= $item['item_unit_id']?>][special_offer_item_bonus]" class="form-control special_offer_item_bonus" readonly value="<?= $item['special_offer_bonus_quantity']?>" /></td>
                                         <td><input type="text" name="detail[<?= $item['item_unit_id']?>][item_cash_discount]" class="form-control item_cash_discount" readonly value="<?= $item['instant_discount']?>" /></td>
                                         <td><input type="text" name="detail[<?= $item['item_unit_id']?>][item_net_total]" class="form-control item_net_total" readonly value="<?= $item['product_quantity']*$itemUnitPriceArray[$item['item_unit_id']]-$item['instant_discount']?>" /></td>
                                     </tr>

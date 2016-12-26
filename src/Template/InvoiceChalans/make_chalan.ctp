@@ -54,7 +54,7 @@ $status = \Cake\Core\Configure::read('status_options');
                                 <?php foreach($returnData as $item_unit_id=>$detail):?>
                                     <tr>
                                         <td><?= $itemArray[$detail['item_unit_id']]?></td>
-                                        <td class="text-center"><?= $detail['product_quantity']?><input type="hidden" name="detail[<?=$item_unit_id?>]" value="<?= $detail['product_quantity']?>"></td>
+                                        <td class="text-center"><?= $detail['product_quantity']+$detail['bonus_quantity']+$detail['special_offer_bonus_quantity']?><input type="hidden" name="detail[<?=$item_unit_id?>]" value="<?= $detail['product_quantity']+$detail['bonus_quantity']+$detail['special_offer_bonus_quantity']?>"></td>
                                     </tr>
                                 <?php endforeach;?>
                             </tbody>

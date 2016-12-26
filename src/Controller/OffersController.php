@@ -101,6 +101,8 @@ class OffersController extends AppController
                     $data['offer_payment_mode'] = $input['offer_payment_mode'];
                     $data['invoicing'] = $input['invoicing'];
                     $data['invoice_type'] = $input['invoice_type'];
+                    $data['is_product_bonus_allowed_in_credit_invoice'] = $input['is_product_bonus_allowed_in_credit_invoice'];
+                    $data['is_product_bonus_allowed_in_credit_invoice'] = $input['is_product_bonus_allowed_in_credit_invoice'];
                     $data['program_period_start'] = strtotime($input['program_period_start']);
                     $data['program_period_end'] = strtotime($input['program_period_end']);
                     $data['conditions'] = json_encode($input['condition']);

@@ -67,6 +67,7 @@ use Cake\Core\Configure;
                                 <th>Quantity</th>
                                 <th>Unit Price</th>
                                 <th>Bonus</th>
+                                <th>Special Offer Bonus</th>
                                 <th>Cash Discount</th>
                                 <th>Item Net Total</th>
                                 <th style="width: 2%;">Cancel</th>
@@ -284,11 +285,17 @@ use Cake\Core\Configure;
                         customer_unit: customer_unit
                     },
                     success: function (data, status) {
-//                        console.log(data);
                         if(data.length>0){
                             var res = JSON.parse(data);
                             if(res.value_or_quantity>0){
-                                obj.closest('.itemTr').find('.item_cash_discount').val(res.value_or_quantity);
+                                if(res.offer_type=='product bonus'){
+                                    obj.closest('.itemTr').find('.special_offer_item_bonus').val(res.value_or_quantity);
+                                    obj.closest('.itemTr').find('.item_cash_discount').val(0);
+                                }else{
+                                    obj.closest('.itemTr').find('.item_cash_discount').val(res.value_or_quantity);
+                                    obj.closest('.itemTr').find('.special_offer_item_bonus').val(0);
+                                }
+
                                 obj.closest('.itemTr').find('.item_bonus').val(res.bonus_quantity);
 
                                 // redo

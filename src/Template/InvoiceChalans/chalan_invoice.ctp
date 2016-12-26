@@ -58,7 +58,7 @@ $status = \Cake\Core\Configure::read('status_options');
                                         ?>
                                         <tr>
                                             <td><?= $itemArray[$detail['item_unit_id']]?></td>
-                                            <td class="text-center"><?= $detail['product_quantity']?></td>
+                                            <td class="text-center"><?= $detail['product_quantity']+$detail['bonus_quantity']+$detail['special_offer_bonus_quantity']?></td>
                                             <td class="text-center"><?= $detail['net_total']?></td>
                                         </tr>
                                     <?php endforeach;?>

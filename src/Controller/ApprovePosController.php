@@ -155,6 +155,7 @@ class ApprovePosController extends AppController
                         $invoicedProductsData['manufacture_unit_id'] = $itemUnitInfo['manufacture_unit_id'];
                         $invoicedProductsData['product_quantity'] = $itemDetail['item_quantity'];
                         $invoicedProductsData['bonus_quantity'] = $itemDetail['item_bonus'];
+                        $invoicedProductsData['special_offer_bonus_quantity'] = $itemDetail['special_offer_item_bonus'];
                         $invoicedProductsData['instant_discount'] = $itemDetail['item_cash_discount'];
                         $invoicedProductsData['net_total'] = $itemDetail['item_net_total'];
                         $invoicedProductsData['due'] = $itemDetail['item_net_total'];

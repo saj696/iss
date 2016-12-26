@@ -158,7 +158,7 @@ class InvoiceChalansController extends AppController
                         // Forward to warehouse in charge
                         $depotInfo = $this->Depots->get($user['depot_id']);
                         $warehouses = json_decode($depotInfo['warehouses'], true);
-                        $warehouse_id = $warehouses[0]; // We are supporting single warehouse in a depot now.
+                        $warehouse_id = $warehouses[0]; // We support single warehouse in a depot now.
                         $warehouseUserInfo = $this->Users->find('all', ['conditions'=>['status !='=>99, 'warehouse_id'=>$warehouse_id]])->first();
 
                         if($warehouseUserInfo){
@@ -308,6 +308,8 @@ class InvoiceChalansController extends AppController
                     $arr = [];
                     $arr['item_unit_id'] = $itemDetail['item_unit_id'];
                     $arr['product_quantity'] = $itemDetail['product_quantity'];
+                    $arr['bonus_quantity'] = $itemDetail['bonus_quantity'];
+                    $arr['special_offer_bonus_quantity'] = $itemDetail['special_offer_bonus_quantity'];
                     $info[] = $arr;
                 }
             }
@@ -318,10 +320,14 @@ class InvoiceChalansController extends AppController
                 if (!array_key_exists($key, $returnData)) {
                     $returnData[$key] = [
                         'item_unit_id' => $item['item_unit_id'],
-                        'product_quantity' => $item['product_quantity']
+                        'product_quantity' => $item['product_quantity'],
+                        'bonus_quantity' => $item['bonus_quantity'],
+                        'special_offer_bonus_quantity' => $item['special_offer_bonus_quantity'],
                     ];
                 } else {
                     $returnData[$key]['product_quantity'] = $returnData[$key]['product_quantity'] + $item['product_quantity'];
+                    $returnData[$key]['bonus_quantity'] = $returnData[$key]['bonus_quantity'] + $item['bonus_quantity'];
+                    $returnData[$key]['special_offer_bonus_quantity'] = $returnData[$key]['special_offer_bonus_quantity'] + $item['special_offer_bonus_quantity'];
                 }
                 $key++;
             }

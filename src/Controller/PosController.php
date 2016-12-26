@@ -121,6 +121,7 @@ class PosController extends AppController
                         $poProductData['manufacture_unit_id'] = $itemUnitInfo['manufacture_unit_id'];
                         $poProductData['product_quantity'] = $itemDetail['item_quantity'];
                         $poProductData['bonus_quantity'] = $itemDetail['item_bonus'];
+                        $poProductData['special_offer_bonus_quantity'] = $itemDetail['special_offer_item_bonus'];
                         $poProductData['instant_discount'] = $itemDetail['item_cash_discount'];
                         $poProductData['net_total'] = $itemDetail['item_net_total'];
                         $poProductData['created_by'] = $user['id'];
