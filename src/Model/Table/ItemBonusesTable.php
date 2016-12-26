@@ -47,9 +47,14 @@ class ItemBonusesTable extends Table
             ->allowEmpty('id', 'create');
             
         $validator
-            ->add('order_quantity', 'valid', ['rule' => 'numeric'])
-            ->requirePresence('order_quantity', 'create')
-            ->notEmpty('order_quantity');
+            ->add('order_quantity_from', 'valid', ['rule' => 'numeric'])
+            ->requirePresence('order_quantity_from', 'create')
+            ->notEmpty('order_quantity_from');
+
+        $validator
+            ->add('order_quantity_to', 'valid', ['rule' => 'numeric'])
+            ->requirePresence('order_quantity_to', 'create')
+            ->notEmpty('order_quantity_to');
             
         $validator
             ->add('bonus_quantity', 'valid', ['rule' => 'numeric'])

@@ -40,24 +40,20 @@ $invoice_type = Configure::read('invoice_type');
                                     <tr>
                                         <th><?= __('Item') ?></th>
                                         <th><?= __('Unit') ?></th>
-                                        <th><?= __('Order Qty') ?></th>
+                                        <th><?= __('Order Qty From') ?></th>
+                                        <th><?= __('Order Qty To') ?></th>
                                         <th><?= __('Bonus Qty') ?></th>
                                         <th><?= __('Invoice Type') ?></th>
                                         <th></th>
                                     </tr>
                                     <tr class="item_tr single_list">
-                                        <td style="width: 20%;">
-                                            <?php echo $this->Form->input('details.0.item_id', ['options' => $items, 'style' => 'max-width: 100%', 'class' => 'form-control', 'empty' => __('Select'),  'required','templates' => ['label' => '']]); ?></td>
-
-                                        <td style="width: 20%;">
-                                            <?php echo $this->Form->input('details.0.manufacture_unit_id', ['options' => $units, 'style' => 'max-width: 100%', 'class' => 'form-control', 'empty' => __('Select'),  'required','templates' => ['label' => '']]); ?></td>
-
-                                        <td><?php echo $this->Form->input('details.0.order_quantity', ['type' => 'text', 'style' => 'width: 100%', 'class' => 'form-control quantity numbersOnly', 'templates' => ['label' => '']]); ?></td>
+                                        <td style="width: 20%;"><?php echo $this->Form->input('details.0.item_id', ['options' => $items, 'style' => 'max-width: 100%', 'class' => 'form-control', 'empty' => __('Select'),  'required','templates' => ['label' => '']]); ?></td>
+                                        <td style="width: 20%;"><?php echo $this->Form->input('details.0.manufacture_unit_id', ['options' => $units, 'style' => 'max-width: 100%', 'class' => 'form-control', 'empty' => __('Select'),  'required','templates' => ['label' => '']]); ?></td>
+                                        <td><?php echo $this->Form->input('details.0.order_quantity_from', ['type' => 'text', 'style' => 'width: 100%', 'class' => 'form-control quantity numbersOnly', 'templates' => ['label' => '']]); ?></td>
+                                        <td><?php echo $this->Form->input('details.0.order_quantity_to', ['type' => 'text', 'style' => 'width: 100%', 'class' => 'form-control quantity numbersOnly', 'templates' => ['label' => '']]); ?></td>
                                         <td><?php echo $this->Form->input('details.0.bonus_quantity', ['type' => 'text', 'style' => 'width: 100%', 'class' => 'form-control numbersOnly', 'required', 'templates' => ['label' => '']]); ?></td>
                                         <td style="width: 20%"><?php echo $this->Form->input('details.0.invoice_type', ['options' => $invoice_type,'class' => 'form-control','empty' => __('Select'), 'required', 'templates' => ['label' => '']]); ?></td>
-
-                                        <td width="50px;"><span
-                                                class="btn btn-sm btn-circle btn-danger remove pull-right">X</span></td>
+                                        <td width="50px;"><span class="btn btn-sm btn-circle btn-danger remove pull-right">X</span></td>
                                     </tr>
                                 </table>
                             </div>

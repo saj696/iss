@@ -75,15 +75,15 @@ use Cake\Core\Configure;
                             $total_amount = 0;
                             if(sizeof($event['po']['po_products'])>0):
                                 foreach($event['po']['po_products'] as $item):
-                                    $total_amount+=$item['product_quantity']*$itemUnitPriceArray[$item['item_unit_id']];
+                                    $total_amount+=($item['product_quantity']*$itemUnitPriceArray[$item['item_unit_id']])-$item['instant_discount'];
                                     ?>
                                     <tr class="itemTr">
                                         <td><?= $itemArray[$item['item_unit_id']]?></td>
                                         <td><input type="text" name="detail[<?= $item['item_unit_id']?>][item_quantity]" class="form-control item_quantity" value="<?= $item['product_quantity']?>" /><input type="hidden" class="itemId" name="itemId[]" value="<?=$item['item_unit_id']?>?>"></td>
                                         <td><input type="text" name="detail[<?= $item['item_unit_id']?>][unit_price]" class="form-control unit_price" readonly value="<?= $itemUnitPriceArray[$item['item_unit_id']]?>" /></td>
-                                        <td><input type="text" name="detail[<?= $item['item_unit_id']?>][item_bonus]" class="form-control item_bonus" readonly value="0" /></td>
-                                        <td><input type="text" name="detail[<?= $item['item_unit_id']?>][item_cash_discount]" class="form-control item_cash_discount" readonly value="0" /></td>
-                                        <td><input type="text" name="detail[<?= $item['item_unit_id']?>][item_net_total]" class="form-control item_net_total" readonly value="<?= $item['product_quantity']*$itemUnitPriceArray[$item['item_unit_id']]?>" /></td>
+                                        <td><input type="text" name="detail[<?= $item['item_unit_id']?>][item_bonus]" class="form-control item_bonus" readonly value="<?= $item['bonus_quantity']?>" /></td>
+                                        <td><input type="text" name="detail[<?= $item['item_unit_id']?>][item_cash_discount]" class="form-control item_cash_discount" readonly value="<?= $item['instant_discount']?>" /></td>
+                                        <td><input type="text" name="detail[<?= $item['item_unit_id']?>][item_net_total]" class="form-control item_net_total" readonly value="<?= $item['product_quantity']*$itemUnitPriceArray[$item['item_unit_id']]-$item['instant_discount']?>" /></td>
                                     </tr>
                                 <?php
                                 endforeach;

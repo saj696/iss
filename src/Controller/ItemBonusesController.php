@@ -78,7 +78,8 @@ class ItemBonusesController extends AppController
                         $data['item_id'] = $detail['item_id'];
                         $data['manufacture_unit_id'] = $detail['manufacture_unit_id'];
                         $data['invoice_type'] = $detail['invoice_type'];
-                        $data['order_quantity'] = $detail['order_quantity'];
+                        $data['order_quantity_from'] = $detail['order_quantity_from'];
+                        $data['order_quantity_to'] = $detail['order_quantity_to'];
                         $data['bonus_quantity'] = $detail['bonus_quantity'];
                         $data['created_by'] = $user['id'];
                         $data['created_date'] = $time;

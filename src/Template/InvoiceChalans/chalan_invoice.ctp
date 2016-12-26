@@ -26,10 +26,12 @@ $status = \Cake\Core\Configure::read('status_options');
                 </div>
                 <div class="tools">
                     <?= $this->Html->link(__('Back'), ['action' => 'index'], ['class' => 'btn btn-sm grey-gallery']); ?>
+                    <button class="btn btn-sm grey-gallery" style="float: right; margin-left: 10px;" onclick="print_rpt()">&nbsp;Print&nbsp;</button>
                 </div>
             </div>
 
             <div class="portlet-body">
+                <div id="PrintArea">
                 <div class="table-scrollable">
                     <form method="post" class="form-horizontal" role="form" action="<?= $this->Url->build("/InvoiceChalans/makeChalan")?>">
                         <?php foreach($invoiceIds as $invoiceId):?>
@@ -52,7 +54,8 @@ $status = \Cake\Core\Configure::read('status_options');
                                         <th class="text-center">Quantity</th>
                                         <th class="text-center">Net Total</th>
                                     </tr>
-                                    <?php foreach($invoice['invoiced_products'] as $detail):?>
+                                    <?php foreach($invoice['invoiced_products'] as $detail):
+                                        ?>
                                         <tr>
                                             <td><?= $itemArray[$detail['item_unit_id']]?></td>
                                             <td class="text-center"><?= $detail['product_quantity']?></td>
@@ -68,12 +71,23 @@ $status = \Cake\Core\Configure::read('status_options');
                             </table>
                         </div>
                     <?php endforeach;?>
-                    <div class="text-center" style="margin-bottom: 20px;">
-                        <?= $this->Form->button(__('Make Chalan'), ['class' => 'btn default yellow-stripe', 'style'=>'font-size:13px; padding:6px 8px;']) ?>
                     </div>
-                    </form>
                 </div>
+
+                <div class="text-center" style="margin-bottom: 20px;">
+                    <?= $this->Form->button(__('Make Chalan'), ['class' => 'btn default yellow-stripe', 'style'=>'font-size:13px; padding:6px 8px;']) ?>
+                </div>
+                </form>
             </div>
         </div>
     </div>
 </div>
+
+<script>
+    function print_rpt() {
+        URL = "<?php echo $this->request->webroot; ?>page/Print_a4_Eng.php?selLayer=PrintArea";
+        day = new Date();
+        id = day.getTime();
+        eval("page" + id + " = window.open(URL, '" + id + "', 'toolbar=yes,scrollbars=yes ,location=0,statusbar=0 ,menubar=yes,resizable=1,width=880,height=600,left = 20,top = 50');");
+    }
+</script>

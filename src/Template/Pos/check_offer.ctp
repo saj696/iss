@@ -8,11 +8,14 @@
 ?>
 
 <table class="table table-bordered">
-    <tr><td colspan="12" class="text-center"><span class="label label-success crossSpan">Offer Detail</span></td></tr>
     <?php
     if(sizeof($wonOffers)>0):
+        ?>
+        <tr><td colspan="12" class="text-center"><span class="label label-success crossSpan">Offer Detail</span></td></tr>
+        <?php
     foreach($wonOffers as $wonOffer):
     ?>
+
         <tr>
             <td>
                 <table class="table table-bordered">
