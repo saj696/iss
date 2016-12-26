@@ -56,12 +56,6 @@ class InvoicesTable extends Table
         $this->hasMany('InvoicedProducts', [
             'foreignKey' => 'invoice_id'
         ]);
-        $this->belongsTo('Items', [
-            'foreignKey' => 'item_id'
-        ]);
-        $this->belongsTo('Units', [
-            'foreignKey' => 'manufacture_unit_id'
-        ]);
     }
 
     /**
