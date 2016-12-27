@@ -39,7 +39,7 @@
             } elseif ($row['item_id'] == 'last') {
                 ?>
                 <tr>
-                    <td colspan="6"><input type="hidden" id="<?= $item_id ?>" value="<?= $my_item_sum; ?>"></td>
+                    <td colspan="6"><input type="hidden" id="<?= $my_id ?>" value="<?= $my_item_sum; ?>"></td>
                     <td><?= $my_item_sum; ?></td>
                 </tr>
             <?php } elseif ($my_id == $row['item_id']) {
@@ -47,7 +47,7 @@
             } else {
                 ?>
                 <tr>
-                    <td colspan="6"><input type="hidden" id="<?= $item_id ?>" value="<?= $my_item_sum; ?>"></td>
+                    <td colspan="6"><input type="hidden" id="<?= $my_id ?>" value="<?= $my_item_sum; ?>"></td>
                     <td><?= $my_item_sum; ?></td>
                 </tr>
 
