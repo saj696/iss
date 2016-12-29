@@ -48,6 +48,10 @@ class DeliverDoController extends AppController
 
         $do_events = TableRegistry::get('do_events')->get($id);
 
+        $ddos=TableRegistry::get('ddos')->get($do_events->do_object_id);
+        $receivingWareHouse=TableRegistry::get('warehouses')->get($ddos->do_receiving_warehouse);
+
+
         $items = TableRegistry::get('ddos_items')->find('all')
             ->where(['ddo_id' => $do_events->do_object_id])
             ->contain(['Items', 'Units', 'Ddos'])->toArray();
@@ -106,6 +110,7 @@ class DeliverDoController extends AppController
         $warehouse_id = $user['warehouse_id'];
 
         $this->set('items', $items);
+        $this->set('receivingWareHouse', $receivingWareHouse);
         $this->set('id', $id);
         $this->set('warehouse_id', $warehouse_id);
         $this->set('_serialize', ['items']);

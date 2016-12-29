@@ -29,6 +29,7 @@ class MakeScheduledDeliveriesController extends AppController
             ->where(['do_events.action_status' => Configure::read('do_object_event_action_status')['awaiting_ds_delivery']])
             ->orWhere(['do_events.action_status' => Configure::read('do_object_event_action_status')['partial_ds_delivery']])
             ->contain(['Senders'])
+            ->order(['do_events.id' => 'DESC'])
             ->toArray();
         //    echo "<pre>";print_r($deliverDo);die();
         //   $this->paginate($this->DeliverDo);
@@ -56,7 +57,7 @@ class MakeScheduledDeliveriesController extends AppController
 
             $do_object = TableRegistry::get('do_objects')->get($pi_id->id);
             //Warehouse
-            if ($do_object->object_type == 1) {
+            if ($do_object->target_type == 1) {
                 $do_objects[$key]['type'] = "Warehouse";
                 $warehouse = TableRegistry::get('warehouses')->get($do_object->target_id);
                 $do_objects[$key]['target_name'] = $warehouse->name;
@@ -100,19 +101,33 @@ class MakeScheduledDeliveriesController extends AppController
                 ->where(['do_objects.id' => $do_object_id]);
             $do_object = $do_object->first();
 
-            $do_object_items = TableRegistry::get('do_object_items')->find('all');
-            $do_object_items->select(['id' => 'do_object_items.id',
+            $do_object_item = TableRegistry::get('do_object_items')->find('all');
+            $do_object_item->select(['id' => 'do_object_items.id',
                 'approved_quantity' => 'do_object_items.approved_quantity',
                 'item_id' => 'do_object_items.item_id',
                 'item_name' => 'items.name',
                 'unit_id' => 'units.id',
-                'unit_name' => 'units.unit_display_name',
-                'current_stock' => 'stocks.quantity'])
+             //   'current_stock' => 'stocks.quantity',
+                'unit_name' => 'units.unit_display_name'
+
+            ])
                 ->leftJoin('items', 'items.id=do_object_items.item_id')
                 ->leftJoin('units', 'units.id=do_object_items.unit_id')
-                ->leftJoin('stocks', 'stocks.item_id=do_object_items.item_id AND stocks.manufacture_unit_id=do_object_items.unit_id')
+             //   ->leftJoin('stocks', 'stocks.item_id=do_object_items.item_id AND stocks.manufacture_unit_id=do_object_items.unit_id')
                 ->where(['do_object_items.do_object_id' => $data['do_object_id']])
-                ->where(['stocks.warehouse_id' => $user['warehouse_id']]);
+              //  ->where(['stocks.warehouse_id' => $user['warehouse_id']])
+                ->hydrate(false)->toArray();
+				  $do_object_items=[];
+          foreach($do_object_item as $key=>$row){
+                $stock=TableRegistry::get('stocks')->find('all')
+                    ->where(['warehouse_id' => $user['warehouse_id'],'item_id'=>$row['item_id'],'manufacture_unit_id'=>$row['unit_id']])->hydrate(false)->first();
+               $do_object_items[$key]=$row;
+               $do_object_items[$key]['current_stock']=$stock['quantity']?$stock['quantity']:0;					
+                
+            }
+
+            
+
             $ds_tbl = TableRegistry::get('dds')->get($ds_tbl_id);
             $ddoss = [];
             foreach (json_decode($ds_tbl->do_ids) as $key => $do_id) {

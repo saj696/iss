@@ -31,7 +31,7 @@ use App\View\Helper\SystemHelper;
         <div class="portlet box blue-hoki">
             <div class="portlet-title">
                 <div class="caption">
-                    <i class="fa fa-picture-o fa-lg"></i><?= __('Do Object Details') ?>
+                    <i class="fa fa-picture-o fa-lg"></i><?= __('Do Details') ?>
                 </div>
                 <div class="tools">
                     <?= $this->Html->link(__('Back'), ['action' => 'index'], ['class' => 'btn btn-sm btn-success']); ?>
@@ -45,6 +45,7 @@ use App\View\Helper\SystemHelper;
                             <td>Item Name</td>
                             <td>Unit</td>
                             <td>Quantity</td>
+                            <td>Receiving Ware House</td>
                         </tr>
                         <?php foreach($items as $key=>$row):?>
                             <tr>
@@ -52,6 +53,7 @@ use App\View\Helper\SystemHelper;
                                 <td><?php echo SystemHelper::getItemAlias($row['item']['id'], $warehouse_id); ?></td>
                                 <td><?=$row['unit']['unit_display_name']?></td>
                                 <td><?=$row['quantity']?></td>
+                                <td><?=$receivingWareHouse->name;?></td>
                             </tr>
                         <?php endforeach;?>
 

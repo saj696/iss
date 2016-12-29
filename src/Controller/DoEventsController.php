@@ -33,7 +33,9 @@ class DoEventsController extends AppController
             'contain' => ['Senders', 'DoObjects']
         ])
             ->where(['DoEvents.action_status' => Configure::read('do_object_event_action_status')['awaiting_approval']])
-            ->orWhere(['DoEvents.action_status' => Configure::read('do_object_event_action_status')['approved']]);
+            ->orWhere(['DoEvents.action_status' => Configure::read('do_object_event_action_status')['approved']])
+            ->orWhere(['DoEvents.action_status' => Configure::read('do_object_event_action_status')['Action_Taken']])
+            ->order(['DoEvents.id' => 'DESC']) ;
         $this->set('doEvents', $doEvents);
         $this->set('_serialize', ['doEvents']);
     }
@@ -345,6 +347,14 @@ class DoEventsController extends AppController
                 $pi_ids[$key]['id']=$id;
                 $pi_ids[$key]['status']='false';
             }
+
+            foreach($data['pi_ids'] as $key=>$id){
+                $do_event = TableRegistry::get('do_events');
+                $query = $do_event->query();
+                $query->update()->set(['action_status' => Configure::read('do_object_event_action_status')['Action_Taken']])->where(['do_object_id'=>$id,'action_status' => Configure::read('do_object_event_action_status')['approved'],'events_tepe'=>1])->execute();
+
+            }
+
             // Khala shuru
 
             foreach ($data['do_object_items'] as $row) {

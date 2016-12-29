@@ -22,63 +22,70 @@ use Cake\Core\Configure;
 
         <form class="form-horizontal" method="post"
               action="<?php echo Router::url('/', true); ?>DoEvents/makeDoDs" enctype="multipart/form-data">
-        <div class="portlet box blue-hoki">
-            <div class="portlet-title">
-                <div class="caption">
-                    <i class="fa fa-list-alt fa-lg"></i><?= __('Product Indents') ?>
-                </div>
-                <div class="tools">
-                    <button type="submit" class="btn btn-danger">Make DO-DS</button>
-                </div>
+            <div class="portlet box blue-hoki">
+                <div class="portlet-title">
+                    <div class="caption">
+                        <i class="fa fa-list-alt fa-lg"></i><?= __('Product Indents') ?>
+                    </div>
+                    <div class="tools">
+                        <button type="submit" class="btn btn-danger">Make DO-DS</button>
+                    </div>
 
-            </div>
-            <div class="portlet-body">
-                <div class="table-scrollable">
-                    <table class="table table-bordered table-hover">
-                        <thead>
-                        <tr>
-                            <th><?= __('Sl. No.') ?></th>
-                            <th><?= __('Sender') ?></th>
-
-                            <th><?= __('Sending Date') ?></th>
-                            <th><?= __('Actions') ?></th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        <?php foreach ($doEvents as $key => $doEvent) { ?>
+                </div>
+                <div class="portlet-body">
+                    <div class="table-scrollable">
+                        <table class="table table-bordered table-hover">
+                            <thead>
                             <tr>
-                                <td><?= $this->Number->format($key + 1) ?></td>
-                                <td><?= $doEvent->sender->full_name_en ?></td>
-                                <td><?= date('d-M-Y',$doEvent->do_object->date)?></td>
-                                <td class="actions">
-                                    <?php
-                                    if($doEvent['action_status']==Configure::read('do_object_event_action_status')['awaiting_approval']) {
-                                        echo $this->Html->link(__('View'), ['action' => 'view', $doEvent->id], ['class' => 'btn btn-sm btn-info']);
-                                    }else{ ?>
+                                <th><?= __('Sl. No.') ?></th>
+                                <th><?= __('Sender') ?></th>
 
-                                                <div class="checkbox">
-                                                    <label>
-                                                        <input type="checkbox" value="<?= $doEvent['id']?>" name="events[]"> Select
-                                                    </label>
-                                                </div>
+                                <th><?= __('Sending Date') ?></th>
+                                <th><?= __('Action_status') ?></th>
 
-                                    <?php
-
-                                    }
-
-                                    ?>
-
-                                </td>
+                                <th><?= __('Actions') ?></th>
                             </tr>
+                            </thead>
+                            <tbody>
+                            <?php foreach ($doEvents as $key => $doEvent) { ?>
+                                <tr>
+                                    <td><?= $this->Number->format($key + 1) ?></td>
+                                    <td><?= $doEvent->sender->full_name_en ?></td>
+                                    <td><?= date('d-M-Y', $doEvent->do_object->date) ?></td>
+                                    <td><?= array_flip(Configure::read('do_object_event_action_status'))[$doEvent->action_status] ?></td>
 
-                        <?php } ?>
-                        </tbody>
-                    </table>
+                                    <td class="actions">
+                                        <?php
+                                        if ($doEvent['action_status'] == Configure::read('do_object_event_action_status')['awaiting_approval']) {
+                                            echo $this->Html->link(__('View'), ['action' => 'view', $doEvent->id], ['class' => 'btn btn-sm btn-info']);
+                                        }elseif($doEvent['action_status'] == Configure::read('do_object_event_action_status')['Action_Taken']){
+                                            //TODO
+                                        } else { ?>
+
+                                            <div class="checkbox">
+                                                <label>
+                                                    <input type="checkbox" value="<?= $doEvent['id'] ?>"
+                                                           name="events[]"> Select
+                                                </label>
+                                            </div>
+
+                                            <?php
+
+                                        }
+
+                                        ?>
+
+                                    </td>
+                                </tr>
+
+                            <?php } ?>
+                            </tbody>
+                        </table>
+                    </div>
+
                 </div>
-
             </div>
-        </div>
-            </form>
+        </form>
         <!-- END BORDERED TABLE PORTLET-->
     </div>
 </div>
