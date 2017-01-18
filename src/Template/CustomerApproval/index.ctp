@@ -29,6 +29,7 @@ $status = \Cake\Core\Configure::read('status_options');
                         <tr>
                             <th><?= __('Sl. No.') ?></th>
                             <th><?= __('Name') ?></th>
+                            <th><?= __('Code')?></th>
                             <th><?= __('Location')?></th>
                             <th><?= __('Proprietor') ?></th>
                             <th><?= __('Status') ?></th>
@@ -40,6 +41,7 @@ $status = \Cake\Core\Configure::read('status_options');
                             <tr>
                                 <td><?= $customer->id ?></td>
                                 <td><?= h($customer->name) ?></td>
+                                <td><?= h($customer->code) ?></td>
                                 <td><?= $customer->administrative_unit->unit_name ?></td>
                                 <td><?= h($customer->proprietor) ?></td>
                                 <td><?= ($customer->status)==0?"Not Approved":"Approved" ?></td>

@@ -106,7 +106,7 @@ class AccountHeadsController extends AppController
                 $this->Flash->error('The account head could not be saved. Please, try again.');
             }
         }
-        $parents = $this->AccountHeads->find('list', ['keyField' => 'code', 'keyValue' => 'name'],['conditions'=>['status !=' => 99]]);
+        $parents = $this->AccountHeads->find('list', ['keyField' => 'code', 'keyValue' => 'name', 'conditions'=>['status !=' => 99]]);
         $this->set(compact('accountHead','parents'));
         $this->set('_serialize', ['accountHead']);
     }
@@ -141,7 +141,7 @@ class AccountHeadsController extends AppController
                 $this->Flash->error('The account head could not be saved. Please, try again.');
             }
         }
-        $parents = $this->AccountHeads->find('list', ['keyField' => 'code', 'keyValue' => 'name'],['conditions'=>['status !=' => 99]]);
+        $parents = $this->AccountHeads->find('list', ['keyField' => 'code', 'keyValue' => 'name', 'conditions'=>['status !=' => 99]]);
         $this->set(compact('accountHead', 'parents'));
         $this->set('_serialize', ['accountHead']);
     }

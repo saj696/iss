@@ -109,7 +109,8 @@ License: You must have a valid license purchased only from softbd
                 <a href="#">
 <!--                    <img src="img/logo-light.png" alt="logo" class="logo-default"/>-->
                 </a>
-                <h3 style="color: white; font-weight: bold"><?= __('Inventory & Sales System') ?></h3>
+                <img src="<?= $this->request->webroot; ?>logo-long.png" style="height: 50px; width: 550px; margin-top: 10px;">
+<!--                <h3 style="color: white; font-weight: bold">--><?//= __('Inventory & Sales System') ?><!--</h3>-->
     <!--            <div class="menu-toggler sidebar-toggler"></div>-->
             </div>
             <!-- END LOGO -->
@@ -251,6 +252,7 @@ License: You must have a valid license purchased only from softbd
 
 
     <script src="<?= $this->request->webroot; ?>js/sys_mcake.js" type="text/javascript"></script>
+    <script src="<?= $this->request->webroot; ?>js/common.js" type="text/javascript"></script>
     <!-- END PAGE LEVEL SCRIPTS -->
     <script>
     jQuery(document).ready(function () {

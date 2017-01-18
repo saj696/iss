@@ -48,6 +48,7 @@ Website: http://www.softbdltd.com/
 <!-- END SIDEBAR TOGGLER BUTTON -->
 <!-- BEGIN LOGO -->
 <div class="logo">
+    <img src="<?= $this->request->webroot; ?>logo.png" style="height: 80px; width: 130px;">
     <h1 style="color: #f1f1e3"><b><?= __('Inventory & Sales System') ?></b></h1>
 </div>
 <!-- END LOGO -->
@@ -56,6 +57,15 @@ Website: http://www.softbdltd.com/
     <?= $this->Flash->render() ?>
     <?= $this->Flash->render('auth') ?>
     <?php echo $this->fetch('content'); ?>
+</div>
+<div class="col-lg-12">
+    <div class="col-lg-4 col-lg-offset-4 text-center">
+        <h2 style="color: yellowgreen"><b>EAST WEST CHEMICALS LTD.</b></h2>
+        <p style="color: #ffffff">Corporate Office: 52/1-New Eskaton Road, Hasan Holdings (9th Floor), Dhaka-1000, Bangladesh.</p>
+        <p style="color: #ffffff">Phone: 02-9360658, 8359881, Fax: 02-9351395</p>
+        <p style="color: #ffffff">E-mail: haque_robiul@yahoo.com</p>
+        <p style="color: #ffffff">Hotline: +8801841624515</p>
+    </div>
 </div>
 <div class="copyright hide">
     2016 © Softbd Ltd

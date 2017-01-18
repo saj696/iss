@@ -551,6 +551,8 @@ class PosController extends AppController
             }
         }
 
+        $wonOffers = array_values($wonOffers);
+
         if(isset($wonOffers[0])){
             $wonOffers[0]['bonus_quantity'] = isset($bonusQuantityInfo->bonus_quantity)?$bonusQuantityInfo->bonus_quantity:0;
             $arr = json_encode($wonOffers[0]);

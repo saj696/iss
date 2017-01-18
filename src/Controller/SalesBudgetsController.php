@@ -2,9 +2,12 @@
 namespace App\Controller;
 
 use App\Controller\AppController;
+use App\View\Helper\SystemHelper;
+use Cake\Core\App;
 use Cake\Core\Configure;
 use Cake\Datasource\ConnectionManager;
 use Cake\ORM\TableRegistry;
+use Cake\View\View;
 
 /**
  * SalesBudgets Controller
@@ -67,7 +70,9 @@ class SalesBudgetsController extends AppController
         $parents = $this->AdministrativeUnits->find('list', ['conditions'=>['level_no'=>$salesBudgetConfigurations['level_no']-1]])->toArray();
 
         $this->loadModel('Items');
-        $items = $this->Items->find('list', ['conditions'=>['status !='=>99]]);
+        App::import('Helper', 'SystemHelper');
+        $SystemHelper = new SystemHelper(new View());
+        $items = $SystemHelper->get_item_unit_array();
         if($salesBudgetConfigurations['product_scope']==2){
             $items = [];
         }

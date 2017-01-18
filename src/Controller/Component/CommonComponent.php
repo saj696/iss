@@ -8,6 +8,7 @@ use Cake\Utility\Security;
 use Hashids\Hashids;
 use Cake\I18n\Time;
 use Cake\Datasource\ConnectionManager;
+use mPDF;
 use Symfony\Component\Config\Definition\Exception\Exception;
 
 /**
@@ -255,6 +256,18 @@ class CommonComponent extends Component
             }
         }
         return $item;
+    }
+
+    public function getPdf($html){
+        \Composer\Autoload\includeFile(ROOT . '\vendor' . DS  . 'mpdf' . DS .'mpdf' . DS . 'mpdf.php');
+        $mpdf=new mPDF();
+        $mpdf->useAdobeCJK=true;
+        //$mpdf->autoLangToFont(AUTOFONT_ALL);
+        $mpdf->WriteHTML(file_get_contents(WWW_ROOT.'css/mpdf.css'),1);
+        $mpdf->WriteHTML(file_get_contents(WWW_ROOT.'css/report.css'),1);
+        $mpdf->WriteHTML(file_get_contents(WWW_ROOT.'assets/global/plugins/bootstrap/css/bootstrap.min.css'),1);
+        $mpdf->WriteHTML($html);
+        $mpdf->Output();
     }
 
 }
