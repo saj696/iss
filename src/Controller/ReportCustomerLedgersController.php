@@ -55,77 +55,101 @@ class ReportCustomerLedgersController extends AppController
 
     public function loadReport($param)
     {
-        $this->loadModel('SalesBudgets');
-        $this->loadModel('AdministrativeLevels');
-        $this->loadModel('AdministrativeUnits');
-        $this->loadModel('SalesBudgetConfigurations');
-
         if ($this->request->is(['post', 'get'])) {
             $data = $this->request->data;
             $start_date = strtotime($data['start_date']);
             $end_date = strtotime($data['end_date']);
             $explore_level = $data['explore_level'];
             $unit_id = $data['unit_id'];
+            $customer_id = $data['customer_id'];
 
-            if ($explore_level == Configure::read('max_level_no') + 1) {
+            // upto date due calculate
+            $closestUptoDateDue = TableRegistry::get('personal_accounts')->find()->hydrate(false);
+            $closestUptoDateDue->where(['account_code'=>Configure::read('account_receivable_code')]);
+            $closestUptoDateDue->where(['upto_date <'=>$start_date]);
+            $closestUptoDateDue->order(['upto_date'=> 'DESC']);
+            $closestUptoDateDue->first();
 
-            } else {
-                $unitAdminUnitInfo = $this->AdministrativeUnits->get($unit_id);
-                $childs = $this->AdministrativeUnits->find('all', ['conditions' => ['parent' => $unitAdminUnitInfo['id']]]);
+            if($closestUptoDateDue->toArray()){
+                $uptoDateDue = $closestUptoDateDue['due'];
+                $uptoDate = $closestUptoDateDue['upto_date'];
+            }else{
+                $uptoDateDue = 0;
+                $uptoDate = 0;
+            }
 
-                if ($childs->toArray() && sizeof($childs->toArray()) > 0) {
-                    $mainArr = [];
-                    foreach ($childs as $child) {
-                        $unitGlobalId = $child->global_id;
-                        $limitStart = pow(2, (Configure::read('max_level_no') - $child->level_no - 1) * 5);
-                        $limitEnd = pow(2, (Configure::read('max_level_no') - $child->level_no) * 5);
+            if($uptoDate>0){
+                $betweenDateInvoices = TableRegistry::get('invoices')->find()->hydrate(false);
+                $betweenDateInvoices->where(['invoice_date >='=>$uptoDate]);
+                $betweenDateInvoices->where(['invoice_date <='=>$start_date]);
+                $betweenDateInvoices->where(['customer_id'=>$customer_id]);
+                $betweenDateInvoices->select(['SUM(net_total)']);
+                $betweenDateInvoices->first();
+                if($betweenDateInvoices->toArray()){
+                    $betweenDateInvoicesNetTotal = $betweenDateInvoices->toArray()['net_total'];
+                }else{
+                    $betweenDateInvoicesNetTotal = 0;
+                }
+                $betweenDatePayments = TableRegistry::get('invoice_payments')->find()->hydrate(false);
+                $betweenDatePayments->where(['payment_collection_date >='=>$uptoDate]);
+                $betweenDatePayments->where(['payment_collection_date <='=>$start_date]);
+                $betweenDatePayments->where(['customer_id'=>$customer_id]);
+                $betweenDatePayments->select(['SUM(invoice_wise_payment_amount)']);
+                $betweenDatePayments->first();
+                if($betweenDatePayments->toArray()){
+                    $betweenDatePaymentsNetTotal = $betweenDatePayments->toArray()['invoice_wise_payment_amount'];
+                }else{
+                    $betweenDatePaymentsNetTotal = 0;
+                }
+            }else{
+                $betweenDateInvoicesNetTotal = 0;
+                $betweenDatePaymentsNetTotal = 0;
+            }
 
-                        $budgets = TableRegistry::get('sales_budgets')->find()->hydrate(false);
-                        $budgets->where('administrative_unit_global_id -' . $unitGlobalId . '>= ' . $limitStart);
-                        $budgets->where('administrative_unit_global_id -' . $unitGlobalId . '<= ' . $limitEnd);
-                        if ($start_date) {
-                            $budgets->where(['budget_period_start >=' => $start_date]);
-                        }
-                        if ($end_date) {
-                            $budgets->where(['budget_period_end <=' => $end_date]);
-                        }
-                        $budgets->where(['status' => 1]);
-                        $budgets->select(['total' => 'SUM(sales_amount)', 'sales_measure_unit']);
-                        $arr['total'] = $budgets->first()['total'] ? $budgets->first()['total'] : 0;
-                        $arr['unit_name'] = $child->unit_name;
-                        $arr['measure_unit'] = $budgets->first()['sales_measure_unit'] ? $budgets->first()['sales_measure_unit'] : '';
-                        $mainArr[] = $arr;
-                    }
+            $finalDue = $uptoDateDue + $betweenDateInvoicesNetTotal - $betweenDatePaymentsNetTotal;
 
-                } else {
-                    $unitGlobalId = $unitAdminUnitInfo['global_id'];
-                    $budgets = TableRegistry::get('sales_budgets')->find()->hydrate(false);
-                    $budgets->where(['administrative_unit_global_id' => $unitGlobalId]);
-                    if ($start_date) {
-                        $budgets->where(['budget_period_start >=' => $start_date]);
-                    }
-                    if ($end_date) {
-                        $budgets->where(['budget_period_end <=' => $end_date]);
-                    }
-                    $budgets->where(['status' => 1]);
-                    $budgets->select(['total' => 'SUM(sales_amount)', 'sales_measure_unit']);
-                    $arr['total'] = $budgets->first()['total'] ? $budgets->first()['total'] : 0;
-                    $arr['unit_name'] = $unitAdminUnitInfo['unit_name'];
-                    $arr['measure_unit'] = $budgets->first()['sales_measure_unit'] ? $budgets->first()['sales_measure_unit'] : '';
-                    $mainArr[] = $arr;
+            // invoices between start and end dates
+            $finalArray = [];
+
+            $invoices = TableRegistry::get('invoices')->find()->hydrate(false);
+            $invoices->where(['invoice_date >='=>$start_date]);
+            $invoices->where(['invoice_date <='=>$end_date]);
+            $invoices->where(['customer_id'=>$customer_id]);
+            if($invoices->toArray()){
+                $invoiceArray = $invoices->toArray();
+                foreach($invoiceArray as $isl=>$invAr){
+                    $finalArray[$invAr['invoice_date']]['inv'][$isl]['id'] = $invAr['id'];
+                    $finalArray[$invAr['invoice_date']]['inv'][$isl]['net_total'] = $invAr['net_total'];
+                    $finalArray[$invAr['invoice_date']]['inv'][$isl]['type'] = $invAr['invoice_type'];
+                }
+            }
+
+            // payments between start and end dates
+            $payments = TableRegistry::get('invoice_payments')->find()->hydrate(false);
+            $payments->contain(['Invoices', 'Payments']);
+            $payments->where(['invoice_payments.payment_collection_date >='=>$start_date]);
+            $payments->where(['invoice_payments.payment_collection_date <='=>$end_date]);
+            $payments->where(['invoice_payments.customer_id'=>$customer_id]);
+            if($payments->toArray()){
+                $paymentArray = $payments->toArray();
+                foreach($paymentArray as $psl=>$payAr){
+                    $finalArray[$payAr['payment_collection_date']]['pay'][$psl]['id'] = $payAr['id'];
+                    $finalArray[$payAr['payment_collection_date']]['pay'][$psl]['net_total'] = $payAr['invoice_wise_payment_amount'];
+                    $finalArray[$payAr['payment_collection_date']]['pay'][$psl]['type'] = $payAr['invoice']['invoice_type'];
+                    $finalArray[$payAr['payment_collection_date']]['pay'][$psl]['sl_no'] = $payAr['payment']['collection_serial_no'];
                 }
             }
 
             if ($param == 'report') {
                 $this->viewBuilder()->layout('report');
-                $this->set(compact('mainArr', 'data'));
-                $this->set('_serialize', ['mainArr', 'explore_level', 'unit_id']);
+                $this->set(compact('finalArray', 'finalDue', 'data'));
+                $this->set('_serialize', ['finalArray']);
             } elseif ($param == 'pdf') {
                 $view = new View();
                 $btnHide = 1;
                 $view->layout=false;
-                $view->set(compact('mainArr', 'data', 'btnHide'));
-                $view->viewPath = 'ExploreBudgets';
+                $view->set(compact('finalArray', 'finalDue', 'data', 'btnHide'));
+                $view->viewPath = 'ReportCustomerLedgers';
                 $html = $view->render('load_report');
                 $this->loadComponent('Common');
                 $this->Common->getPdf($html);
@@ -135,8 +159,8 @@ class ReportCustomerLedgersController extends AppController
 
     public function ajax($param)
     {
+        $data = $this->request->data;
         if ($param == 'parent_units') {
-            $data = $this->request->data;
             $explore_level = $data['explore_level'];
             $units = TableRegistry::get('administrative_units')->find('all', ['conditions' => ['level_no' => $explore_level - 1], 'fields' => ['id', 'unit_name']])->hydrate(false)->toArray();
 
@@ -144,11 +168,7 @@ class ReportCustomerLedgersController extends AppController
             foreach ($units as $unit):
                 $dropArray[$unit['id']] = $unit['unit_name'];
             endforeach;
-
-            $this->viewBuilder()->layout('ajax');
-            $this->set(compact('dropArray', 'param'));
         } elseif ($param == 'units') {
-            $data = $this->request->data;
             $explore_level = $data['explore_level'];
             $paren_unit = $data['parent_unit'];
 
@@ -165,9 +185,17 @@ class ReportCustomerLedgersController extends AppController
                     $dropArray[$unit['id']] = $unit['unit_name'];
                 endforeach;
             }
+        } elseif ($param == 'customers'){
+            $unit = $data['unit'];
+            $customers = TableRegistry::get('customers')->find('all', ['conditions' => ['administrative_unit_id' => $unit], 'fields' => ['id', 'name']])->hydrate(false)->toArray();
 
-            $this->viewBuilder()->layout('ajax');
-            $this->set(compact('dropArray', 'param'));
+            $dropArray = [];
+            foreach ($customers as $customer):
+                $dropArray[$customer['id']] = $customer['name'];
+            endforeach;
         }
+
+        $this->viewBuilder()->layout('ajax');
+        $this->set(compact('dropArray', 'param'));
     }
 }

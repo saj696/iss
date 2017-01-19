@@ -44,6 +44,10 @@ class InvoicePaymentsTable extends Table
             'foreignKey' => 'payment_id',
             'joinType' => 'INNER'
         ]);
+        $this->belongsTo('Invoices', [
+            'foreignKey' => 'invoice_id',
+            'joinType' => 'INNER'
+        ]);
 
     }
 

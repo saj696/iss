@@ -15,6 +15,6 @@
 <div class="col-md-12 text-center">
     <p style="margin: 0;">Corporate Office: 52/1-New Eskaton Road, Hasan Holdings (9th Floor), Dhaka-1000, Bangladesh.</p>
     <p style="margin: 0;">Phone: 02-9360658, 8359881, Fax: 02-9351395</p>
-    <p style="margin: 0;">E-mail: haque_robiul@yahoo.com</p>
+<!--    <p style="margin: 0;">E-mail: haque_robiul@yahoo.com</p>-->
     <p style="margin: 0;">Hotline: +8801841624515</p>
 </div>
