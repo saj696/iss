@@ -22,9 +22,6 @@ $status = Configure::read('status_options');
                 <div class="caption">
                     <i class="fa fa-plus-square-o fa-lg"></i><?= __('Explore Budget') ?>
                 </div>
-                <div class="tools">
-                    <?= $this->Html->link(__('Back'), ['action' => 'index'], ['class' => 'btn btn-sm grey-gallery']); ?>
-                </div>
             </div>
 
             <div class="portlet-body">
@@ -56,7 +53,7 @@ $status = Configure::read('status_options');
         });
 
         $(document).on("focus",".datepicker", function() {
-            $(this).removeClass('hasDatepicker').datepicker({
+            $(this).datepicker({
                 dateFormat: 'dd-mm-yy'
             });
         });

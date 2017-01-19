@@ -62,27 +62,3 @@ $webroot =  $this->request->webroot;
         </div>
     </div>
 </div>
-
-<div class="row">
-    <div class="load_pdf col-lg-12">
-
-    </div>
-</div>
-
-<script>
-//    $(document).ready(function(){
-//        $(document).on('click', '.pdf', function(){
-//            var html = $('#PrintArea').html();
-//
-//            $.ajax({
-//                type: 'POST',
-//                url: '<?//= $this->Url->build("/ExploreBudgets/pdf")?>//',
-//                data: {html:html},
-//                success: function (data, status) {
-////                    window.open("data:application/pdf," + data);
-//                }
-//            });
-//
-//        })
-//    });
-</script>
