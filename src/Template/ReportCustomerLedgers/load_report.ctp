@@ -54,6 +54,8 @@ $tTypeCon = Configure::read('transaction_type_display');
                         if(sizeof($finalArray)>0):
                             $i=0;
                             $balance = $finalDue;
+                            $totalInvoiceAmount = 0;
+                            $totalPaymentAmount = 0;
                             foreach($finalArray as $date=>$detail):
                                 foreach($detail as $invOrPay=>$info):
                                     foreach($info as $field):?>
@@ -62,43 +64,53 @@ $tTypeCon = Configure::read('transaction_type_display');
                                         <td><?= date('d-m-Y', $date)?></td>
                                         <td>
                                             <?php
-                                                if($invOrPay=='inv'):
-                                                    echo $field['id'];
-                                                else:
-                                                    echo $field['id'].' - '.$field['sl_no'];
-                                                endif;
+                                            if($invOrPay=='inv'):
+                                                echo $field['id'];
+                                            else:
+                                                echo $field['id'].' - '.$field['sl_no'];
+                                            endif;
                                             ?>
                                         </td>
-                                        <td><?= $tTypeCon[$invOrPay][$field['type']]?></td>
-                                        <td>
+                                        <td><?= $tTypeCon[$invOrPay][$field['type']]?$tTypeCon[$invOrPay][$field['type']]:''?></td>
+                                        <td class="text-center">
                                             <?php
                                             if($invOrPay=='inv'){
                                                 echo $field['net_total'];
                                                 $balance += $field['net_total'];
+                                                $totalInvoiceAmount += $field['net_total'];
                                             }else{
                                                 echo '';
                                             }
                                             ?>
                                         </td>
-                                        <td>
+                                        <td class="text-center">
                                             <?php
                                             if($invOrPay=='pay'){
                                                 echo $field['net_total'];
                                                 $balance -= $field['net_total'];
+                                                $totalPaymentAmount += $field['net_total'];
                                             }else{
                                                 echo '';
                                             }
                                             ?>
                                         </td>
-                                        <td><?= $balance?></td>
+                                        <td class="text-center"><?= $balance?></td>
                                     </tr>
                                 <?php
                                     $i++;
-                                endforeach;
+                                    endforeach;
                                 endforeach;
                                 ?>
                             <?php
                             endforeach;
+                            ?>
+                            <tr>
+                                <td colspan="4">Total</td>
+                                <td colspan="1" class="text-center"><?= $totalInvoiceAmount?></td>
+                                <td colspan="1" class="text-center"><?= $totalPaymentAmount?></td>
+                                <td colspan="1" class="text-center"><?= $balance?></td>
+                            </tr>
+                            <?php
                         else:?>
                             <tr><td class="text-center alert-danger" colspan="12"><?= __('No Data Found')?></td></tr>
                         <?php
