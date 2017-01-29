@@ -71,6 +71,7 @@ use Cake\Core\Configure;
                                 <th>Special Offer Bonus</th>
                                 <th>Cash Discount</th>
                                 <th>Item Net Total</th>
+                                <th style="width: 2%;">Cancel</th>
                             </tr>
                             <?php
                             $total_amount = 0;
@@ -80,12 +81,16 @@ use Cake\Core\Configure;
                                     ?>
                                     <tr class="itemTr">
                                         <td><?= $itemArray[$item['item_unit_id']]?></td>
-                                        <td><input type="text" name="detail[<?= $item['item_unit_id']?>][item_quantity]" class="form-control item_quantity" value="<?= $item['product_quantity']?>" /><input type="hidden" class="itemId" name="itemId[]" value="<?=$item['item_unit_id']?>?>"></td>
+                                        <td><input type="text" name="detail[<?= $item['item_unit_id']?>][item_quantity]" class="form-control item_quantity" value="<?= $item['product_quantity']?>" /><input type="hidden" class="itemUnitId" name="itemUnitId[]" value="<?=$item['item_unit_id']?>"></td>
                                         <td><input type="text" name="detail[<?= $item['item_unit_id']?>][unit_price]" class="form-control unit_price" readonly value="<?= $itemUnitPriceArray[$item['item_unit_id']]?>" /></td>
                                         <td><input type="text" name="detail[<?= $item['item_unit_id']?>][item_bonus]" class="form-control item_bonus" readonly value="<?= $item['bonus_quantity']?>" /></td>
                                         <td><input type="text" name="detail[<?= $item['item_unit_id']?>][special_offer_item_bonus]" class="form-control special_offer_item_bonus" readonly value="<?= $item['special_offer_bonus_quantity']?>" /></td>
-                                        <td><input type="text" name="detail[<?= $item['item_unit_id']?>][item_cash_discount]" class="form-control item_cash_discount" readonly value="<?= $item['instant_discount']?>" /></td>
-                                        <td><input type="text" name="detail[<?= $item['item_unit_id']?>][item_net_total]" class="form-control item_net_total" readonly value="<?= $item['product_quantity']*$itemUnitPriceArray[$item['item_unit_id']]-$item['instant_discount']?>" /></td>
+                                        <td><input type="text" name="detail[<?= $item['item_unit_id']?>][item_cash_discount]" class="form-control item_cash_discount" value="<?= $item['instant_discount']?>" /></td>
+                                        <td>
+                                            <input type="text" name="detail[<?= $item['item_unit_id']?>][item_net_total]" class="form-control item_net_total" readonly value="<?= $item['product_quantity']*$itemUnitPriceArray[$item['item_unit_id']]-$item['instant_discount']?>" />
+                                            <input type="hidden" name="detail[<?= $item['item_unit_id']?>][offer_id]" class="form-control offer_id" readonly value="<?=$item['offer_id']?>" />
+                                        </td>
+                                        <td width="50px;"><span class="btn btn-sm btn-circle btn-danger remove pull-right">X</span></td>
                                     </tr>
                                 <?php
                                 endforeach;
@@ -103,7 +108,12 @@ use Cake\Core\Configure;
                         </table>
                     </div>
                 </div>
+
+                <div class="row popContainer" style="display: none; width: 500px; max-height: 600px; overflow: auto;">
+                </div>
+
                 <div class="row text-center">
+                    <span class="btn default red-stripe check_offer" style="margin-top:20px; margin-bottom:20px">Check Offer</span>
                     <?= $this->Form->button(__('Approve'), ['class' => 'btn default yellow-stripe', 'style' => 'margin-top:20px; margin-bottom:20px']) ?>
                 </div>
                 <?= $this->Form->end() ?>
@@ -122,6 +132,59 @@ use Cake\Core\Configure;
             $(this).removeClass('hasDatepicker').datepicker({
                 dateFormat: 'dd-mm-yy'
             });
+        });
+
+        $(document).on('click', '.check_offer', function(){
+            var myArr = {};
+            var i = 0;
+            $( ".itemUnitId" ).each(function(index) {
+                myArr[i] = {
+                    "item_unit_id":$(this).val(),
+                    "item_quantity":$(this).closest('.itemTr').find('.item_quantity').val()
+                }
+                i++;
+            });
+
+            // check offer ajax
+            var level_no = $('.level_no').val();
+            var customer_unit = $('.customer_unit').val();
+            var invoice_type = $('.invoice_type').val();
+            var customer_id = $('.customer_id').val();
+
+            $.ajax({
+                type: 'POST',
+                url: '<?= $this->Url->build("/ApprovePos/checkOffer")?>',
+                data: {
+                    item_array: myArr,
+                    invoice_type:invoice_type,
+                    customer_id:customer_id,
+                    level_no: level_no,
+                    customer_unit: customer_unit,
+                },
+                success: function (data, status) {
+                    //console.log(data);
+                    $(".popContainer").hide();
+                    $('.popContainer').html('');
+                    $('.popContainer').html(data);
+                    $('.popContainer').show();
+                }
+            });
+        });
+
+        // close offer modal
+        $(document).on("click",".crossSpan",function() {
+            $(".offer_items").each(function(index){
+                var offer_id = $(this).attr('data-offer');
+                var offer_item_unit_id = $(this).val();
+
+                $( ".itemUnitId" ).each(function(index) {
+                    if($(this).val()==offer_item_unit_id){
+                        $(this).closest('.itemTr').find('.offer_id').val(offer_id);
+                    }
+                });
+            });
+
+            $(".popContainer").hide();
         });
 
         $(document).on('change', '.level_no', function () {
@@ -195,9 +258,10 @@ use Cake\Core\Configure;
             var obj = $(this);
             var item_unit_id = obj.val();
             var invoice_type = $('.invoice_type').val();
+            var customer_id = $('.customer_id').val();
 
             var myArr = [];
-            $( ".itemId" ).each(function( index ) {
+            $( ".itemUnitId" ).each(function( index ) {
                 myArr.push($(this).val());
             });
 
@@ -212,13 +276,13 @@ use Cake\Core\Configure;
                     $.ajax({
                         type: 'POST',
                         url: '<?= $this->Url->build("/ApprovePos/loadItem")?>',
-                        data: {item_unit_id: item_unit_id, invoice_type:invoice_type},
+                        data: {item_unit_id: item_unit_id, invoice_type:invoice_type, customer_id:customer_id},
                         success: function (data, status) {
                             $('.appendTr').append(data);
                         }
                     });
                 } else {
-                    toastr.info('Select Item & Invoice Type and try again!');
+                    toastr.warning('Select Item, Invoice Type then try again!');
                 }
             }
         });
@@ -232,20 +296,152 @@ use Cake\Core\Configure;
             }
         });
 
-        $(document).on('keyup', '.item_quantity', function(){
+        $(document).on('blur', '.item_quantity', function(){
+            var obj = $(this);
+            // bonus check
+            var level_no = $('.level_no').val();
+            var customer_unit = $('.customer_unit').val();
+            var invoice_type = $('.invoice_type').val();
+            var customer_id = $('.customer_id').val();
+            var itemUnitId = $(this).closest('.itemTr').find('.itemUnitId').val();
             var item_quantity = parseFloat($(this).val());
+
+            if(item_quantity>0){
+                $.ajax({
+                    type: 'POST',
+                    url: '<?= $this->Url->build("/ApprovePos/loadOffer")?>',
+                    data: {
+                        item_unit_id: itemUnitId,
+                        invoice_type:invoice_type,
+                        customer_id:customer_id,
+                        item_quantity: item_quantity,
+                        level_no: level_no,
+                        customer_unit: customer_unit
+                    },
+                    success: function (data, status) {
+                        if(data.length>0){
+                            var res = JSON.parse(data);
+                            if(res.value_or_quantity>0){
+                                if(res.offer_type=='product bonus'){
+                                    obj.closest('.itemTr').find('.special_offer_item_bonus').val(res.value_or_quantity);
+                                    obj.closest('.itemTr').find('.item_cash_discount').val(0);
+                                }else{
+                                    obj.closest('.itemTr').find('.item_cash_discount').val(res.value_or_quantity);
+                                    obj.closest('.itemTr').find('.special_offer_item_bonus').val(0);
+                                }
+
+                                obj.closest('.itemTr').find('.item_bonus').val(res.bonus_quantity);
+                                obj.closest('.itemTr').find('.offer_id').val(res.offer_id);
+
+                                // redo
+                                // other calculation
+                                var unit_price = parseFloat(obj.closest('.itemTr').find('.unit_price').val());
+                                var item_cash_discount = parseFloat(obj.closest('.itemTr').find('.item_cash_discount').val());
+                                var item_net_total = item_quantity*unit_price-item_cash_discount;
+
+                                if(item_net_total){
+                                    obj.closest('.itemTr').find('.item_net_total').val(item_net_total);
+                                }else{
+                                    obj.closest('.itemTr').find('.item_net_total').val(0);
+                                }
+
+                                // calculate total amount
+                                var total_amount = 0;
+                                $( ".item_net_total" ).each(function( index ) {
+                                    if(parseFloat($(this).val())>0){
+                                        total_amount += parseFloat($(this).val());
+                                    }
+                                });
+                                if(total_amount){
+                                    $('.total_amount').html(total_amount);
+                                    $('.total_amount_hidden').val(total_amount);
+                                }else{
+                                    $('.total_amount').html(0);
+                                    $('.total_amount_hidden').val(0);
+                                }
+                            }else{
+                                obj.closest('.itemTr').find('.item_cash_discount').val(0);
+                                obj.closest('.itemTr').find('.item_bonus').val(0);
+                            }
+                        }else{
+                            obj.closest('.itemTr').find('.item_cash_discount').val(0);
+                            obj.closest('.itemTr').find('.item_bonus').val(0);
+                        }
+                    }
+                });
+            }
+
+            // other calculation
             var unit_price = parseFloat($(this).closest('.itemTr').find('.unit_price').val());
             var item_cash_discount = parseFloat($(this).closest('.itemTr').find('.item_cash_discount').val());
             var item_net_total = item_quantity*unit_price-item_cash_discount;
 
-            $(this).closest('.itemTr').find('.item_net_total').val(item_net_total);
+            if(item_net_total){
+                $(this).closest('.itemTr').find('.item_net_total').val(item_net_total);
+            }else{
+                $(this).closest('.itemTr').find('.item_net_total').val(0);
+            }
 
+            // calculate total amount
             var total_amount = 0;
             $( ".item_net_total" ).each(function( index ) {
-                total_amount = total_amount + parseFloat($(this).val());
+                if(parseFloat($(this).val())>0){
+                    total_amount += parseFloat($(this).val());
+                }
             });
-            $('.total_amount').html(total_amount);
-            $('.total_amount_hidden').val(total_amount);
+            if(total_amount){
+                $('.total_amount').html(total_amount);
+                $('.total_amount_hidden').val(total_amount);
+            }else{
+                $('.total_amount').html(0);
+                $('.total_amount_hidden').val(0);
+            }
+
+        });
+
+        $(document).on('change', '.invoice_type', function(){
+            var obj = $(this);
+            var invoice_type = obj.val();
+            var cash_invoice_days = $('.cash_invoice_days').val();
+            var credit_invoice_days = $('.credit_invoice_days').val();
+            var customer_id = $('.customer_id').val();
+
+            if(customer_id>0 && invoice_type>0){
+                $.ajax({
+                    type: 'POST',
+                    url: '<?= $this->Url->build("/ApprovePos/checkInvoiceTypeEligibility")?>',
+                    data: {invoice_type:invoice_type, cash_invoice_days:cash_invoice_days, credit_invoice_days:credit_invoice_days, customer_id:customer_id},
+                    success: function (data, status) {
+                        if(data==0){
+                            obj.val('');
+                            toastr.error('Customer is not eligible for PO!');
+                        }
+                    }
+                });
+            }
+        });
+
+        $(document).on('click', '.remove', function () {
+            var obj = $(this);
+            var count = $('.itemTr').length;
+            if (count > 1) {
+                obj.closest('.itemTr').remove();
+
+                // total amount recalculate
+                var total_amount = 0;
+                $( ".item_net_total" ).each(function( index ) {
+                    if(parseFloat($(this).val())>0){
+                        total_amount += parseFloat($(this).val());
+                    }
+                });
+                if(total_amount){
+                    $('.total_amount').html(total_amount);
+                    $('.total_amount_hidden').val(total_amount);
+                }else{
+                    $('.total_amount').html(0);
+                    $('.total_amount_hidden').val(0);
+                }
+            }
         });
     });
 

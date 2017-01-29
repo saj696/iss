@@ -677,10 +677,9 @@ class FunctionHelper extends Helper
         return $location_info['created_date'];
     }
 
-    public function max_due_invoice_age($level, $unit=null){
-        return 'work to do';
-//        $invoice = TableRegistry::get('invoices')->find('all', ['conditions'=>['id'=>$invoice]])->first();
-//        return $invoice['invoice_date'];
+    public function max_due_invoice_age($invoice){
+        // work to do;
+        // 24 january 2017
     }
 
     public function payment_date($contextArray = []){
@@ -768,6 +767,21 @@ class FunctionHelper extends Helper
                 }
             }
         }
+    }
+
+    public function invoice_payment_age($invoiceArray){
+        // work to do
+        // january 24, 2017
+    }
+
+    public function item_unit_quantity_in_cash_invoices_over_a_period($itemName, $unitName, $invoiceArray){
+        // work to do
+        // january 26, 2017
+    }
+
+    public function item_unit_quantity_in_credit_invoices_over_a_period($itemName, $unitName, $invoiceArray){
+        // work to do
+        // january 26, 2017
     }
 
     public function is_mango_customer($contextArray = []){

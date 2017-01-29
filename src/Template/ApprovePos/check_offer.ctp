@@ -18,7 +18,7 @@
             ?>
             <tr>
                 <td colspan="2" class="text-center">
-                    <?= $itemArray[$item]?>
+                    <?= $itemArray[$item] ?>
                     <input type="hidden" class="offer_items" data-offer="<?=$offer_id?>" name="offer_items[]" value="<?=$item?>">
                 </td>
             </tr>

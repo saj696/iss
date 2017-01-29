@@ -15,13 +15,13 @@ use Cake\View\View;
  *
  * @property \App\Model\Table\PosTable $Pos
  */
-class ApprovePosController extends AppController
+class InvoicesController extends AppController
 {
 
     public $paginate = [
         'limit' => 15,
         'order' => [
-            'Pos.id' => 'desc'
+            'Invoices.id' => 'desc'
         ]
     ];
 
@@ -33,15 +33,12 @@ class ApprovePosController extends AppController
     public function index()
     {
         $user = $this->Auth->user();
-        $this->loadModel('Pos');
-        $this->loadModel('PoEvents');
-        $events = $this->PoEvents->find('all', [
-            'conditions' => ['Pos.status !=' => 99, 'recipient_id'=>$user['id'], 'event_type'=>array_flip(Configure::read('po_event_types'))['po']],
-            'contain' => ['Pos'=>['PoProducts', 'Customers']]
+        $invoices = $this->Invoices->find('all', [
+            'conditions' => ['Invoices.status !=' => 99, 'Invoices.created_by'=>$user['id']],
+            'contain' => ['Customers']
         ]);
-
-        $this->set('events', $this->paginate($events));
-        $this->set('_serialize', ['events']);
+        $this->set('invoices', $this->paginate($invoices));
+        $this->set('_serialize', ['invoices']);
     }
 
     /**
@@ -54,22 +51,19 @@ class ApprovePosController extends AppController
     public function view($id = null)
     {
         $user = $this->Auth->user();
-        $this->loadModel('Pos');
-        $po = $this->Pos->get($id, [
+        $invoice = $this->Invoices->get($id, [
             'contain' => ['Customers']
         ]);
-        $this->set('po', $po);
-        $this->set('_serialize', ['po']);
+        $this->set('invoice', $invoice);
+        $this->set('_serialize', ['invoice']);
     }
 
     /**
-     * Edit method
+     * Add method
      *
-     * @param string|null $id Po id.
-     * @return void Redirects on successful edit, renders view otherwise.
-     * @throws \Cake\Network\Exception\NotFoundException When record not found.
+     * @return void Redirects on successful add, renders view otherwise.
      */
-    public function edit($id = null)
+    public function add()
     {
         $user = $this->Auth->user();
         $time = time();
@@ -88,19 +82,15 @@ class ApprovePosController extends AppController
         $this->loadModel('InvoiceCycleConfigurations');
         $this->loadModel('Prices');
         $this->loadModel('ItemUnits');
+        $invoice = $this->Invoices->newEntity();
 
-        $event = $this->PoEvents->get($id, [
-            'contain' => ['Pos'=>['PoProducts', 'Customers']]
-        ]);
-
-        if ($this->request->is(['patch', 'post', 'put'])) {
+        if ($this->request->is('post')) {
             try {
                 $saveStatus = 0;
                 $conn = ConnectionManager::get('default');
-                $conn->transactional(function () use ($id, $event, $user, $time, &$saveStatus)
+                $conn->transactional(function () use ($invoice, $user, $time, &$saveStatus)
                 {
                     $invoiceCycleInfo = $this->InvoiceCycleConfigurations->find('all', ['conditions'=>['status !='=>99]])->first();
-                    $invoice = $this->Invoices->newEntity();
                     $data = $this->request->data;
                     $invoiceData['customer_level_no'] = $data['customer_level_no'];
                     $customerUnitInfo = $this->AdministrativeUnits->get($data['customer_unit']);
@@ -112,7 +102,6 @@ class ApprovePosController extends AppController
                     else:
                         $invoiceData['customer_type'] = array_flip(Configure::read('po_customer_type'))['general'];
                     endif;
-                    $invoiceData['po_id'] = $data['po_id'];
                     $invoiceData['delivery_date'] = strtotime($data['delivery_date']);
                     $invoiceData['invoice_type'] = $data['invoice_type'];
                     $invoiceData['net_total'] = $data['total_amount_hidden'];
@@ -135,6 +124,7 @@ class ApprovePosController extends AppController
                     $invoiceData['created_date'] = $time;
                     $invoice = $this->Invoices->patchEntity($invoice, $invoiceData);
                     $result = $this->Invoices->save($invoice);
+
                     // Invoiced Products table insert
                     foreach($data['detail'] as $item_unit_id=>$itemDetail):
                         $invoicedProducts = $this->InvoicedProducts->newEntity();
@@ -166,15 +156,6 @@ class ApprovePosController extends AppController
                         $invoicedProducts = $this->InvoicedProducts->patchEntity($invoicedProducts, $invoicedProductsData);
                         $this->InvoicedProducts->save($invoicedProducts);
                     endforeach;
-
-                    // PO status update
-                    $pos = TableRegistry::get('pos');
-                    $query = $pos->query();
-                    $query->update()->set(['po_status' => array_flip(Configure::read('po_status'))['approved']])->where(['id' => $data['po_id']])->execute();
-                    // PO Event status update
-                    $poEvent = TableRegistry::get('po_events');
-                    $query = $poEvent->query();
-                    $query->update()->set(['is_action_taken' => 1])->where(['id' => $id])->execute();
 
                     // Event creation
                     if($invoiceCycleInfo['invoice_approved_at']==array_flip(Configure::read('invoice_approved_at'))['Not Needed']){
@@ -234,45 +215,65 @@ class ApprovePosController extends AppController
                     }
                 });
 
-                $this->Flash->success('PO approval done successfully. Thank you!');
+                $this->Flash->success('Invoice created successfully. Thank you!');
                 return $this->redirect(['action' => 'index']);
             } catch (\Exception $e) {
                 echo '<pre>';
                 print_r($e);
                 echo '</pre>';
                 exit;
-                $this->Flash->error('PO approval not possible. Please try again!');
+                $this->Flash->error('Invoice creation not possible. Please try again!');
                 return $this->redirect(['action' => 'index']);
             }
         }
 
+        $this->loadModel('AdministrativeLevels');
         $administrativeLevelsData = $this->AdministrativeLevels->find('all', ['conditions' => ['status' => 1]]);
         $administrativeLevels = [];
         foreach($administrativeLevelsData as $administrativeLevelsDatum)
         {
             $administrativeLevels[$administrativeLevelsDatum['level_no']] = $administrativeLevelsDatum['level_name'];
         }
-        $customers = $this->Customers->find('list', ['conditions' => ['unit_global_id'=>$event['po']['customer_unit_global_id']]]);
-
-        $administrativeUnits = $this->AdministrativeUnits->find('list', ['conditions'=>['level_no'=>$event['po']['customer_level_no']]]);
-        $customerAdministrativeUnitInfo = $this->AdministrativeUnits->find('all', ['conditions'=>['global_id'=>$event['po']['customer_unit_global_id']]])->first();
-        $customerAdministrativeUnit = $customerAdministrativeUnitInfo['id'];
+        $customers = $this->Invoices->Customers->find('list', ['conditions' => ['status' => 1]]);
 
         App::import('Helper', 'SystemHelper');
         $SystemHelper = new SystemHelper(new View());
         $itemArray = $SystemHelper->get_item_unit_array();
 
-        foreach($itemArray as $item_unit_id=>$itemName){
-            $priceInfo = $this->Prices->find('all', ['conditions'=>['item_unit_id'=>$item_unit_id]])->first();
-            if($event['po']['invoice_type']==1):
-                $itemUnitPriceArray[$item_unit_id] = $priceInfo['cash_sales_price'];
-            elseif($event['po']['invoice_type']==2):
-                $itemUnitPriceArray[$item_unit_id] = $priceInfo['credit_sales_price'];
-            endif;
+        $this->set(compact('invoice', 'customers', 'administrativeLevels', 'itemArray'));
+        $this->set('_serialize', ['invoice']);
+    }
+
+    /**
+     * Edit method
+     *
+     * @param string|null $id Po id.
+     * @return void Redirects on successful edit, renders view otherwise.
+     * @throws \Cake\Network\Exception\NotFoundException When record not found.
+     */
+    public function edit($id = null)
+    {
+        $user = $this->Auth->user();
+        $time = time();
+        $po = $this->Pos->get($id, [
+            'contain' => []
+        ]);
+        if ($this->request->is(['patch', 'post', 'put'])) {
+            $data = $this->request->data;
+            $data['updated_by'] = $user['id'];
+            $data['updated_date'] = $time;
+            $po = $this->Pos->patchEntity($po, $data);
+            if ($this->Pos->save($po)) {
+                $this->Flash->success('The po has been saved.');
+                return $this->redirect(['action' => 'index']);
+            } else {
+                $this->Flash->error('The po could not be saved. Please, try again.');
+            }
         }
 
-        $this->set(compact('itemUnitPriceArray', 'event', 'customers', 'administrativeLevels', 'itemArray', 'administrativeUnits', 'customerAdministrativeUnit'));
-        $this->set('_serialize', ['event']);
+        $customers = $this->Pos->Customers->find('list', ['conditions' => ['status' => 1]]);
+        $this->set(compact('po', 'customerUnitGlobals', 'customers'));
+        $this->set('_serialize', ['po']);
     }
 
     /**
@@ -360,6 +361,7 @@ class ApprovePosController extends AppController
 
         $item_unit_id = $data['item_unit_id'];
         $invoice_type = $data['invoice_type'];
+
         $itemPrices = $this->Prices->find('all', ['conditions'=>['item_unit_id'=>$item_unit_id]])->first();
 
         if ($invoice_type == 1) {

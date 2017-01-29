@@ -34,27 +34,8 @@ class OffersController extends AppController
     public function index()
     {
         $offers = $this->Offers->find('all', [
-            'conditions' => ['Offers.status !=' => 99]
+            'conditions' => ['Offers.status' => 1]
         ]);
-
-//        $offers = $this->Offers->find('all', [
-//            'conditions' => ['Offers.status !=' => 99]
-//        ])->toArray();
-
-//        App::import('Helper', 'FunctionHelper');
-//        $FunctionHelper = new FunctionHelper(new View());
-//        $as = 'payment_age[]';
-//        $res = $FunctionHelper->postfix_converter($as.'$');
-//        echo '<pre>';
-//        print_r($res);
-//        echo '</pre>';
-//        exit;
-
-//
-//        echo '<pre>';
-//        print_r(json_decode($offers[0]['conditions'], true));
-//        echo '</pre>';
-//        exit;
 
         $this->set('offers', $this->paginate($offers));
         $this->set('_serialize', ['offers']);

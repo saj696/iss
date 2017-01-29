@@ -1,10 +1,13 @@
 <?php
 namespace App\Controller\Component;
 
+use App\View\Helper\FunctionHelper;
 use Cake\Controller\Component;
+use Cake\Core\App;
 use Cake\Core\Configure;
 use Cake\ORM\TableRegistry;
 use Cake\Utility\Security;
+use Cake\View\View;
 use Hashids\Hashids;
 use Cake\I18n\Time;
 use Cake\Datasource\ConnectionManager;
@@ -268,6 +271,160 @@ class CommonComponent extends Component
         $mpdf->WriteHTML(file_get_contents(WWW_ROOT.'assets/global/plugins/bootstrap/css/bootstrap.min.css'),1);
         $mpdf->WriteHTML($html);
         $mpdf->Output();
+    }
+
+    public function getWonOffer($applicablePostfix, $invoiceArray, $offer_id){
+        App::import('Helper', 'FunctionHelper');
+        $FunctionHelper = new FunctionHelper(new View());
+        $wonOffers = [];
+        // general condition check
+        $general = $applicablePostfix['general'];
+        foreach($general as $k=>$genPost){
+            if($genPost['type']=='function'){
+                if($genPost['name']=='item_unit_quantity' || $genPost['name']=='item_bulk_quantity'){
+                    $argArray = explode(',', $genPost['arg']);
+                    $result = $FunctionHelper->$genPost['name']($argArray[0],$argArray[1],$invoiceArray);
+                }elseif($genPost['name']=='is_mango_customer'){
+                    $result = $FunctionHelper->$genPost['name']($invoiceArray);
+                }elseif($genPost['name']=='is_cash_invoice'){
+                    $result = $FunctionHelper->$genPost['name']($invoiceArray);
+                }elseif($genPost['name']=='payment_date'){
+                    $result = $FunctionHelper->$genPost['name']($invoiceArray);
+                }elseif($genPost['name']=='invoice_item_payment_age'){
+                    $argArray = explode(',', $genPost['arg']);
+                    $result = $FunctionHelper->$genPost['name']($argArray[0],$argArray[1],$invoiceArray);
+                }
+
+                if(isset($result)){
+                    $general[$k]['type']='number';
+                    $general[$k]['number']=$result;
+                    unset($general[$k]['name']);
+                    unset($general[$k]['arg']);
+                }
+            }
+        }
+
+        $generalEvaluation = $FunctionHelper->postfix_evaluator($general);
+
+        // If general condition is true then specific condition will be evaluated
+        if($generalEvaluation){
+            $specific = $applicablePostfix['specific'];
+            foreach($specific as $key=>$specPost){
+                foreach($specPost['condition'] as $k=>$specCon){
+                    if($specCon['type']=='function'){
+                        if($specCon['name']=='item_unit_quantity' || $specCon['name']=='item_bulk_quantity'){
+                            $argArray = explode(',', $specCon['arg']);
+                            $result = $FunctionHelper->$specCon['name']($argArray[0],$argArray[1],$invoiceArray);
+                        }elseif($specCon['name']=='is_mango_customer'){
+                            $result = $FunctionHelper->$specCon['name']($invoiceArray);
+                        }elseif($specCon['name']=='is_cash_invoice'){
+                            $result = $FunctionHelper->$specCon['name']($invoiceArray);
+                        }elseif($specCon['name']=='invoice_item_payment_age'){
+                            $argArray = explode(',', $specCon['arg']);
+                            $result = $FunctionHelper->$specCon['name']($argArray[0],$argArray[1],$invoiceArray);
+                        }elseif($specCon['name']=='payment_date'){
+                            $result = $FunctionHelper->$specCon['name']($invoiceArray);
+                        }
+
+                        if(isset($result)){
+                            $specPost['condition'][$k]['type'] = 'number';
+                            $specPost['condition'][$k]['number'] = $result;
+                            unset($specPost['condition'][$k]['name']);
+                            unset($specPost['condition'][$k]['arg']);
+                        }
+                    }
+                }
+
+                $specConEvaluation = $FunctionHelper->postfix_evaluator($specPost['condition']);
+
+                // If specific condition is true then amount will be evaluated
+                if($specConEvaluation){
+                    foreach($specPost['amount'] as $k=>$specAmount){
+                        if($specAmount['type']=='function'){
+                            if($specAmount['name']=='item_unit_quantity' || $specAmount['name']=='item_bulk_quantity'){
+                                $argArray = explode(',', $specAmount['arg']);
+                                $result = $FunctionHelper->$specAmount['name']($argArray[0],$argArray[1],$invoiceArray);
+                            }elseif($specAmount['name']=='is_mango_customer'){
+                                $result = $FunctionHelper->$specAmount['name']($invoiceArray);
+                            }elseif($specAmount['name']=='is_cash_invoice'){
+                                $result = $FunctionHelper->$specAmount['name']($invoiceArray);
+                            }elseif($specAmount['name']=='invoice_item_payment_age'){
+                                $argArray = explode(',', $specAmount['arg']);
+                                $result = $FunctionHelper->$specAmount['name']($argArray[0],$argArray[1],$invoiceArray);
+                            }elseif($specAmount['name']=='payment_date'){
+                                $result = $FunctionHelper->$specAmount['name']($invoiceArray);
+                            }
+                            if(isset($result)){
+                                $specPost['amount'][$k]['type'] = 'number';
+                                $specPost['amount'][$k]['number'] = $result;
+                                unset($specPost['amount'][$k]['name']);
+                                unset($specPost['amount'][$k]['arg']);
+                            }
+                        }
+                    }
+                    $specAmountEvaluation = $FunctionHelper->postfix_evaluator($specPost['amount']);
+                    $wonOffers[$key]['value'] = $specAmountEvaluation;
+                    $wonOffers[$key]['offer_id'] = $offer_id;
+                    $wonOffers[$key]['offer_type'] = $specific[$key]['offer_type'];
+                    $wonOffers[$key]['offer_name'] = $specific[$key]['offer_name'];
+                    $wonOffers[$key]['offer_unit_name'] = $specific[$key]['offer_unit_name'];
+                    $wonOffers[$key]['amount_type'] = $specific[$key]['amount_type'];
+                    $wonOffers[$key]['payment_mode'] = $specific[$key]['payment_mode'];
+                    $wonOffers[$key]['amount_unit'] = $specific[$key]['amount_unit'];
+                }
+            }
+        }
+
+        return $wonOffers;
+    }
+
+    public function getCustomerDue($customer_id, $date){
+        $closestUptoDateDue = TableRegistry::get('personal_accounts')->find()->hydrate(false);
+        $closestUptoDateDue->where(['account_code'=>Configure::read('account_receivable_code')]);
+        $closestUptoDateDue->where(['applies_to_id'=>$customer_id]);
+        $closestUptoDateDue->where(['upto_date <'=>$date]);
+        $closestUptoDateDue->order(['upto_date'=> 'DESC']);
+        $closestUptoDateDue->first();
+
+        if($closestUptoDateDue->toArray()){
+            $uptoDateDue = $closestUptoDateDue->toArray()[0]['balance_value'];
+            $uptoDate = $closestUptoDateDue->toArray()[0]['upto_date'];
+        }else{
+            $uptoDateDue = 0;
+            $uptoDate = 0;
+        }
+
+        if($uptoDate>0){
+            $betweenDateInvoices = TableRegistry::get('invoices')->find()->hydrate(false);
+            $betweenDateInvoices->where(['invoice_date >='=>$uptoDate]);
+            $betweenDateInvoices->where(['invoice_date <='=>$date]);
+            $betweenDateInvoices->where(['customer_id'=>$customer_id]);
+            $betweenDateInvoices->where(['invoice_date', 'customer_id', 'net_total']);
+            $betweenDateInvoices->select(['net_total'=>'SUM(net_total)']);
+
+            if($betweenDateInvoices->toArray()){
+                $betweenDateInvoicesNetTotal = $betweenDateInvoices->toArray()[0]['net_total'];
+            }else{
+                $betweenDateInvoicesNetTotal = 0;
+            }
+            $betweenDatePayments = TableRegistry::get('invoice_payments')->find()->hydrate(false);
+            $betweenDatePayments->where(['payment_collection_date >='=>$uptoDate]);
+            $betweenDatePayments->where(['payment_collection_date <='=>$date]);
+            $betweenDatePayments->where(['customer_id'=>$customer_id]);
+            $betweenDatePayments->select(['invoice_wise_payment_amount'=>'SUM(invoice_wise_payment_amount)']);
+            $betweenDatePayments->first();
+            if($betweenDatePayments->toArray()){
+                $betweenDatePaymentsNetTotal = $betweenDatePayments->toArray()[0]['invoice_wise_payment_amount'];
+            }else{
+                $betweenDatePaymentsNetTotal = 0;
+            }
+        }else{
+            $betweenDateInvoicesNetTotal = 0;
+            $betweenDatePaymentsNetTotal = 0;
+        }
+
+        $finalDue = $uptoDateDue + $betweenDateInvoicesNetTotal - $betweenDatePaymentsNetTotal;
+        return $finalDue;
     }
 
 }

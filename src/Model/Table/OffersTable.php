@@ -22,9 +22,9 @@ class OffersTable extends Table
     public function initialize(array $config)
     {
         $this->table('offers');
-        $this->displayField('id');
+        $this->displayField('program_name');
         $this->primaryKey('id');
-        $this->hasMany('ProductwiseSpecialOffers', [
+        $this->hasMany('OfferItems', [
             'foreignKey' => 'offer_id'
         ]);
     }

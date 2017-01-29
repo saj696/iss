@@ -148,8 +148,19 @@ use Cake\Core\Configure;
             });
         });
 
-        $(document).on("click",".crossSpan",function()
-        {
+        // close offer modal
+        $(document).on("click",".crossSpan",function() {
+            $(".offer_items").each(function(index){
+                var offer_id = $(this).attr('data-offer');
+                var offer_item_unit_id = $(this).val();
+
+                $( ".itemUnitId" ).each(function(index) {
+                    if($(this).val()==offer_item_unit_id){
+                        $(this).closest('.itemTr').find('.offer_id').val(offer_id);
+                    }
+                });
+            });
+
             $(".popContainer").hide();
         });
 
@@ -297,6 +308,7 @@ use Cake\Core\Configure;
                                 }
 
                                 obj.closest('.itemTr').find('.item_bonus').val(res.bonus_quantity);
+                                obj.closest('.itemTr').find('.offer_id').val(res.offer_id);
 
                                 // redo
                                 // other calculation

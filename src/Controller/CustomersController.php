@@ -7,6 +7,7 @@ use App\Model\Table\AdministrativeUnitsTable;
 use App\View\Helper\SystemHelper;
 use Cake\Core\App;
 use Cake\Core\Configure;
+use Cake\Datasource\ConnectionManager;
 use Cake\ORM\TableRegistry;
 use Cake\View\View;
 
@@ -33,6 +34,69 @@ class CustomersController extends AppController
      */
     public function index()
     {
+//        try {
+//            $saveStatus = 0;
+//            $conn = ConnectionManager::get('default');
+//            $conn->transactional(function () use (&$saveStatus)
+//            {
+//                $invoiceCopies = TableRegistry::get('invoices_copy')->find()->hydrate(false)->toArray();
+//                foreach($invoiceCopies as $invoiceCopy){
+//                    $customerInfo = TableRegistry::get('customers')->find()->hydrate(false);
+//                    $customerInfo->where(['code'=>$invoiceCopy['customer_code']])->first();
+//
+//                    if($customerInfo->toArray()[0]){
+//                        $updateInvoiceCopy = TableRegistry::get('invoices_copy');
+//                        $updateInvoiceCopy = $updateInvoiceCopy->query();
+//                        $updateInvoiceCopy->update()
+//                            ->set([
+//                                'customer_level_no' => $customerInfo->toArray()[0]['level_no'],
+//                                'customer_unit_global_id' => $customerInfo->toArray()[0]['unit_global_id'],
+//                                'customer_type' => $customerInfo->toArray()[0]['business_type'],
+//                                'customer_id' => $customerInfo->toArray()[0]['id'],
+//                                'invoice_type' => 2,
+//                                'approval_status' => array_flip(Configure::read('invoice_approval_status'))['not_required'],
+//                                'max_due_invoice_age' => 0,
+//                            ])
+//                            ->where(['id' => $invoiceCopy['id']])
+//                            ->execute();
+//                    }
+//                }
+
+//                $personalAccounts = TableRegistry::get('personal_accounts')->find()->hydrate(false)->toArray();
+//                foreach($personalAccounts as $personalAccount){
+//                    $customerInfo = TableRegistry::get('customers')->find()->hydrate(false);
+//                    $customerInfo->where(['code'=>$personalAccount['customer_code']])->first();
+//
+//                    if($customerInfo->toArray()[0]){
+//                        $personalAccUpdate = TableRegistry::get('personal_accounts');
+//                        $personalAccUpdate = $personalAccUpdate->query();
+//                        $personalAccUpdate->update()
+//                            ->set([
+//                                'applies_to' => 1,
+//                                'applies_to_id' => $customerInfo->toArray()[0]['id'],
+//                                'account_code' => 211000,
+//                                'unit_global_id' => $customerInfo->toArray()[0]['unit_global_id'],
+//                                'from_date' => strtotime('01-01-2000'),
+//                            ])
+//                            ->where(['id' => $personalAccount['id']])
+//                            ->execute();
+//                    }
+//                }
+//            });
+//
+//            echo 'Migration done successfully. Thank you!';
+//        } catch (\Exception $e) {
+//            echo '<pre>';
+//            print_r($e);
+//            echo '</pre>';
+//            exit;
+//            echo 'Migration not possible. Please try again!';
+//        }
+//
+//
+//        exit;
+
+
         $user = $this->Auth->user();
         $userAdmin = $user['administrative_unit_id'];
         $this->loadModel('AdministrativeUnits');

@@ -10,10 +10,10 @@ use Cake\Core\Configure;
             <i class="fa fa-angle-right"></i>
         </li>
         <li>
-            <?= $this->Html->link(__('POs'), ['action' => 'index']) ?>
+            <?= $this->Html->link(__('Invoices'), ['action' => 'index']) ?>
             <i class="fa fa-angle-right"></i>
         </li>
-        <li><?= __('New PO') ?></li>
+        <li><?= __('New Invoice') ?></li>
     </ul>
 </div>
 
@@ -22,7 +22,7 @@ use Cake\Core\Configure;
         <div class="portlet box grey-cascade">
             <div class="portlet-title">
                 <div class="caption">
-                    <i class="fa fa-plus-square-o fa-lg"></i><?= __('Add New PO') ?>
+                    <i class="fa fa-plus-square-o fa-lg"></i><?= __('New Invoice') ?>
                 </div>
                 <div class="tools">
                     <?= $this->Html->link(__('Back'), ['action' => 'index'], ['class' => 'btn btn-sm grey-gallery']); ?>
@@ -30,7 +30,7 @@ use Cake\Core\Configure;
             </div>
 
             <div class="portlet-body">
-                <?= $this->Form->create($po, ['class' => 'form-horizontal', 'role' => 'form']) ?>
+                <?= $this->Form->create($invoice, ['class' => 'form-horizontal', 'role' => 'form']) ?>
                 <div class="row">
                     <div class="col-md-6">
                         <?php
@@ -43,11 +43,11 @@ use Cake\Core\Configure;
                     </div>
                     <div class="col-md-6">
                         <?php
-                        echo $this->Form->input('po_date', ['label'=>'PO date', 'type'=>'text', 'class'=>'form-control datepicker', 'templates'=>['label' => '<label {{attrs}} class="col-sm-5 control-label text-right" >{{text}}</label>','input' => '<div class="col-sm-6 container_{{name}}"> <input {{attrs}} class="form-control" type="{{type}}" name="{{name}}"></div>']]);
+                        echo $this->Form->input('invoice_date', ['label'=>'Invoice Date', 'type'=>'text', 'class'=>'form-control datepicker', 'templates'=>['label' => '<label {{attrs}} class="col-sm-5 control-label text-right" >{{text}}</label>','input' => '<div class="col-sm-6 container_{{name}}"> <input {{attrs}} class="form-control" type="{{type}}" name="{{name}}"></div>']]);
                         echo $this->Form->input('customer_id', ['label'=>'Customer', 'empty'=>'Select', 'options'=>[], 'class'=>'form-control customer_id', 'templates'=>['label' =>'<label {{attrs}} class="col-sm-5 control-label text-right" >{{text}}</label>', 'select' => '<div id="container_{{name}}" class="col-sm-6 customer_select"><select name="{{name}}"{{attrs}} class="form-control">{{content}}</select></div>']]);
                         echo $this->Form->input('available_credit', ['label'=>'Available Credit', 'type'=>'text', 'readonly', 'class'=>'form-control available_credit', 'templates'=>['label' => '<label {{attrs}} class="col-sm-5 control-label text-right" >{{text}}</label>','input' => '<div class="col-sm-6 container_{{name}}"> <input {{attrs}} class="form-control" type="{{type}}" name="{{name}}"></div>']]);
                         echo $this->Form->input('credit_invoice_days', ['label'=>'Credit Invoice Days', 'readonly', 'type'=>'text', 'class'=>'numbersOnly form-control credit_invoice_days', 'templates'=>['label' => '<label {{attrs}} class="col-sm-5 control-label text-right" >{{text}}</label>','input' => '<div class="col-sm-6 container_{{name}}"> <input {{attrs}} class="form-control" type="{{type}}" name="{{name}}"></div>']]);
-                        echo $this->Form->input('field_po_no', ['label'=>'Field PO No.', 'type'=>'text', 'class'=>'form-control', 'templates'=>['label' => '<label {{attrs}} class="col-sm-5 control-label text-right" >{{text}}</label>','input' => '<div class="col-sm-6 container_{{name}}"> <input {{attrs}} class="form-control" type="{{type}}" name="{{name}}"></div>']]);
+                        //echo $this->Form->input('field_po_no', ['label'=>'Field PO No.', 'type'=>'text', 'class'=>'form-control', 'templates'=>['label' => '<label {{attrs}} class="col-sm-5 control-label text-right" >{{text}}</label>','input' => '<div class="col-sm-6 container_{{name}}"> <input {{attrs}} class="form-control" type="{{type}}" name="{{name}}"></div>']]);
                         ?>
                     </div>
                 </div>
@@ -62,15 +62,16 @@ use Cake\Core\Configure;
                     <div class="col-md-12">
                         <table class="table table-bordered">
                             <tbody class="appendTr">
-                                <tr class="portlet box grey-silver" style="color: white">
-                                    <th>Name</th>
-                                    <th>Quantity</th>
-                                    <th>Unit Price</th>
-                                    <th>Bonus</th>
-                                    <th>Cash Discount</th>
-                                    <th>Item Net Total</th>
-                                    <th style="width: 2%;">Cancel</th>
-                                </tr>
+                            <tr class="portlet box grey-silver" style="color: white">
+                                <th>Name</th>
+                                <th>Quantity</th>
+                                <th>Unit Price</th>
+                                <th>Bonus</th>
+                                <th>Special Offer Bonus</th>
+                                <th>Cash Discount</th>
+                                <th>Item Net Total</th>
+                                <th style="width: 2%;">Cancel</th>
+                            </tr>
                             </tbody>
                         </table>
                         <table class="table">
@@ -83,9 +84,13 @@ use Cake\Core\Configure;
                         </table>
                     </div>
                 </div>
+
+                <div class="row popContainer" style="display: none; width: 500px; max-height: 600px; overflow: auto;">
+                </div>
+
                 <div class="row text-center">
+                    <span class="btn default red-stripe check_offer" style="margin-top:20px; margin-bottom:20px">Check Offer</span>
                     <?= $this->Form->button(__('Save'), ['name'=>'save', 'class' => 'btn default green-stripe', 'style' => 'margin-top:20px; margin-bottom:20px']) ?>
-                    <?= $this->Form->button(__('Forward'), ['name'=>'forward', 'class' => 'btn default yellow-stripe', 'style' => 'margin-top:20px; margin-bottom:20px']) ?>
                 </div>
                 <?= $this->Form->end() ?>
             </div>
@@ -105,6 +110,59 @@ use Cake\Core\Configure;
             });
         });
 
+        $(document).on('click', '.check_offer', function(){
+            var myArr = {};
+            var i = 0;
+            $( ".itemUnitId" ).each(function(index) {
+                myArr[i] = {
+                    "item_unit_id":$(this).val(),
+                    "item_quantity":$(this).closest('.itemTr').find('.item_quantity').val()
+                }
+                i++;
+            });
+
+            // check offer ajax
+            var level_no = $('.level_no').val();
+            var customer_unit = $('.customer_unit').val();
+            var invoice_type = $('.invoice_type').val();
+            var customer_id = $('.customer_id').val();
+
+            $.ajax({
+                type: 'POST',
+                url: '<?= $this->Url->build("/Invoices/checkOffer")?>',
+                data: {
+                    item_array: myArr,
+                    invoice_type:invoice_type,
+                    customer_id:customer_id,
+                    level_no: level_no,
+                    customer_unit: customer_unit,
+                },
+                success: function (data, status) {
+                    //console.log(data);
+                    $(".popContainer").hide();
+                    $('.popContainer').html('');
+                    $('.popContainer').html(data);
+                    $('.popContainer').show();
+                }
+            });
+        });
+
+        // close offer modal
+        $(document).on("click",".crossSpan",function() {
+            $(".offer_items").each(function(index){
+                var offer_id = $(this).attr('data-offer');
+                var offer_item_unit_id = $(this).val();
+
+                $( ".itemUnitId" ).each(function(index) {
+                    if($(this).val()==offer_item_unit_id){
+                        $(this).closest('.itemTr').find('.offer_id').val(offer_id);
+                    }
+                });
+            });
+
+            $(".popContainer").hide();
+        });
+
         $(document).on('change', '.level_no', function () {
             var obj = $(this);
             var level = obj.val();
@@ -113,7 +171,7 @@ use Cake\Core\Configure;
             if(level>0 || level==0){
                 $.ajax({
                     type: 'POST',
-                    url: '<?= $this->Url->build("/Pos/getUnit")?>',
+                    url: '<?= $this->Url->build("/Invoices/getUnit")?>',
                     data: {level: level},
                     success: function (data, status) {
                         //console.log(data);
@@ -134,7 +192,7 @@ use Cake\Core\Configure;
             if(unit>0){
                 $.ajax({
                     type: 'POST',
-                    url: '<?= $this->Url->build("/Pos/getCustomer")?>',
+                    url: '<?= $this->Url->build("/Invoices/getCustomer")?>',
                     data: {unit: unit},
                     success: function (data, status) {
                         //console.log(data);
@@ -154,7 +212,7 @@ use Cake\Core\Configure;
             if(customer_id>0){
                 $.ajax({
                     type: 'POST',
-                    url: '<?= $this->Url->build("/Pos/getCustomerDetail")?>',
+                    url: '<?= $this->Url->build("/Invoices/getCustomerDetail")?>',
                     data: {customer_id: customer_id},
                     success: function (data, status) {
                         var data = JSON.parse(data);
@@ -193,7 +251,7 @@ use Cake\Core\Configure;
                 if(item_unit_id>0 && invoice_type>0){
                     $.ajax({
                         type: 'POST',
-                        url: '<?= $this->Url->build("/Pos/loadItem")?>',
+                        url: '<?= $this->Url->build("/Invoices/loadItem")?>',
                         data: {item_unit_id: item_unit_id, invoice_type:invoice_type, customer_id:customer_id},
                         success: function (data, status) {
                             $('.appendTr').append(data);
@@ -214,15 +272,85 @@ use Cake\Core\Configure;
             }
         });
 
-        $(document).on('keyup', '.item_quantity', function(){
-            var item_quantity = parseFloat($(this).val());
-            var unit_price = parseFloat($(this).closest('.itemTr').find('.unit_price').val());
-            var item_cash_discount = parseFloat($(this).closest('.itemTr').find('.item_cash_discount').val());
-            var item_net_total = item_quantity*unit_price-item_cash_discount;
-
+        $(document).on('blur', '.item_quantity', function(){
+            var obj = $(this);
+            // bonus check
+            var level_no = $('.level_no').val();
+            var customer_unit = $('.customer_unit').val();
             var invoice_type = $('.invoice_type').val();
             var customer_id = $('.customer_id').val();
             var itemUnitId = $(this).closest('.itemTr').find('.itemUnitId').val();
+            var item_quantity = parseFloat($(this).val());
+
+            if(item_quantity>0){
+                $.ajax({
+                    type: 'POST',
+                    url: '<?= $this->Url->build("/Invoices/loadOffer")?>',
+                    data: {
+                        item_unit_id: itemUnitId,
+                        invoice_type:invoice_type,
+                        customer_id:customer_id,
+                        item_quantity: item_quantity,
+                        level_no: level_no,
+                        customer_unit: customer_unit
+                    },
+                    success: function (data, status) {
+                        if(data.length>0){
+                            var res = JSON.parse(data);
+                            if(res.value_or_quantity>0){
+                                if(res.offer_type=='product bonus'){
+                                    obj.closest('.itemTr').find('.special_offer_item_bonus').val(res.value_or_quantity);
+                                    obj.closest('.itemTr').find('.item_cash_discount').val(0);
+                                }else{
+                                    obj.closest('.itemTr').find('.item_cash_discount').val(res.value_or_quantity);
+                                    obj.closest('.itemTr').find('.special_offer_item_bonus').val(0);
+                                }
+
+                                obj.closest('.itemTr').find('.item_bonus').val(res.bonus_quantity);
+                                obj.closest('.itemTr').find('.offer_id').val(res.offer_id);
+
+                                // redo
+                                // other calculation
+                                var unit_price = parseFloat(obj.closest('.itemTr').find('.unit_price').val());
+                                var item_cash_discount = parseFloat(obj.closest('.itemTr').find('.item_cash_discount').val());
+                                var item_net_total = item_quantity*unit_price-item_cash_discount;
+
+                                if(item_net_total){
+                                    obj.closest('.itemTr').find('.item_net_total').val(item_net_total);
+                                }else{
+                                    obj.closest('.itemTr').find('.item_net_total').val(0);
+                                }
+
+                                // calculate total amount
+                                var total_amount = 0;
+                                $( ".item_net_total" ).each(function( index ) {
+                                    if(parseFloat($(this).val())>0){
+                                        total_amount += parseFloat($(this).val());
+                                    }
+                                });
+                                if(total_amount){
+                                    $('.total_amount').html(total_amount);
+                                    $('.total_amount_hidden').val(total_amount);
+                                }else{
+                                    $('.total_amount').html(0);
+                                    $('.total_amount_hidden').val(0);
+                                }
+                            }else{
+                                obj.closest('.itemTr').find('.item_cash_discount').val(0);
+                                obj.closest('.itemTr').find('.item_bonus').val(0);
+                            }
+                        }else{
+                            obj.closest('.itemTr').find('.item_cash_discount').val(0);
+                            obj.closest('.itemTr').find('.item_bonus').val(0);
+                        }
+                    }
+                });
+            }
+
+            // other calculation
+            var unit_price = parseFloat($(this).closest('.itemTr').find('.unit_price').val());
+            var item_cash_discount = parseFloat($(this).closest('.itemTr').find('.item_cash_discount').val());
+            var item_net_total = item_quantity*unit_price-item_cash_discount;
 
             if(item_net_total){
                 $(this).closest('.itemTr').find('.item_net_total').val(item_net_total);
@@ -245,25 +373,6 @@ use Cake\Core\Configure;
                 $('.total_amount_hidden').val(0);
             }
 
-            // bonus check
-            var level_no = $('.level_no').val();
-            var customer_unit = $('.customer_unit').val();
-
-            $.ajax({
-                type: 'POST',
-                url: '<?= $this->Url->build("/Pos/loadOffer")?>',
-                data: {
-                    item_unit_id: itemUnitId,
-                    invoice_type:invoice_type,
-                    customer_id:customer_id,
-                    item_quantity: item_quantity,
-                    level_no: level_no,
-                    customer_unit: customer_unit,
-                },
-                success: function (data, status) {
-                    $('.appendTr').append(data);
-                }
-            });
         });
 
         $(document).on('change', '.invoice_type', function(){
@@ -276,7 +385,7 @@ use Cake\Core\Configure;
             if(customer_id>0 && invoice_type>0){
                 $.ajax({
                     type: 'POST',
-                    url: '<?= $this->Url->build("/Pos/checkInvoiceTypeEligibility")?>',
+                    url: '<?= $this->Url->build("/Invoices/checkInvoiceTypeEligibility")?>',
                     data: {invoice_type:invoice_type, cash_invoice_days:cash_invoice_days, credit_invoice_days:credit_invoice_days, customer_id:customer_id},
                     success: function (data, status) {
                         if(data==0){
