@@ -109,7 +109,7 @@ use Cake\Core\Configure;
                     </div>
                 </div>
 
-                <div class="row popContainer" style="display: none; width: 500px; max-height: 600px; overflow: auto;">
+                <div class="row popContainer" style="display: none; width: 500px; max-height: 500px; overflow: auto;">
                 </div>
 
                 <div class="row text-center">
@@ -321,12 +321,12 @@ use Cake\Core\Configure;
                     success: function (data, status) {
                         if(data.length>0){
                             var res = JSON.parse(data);
-                            if(res.value_or_quantity>0){
+                            if(res.value>0){
                                 if(res.offer_type=='product bonus'){
-                                    obj.closest('.itemTr').find('.special_offer_item_bonus').val(res.value_or_quantity);
+                                    obj.closest('.itemTr').find('.special_offer_item_bonus').val(res.value);
                                     obj.closest('.itemTr').find('.item_cash_discount').val(0);
                                 }else{
-                                    obj.closest('.itemTr').find('.item_cash_discount').val(res.value_or_quantity);
+                                    obj.closest('.itemTr').find('.item_cash_discount').val(res.value);
                                     obj.closest('.itemTr').find('.special_offer_item_bonus').val(0);
                                 }
 

@@ -61,17 +61,18 @@ class FunctionHelper extends Helper
         $fa = []; // function array
         $cn=[];
         $stack = [];
-        $stack[0] = '$';
-        $indexOfStackTop = 0;
+        //$stack[0] = ;
+        $indexOfStackTop = -1;
         $postfix = [];
         $postfixCurrentIndex=0;
         $functionSerial = 0;
         $operators = ['+', '-', '*', '/', '&', '|', '>', '<', '='];
 
+
         for($i=0; $i<sizeof($ca); $i++){
             if($ca[$i]=='(') {
                 $indexOfStackTop++;
-                $stack[$indexOfStackTop] = $ca[$i];
+                $stack[$indexOfStackTop] = -2;
             } elseif(preg_match('/[a-z\s_]/i',$ca[$i])){
                 do{
                     @$fn[$functionSerial] .= $ca[$i];
@@ -111,53 +112,55 @@ class FunctionHelper extends Helper
                 }else{
                     $currentOperator = $o2n[$ca[$i]];
                 }
-                if($stack[$indexOfStackTop]=='$'){
+
+                if($indexOfStackTop== -1){ //if($stack[$indexOfStackTop]=='$')
+
                     $indexOfStackTop++;
                     $stack[$indexOfStackTop] = $currentOperator;
-                }elseif(preg_match('/[0-9\s.]/i',$stack[$indexOfStackTop])){
-                    do{
-                        if($precedence[$currentOperator]>$precedence[$stack[$indexOfStackTop]]){
-                            $indexOfStackTop++;
-                            $stack[$indexOfStackTop] = $currentOperator;
-                            break;
-                        }else{
-                            $postfix[$postfixCurrentIndex]['type'] = Configure::read('postfix_elements_types')['operator'];
-                            $postfix[$postfixCurrentIndex]['operator'] = $stack[$indexOfStackTop];
+                }
+                elseif($stack[$indexOfStackTop]>-1){
 
-                            $postfixCurrentIndex++;
-                            $indexOfStackTop--;
-                            if($stack[$indexOfStackTop]=='$') {
-                                $indexOfStackTop++;
-                                $stack[$indexOfStackTop] = $currentOperator;
-                                break;
-                            }
-                        }
-                    }while(1);
+                    if($precedence[$currentOperator]<=$precedence[intval($stack[$indexOfStackTop])]){
 
-                }elseif($stack[$indexOfStackTop] == '('){
+                        $postfix[$postfixCurrentIndex]['type'] = Configure::read('postfix_elements_types')['operator'];
+                        $postfix[$postfixCurrentIndex]['operator'] = $stack[$indexOfStackTop];
+
+                        $postfixCurrentIndex++;
+                        $indexOfStackTop--;
+                    }
+
+                    $indexOfStackTop++;
+                    $stack[$indexOfStackTop] = $currentOperator;
+
+                }elseif($stack[$indexOfStackTop] == -2){
+
                     $indexOfStackTop++;
                     $stack[$indexOfStackTop] = $currentOperator;
                 }
             } elseif($ca[$i]==')'){
                 do{
                     $stop=$stack[$indexOfStackTop];
+                    if($stop== -2){
+                        break;
+                    }
                     $postfix[$postfixCurrentIndex]['type'] = Configure::read('postfix_elements_types')['operator'];
                     $postfix[$postfixCurrentIndex]['operator'] = $stop;
 
                     $postfixCurrentIndex++;
                     $indexOfStackTop--;
                     $stop=$stack[$indexOfStackTop];
-                }while($stop != '(');
+                }while($stop != -2);
 
                 $indexOfStackTop--;
             } elseif($ca[$i]=='$'){
-                while($indexOfStackTop>0){
+                while($indexOfStackTop>=0){
                     $postfix[$postfixCurrentIndex]['type'] = Configure::read('postfix_elements_types')['operator'];
                     $postfix[$postfixCurrentIndex]['operator'] = $stack[$indexOfStackTop];
 
                     $indexOfStackTop--;
                     $postfixCurrentIndex++;
                 }
+                break;
             }
         }
         return $postfix;
@@ -677,16 +680,11 @@ class FunctionHelper extends Helper
         return $location_info['created_date'];
     }
 
-    public function max_due_invoice_age($invoice){
-        // work to do;
-        // 24 january 2017
-    }
-
-    public function payment_date($contextArray = []){
-        if($contextArray['due']>0){
-            return strtotime('01-01-2020');
+    public function max_due_invoice_age($invoiceArray){
+        if($invoiceArray['max_due_invoice_age']){
+            return $invoiceArray['max_due_invoice_age'];
         }else{
-            return $contextArray['updated_date'];
+            return 0;
         }
     }
 
@@ -769,9 +767,24 @@ class FunctionHelper extends Helper
         }
     }
 
+    public function payment_date($contextArray = []){
+        if($contextArray['last_payment_date']>0){
+            return $contextArray['last_payment_date'];
+        }else{
+            return strtotime('01-01-2027');
+        }
+    }
+
     public function invoice_payment_age($invoiceArray){
-        // work to do
-        // january 24, 2017
+        $invoice_date = $invoiceArray['invoice_date'];
+        $last_payment_date = $invoiceArray['last_payment_date'];
+
+        if($last_payment_date && $last_payment_date>0){
+            $diff = $last_payment_date - $invoice_date;
+            return round($diff/(24*3600));
+        }else{
+            return 3000;
+        }
     }
 
     public function item_unit_quantity_in_cash_invoices_over_a_period($itemName, $unitName, $invoiceArray){
@@ -803,6 +816,8 @@ class FunctionHelper extends Helper
         $unit_info = TableRegistry::get('units')->find('all', ['conditions'=>['unit_display_name'=>str_replace("'", '', $unitName)]])->first();
         $item_id = $item_info['id'];
         $unit_id = $unit_info['id'];
+        $converted_quantity = $unit_info['converted_quantity'];
+        $unit_type = $unit_info['unit_type'];
         $sum = 0;
 
         if(sizeof($contextArray)>0){
@@ -817,6 +832,25 @@ class FunctionHelper extends Helper
                     }
                 }
             }
+        }
+
+        // convert to kg/ltr
+        if($unit_type == 1 && $converted_quantity == 0){
+            $sum = $sum/1000;
+        } elseif( $unit_type == 1 && $converted_quantity != 0){
+            $sum = ($sum*$converted_quantity)/1000;
+        } elseif ($unit_type == 2 && $converted_quantity == 0 || $unit_type == 2 && $converted_quantity == null) {
+            $sum = $sum * 1;
+        } elseif($unit_type == 2 && $converted_quantity != 0){
+            $sum = $sum*$converted_quantity;
+        } elseif( $unit_type == 3 && $converted_quantity == 0){
+            $sum = $sum/1000;
+        } else if( $unit_type == 3 && $converted_quantity != 0){
+            $sum = ($sum*$converted_quantity)/1000;
+        } else if($unit_type == 4 && $converted_quantity == 0){
+            $sum = $sum*1;
+        } else if($unit_type == 4 && $converted_quantity != 0){
+            $sum = $sum*$converted_quantity;
         }
         return $sum?$sum:0;
     }

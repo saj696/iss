@@ -279,20 +279,14 @@ class CommonComponent extends Component
         $wonOffers = [];
         // general condition check
         $general = $applicablePostfix['general'];
+
         foreach($general as $k=>$genPost){
             if($genPost['type']=='function'){
                 if($genPost['name']=='item_unit_quantity' || $genPost['name']=='item_bulk_quantity'){
                     $argArray = explode(',', $genPost['arg']);
                     $result = $FunctionHelper->$genPost['name']($argArray[0],$argArray[1],$invoiceArray);
-                }elseif($genPost['name']=='is_mango_customer'){
+                }elseif($genPost['name']=='max_due_invoice_age' || $genPost['name']=='is_mango_customer' || $genPost['name']=='is_cash_invoice' || $genPost['name']=='payment_date' || $genPost['name']=='invoice_payment_age'){
                     $result = $FunctionHelper->$genPost['name']($invoiceArray);
-                }elseif($genPost['name']=='is_cash_invoice'){
-                    $result = $FunctionHelper->$genPost['name']($invoiceArray);
-                }elseif($genPost['name']=='payment_date'){
-                    $result = $FunctionHelper->$genPost['name']($invoiceArray);
-                }elseif($genPost['name']=='invoice_item_payment_age'){
-                    $argArray = explode(',', $genPost['arg']);
-                    $result = $FunctionHelper->$genPost['name']($argArray[0],$argArray[1],$invoiceArray);
                 }
 
                 if(isset($result)){
@@ -312,17 +306,11 @@ class CommonComponent extends Component
             foreach($specific as $key=>$specPost){
                 foreach($specPost['condition'] as $k=>$specCon){
                     if($specCon['type']=='function'){
+
                         if($specCon['name']=='item_unit_quantity' || $specCon['name']=='item_bulk_quantity'){
                             $argArray = explode(',', $specCon['arg']);
                             $result = $FunctionHelper->$specCon['name']($argArray[0],$argArray[1],$invoiceArray);
-                        }elseif($specCon['name']=='is_mango_customer'){
-                            $result = $FunctionHelper->$specCon['name']($invoiceArray);
-                        }elseif($specCon['name']=='is_cash_invoice'){
-                            $result = $FunctionHelper->$specCon['name']($invoiceArray);
-                        }elseif($specCon['name']=='invoice_item_payment_age'){
-                            $argArray = explode(',', $specCon['arg']);
-                            $result = $FunctionHelper->$specCon['name']($argArray[0],$argArray[1],$invoiceArray);
-                        }elseif($specCon['name']=='payment_date'){
+                        }elseif($specCon['name']=='max_due_invoice_age' || $specCon['name']=='is_mango_customer' || $specCon['name']=='is_cash_invoice' || $specCon['name']=='payment_date' || $specCon['name']=='invoice_payment_age' || $specCon['name']=='invoice_item_payment_age'){
                             $result = $FunctionHelper->$specCon['name']($invoiceArray);
                         }
 
@@ -341,19 +329,14 @@ class CommonComponent extends Component
                 if($specConEvaluation){
                     foreach($specPost['amount'] as $k=>$specAmount){
                         if($specAmount['type']=='function'){
+
                             if($specAmount['name']=='item_unit_quantity' || $specAmount['name']=='item_bulk_quantity'){
                                 $argArray = explode(',', $specAmount['arg']);
                                 $result = $FunctionHelper->$specAmount['name']($argArray[0],$argArray[1],$invoiceArray);
-                            }elseif($specAmount['name']=='is_mango_customer'){
-                                $result = $FunctionHelper->$specAmount['name']($invoiceArray);
-                            }elseif($specAmount['name']=='is_cash_invoice'){
-                                $result = $FunctionHelper->$specAmount['name']($invoiceArray);
-                            }elseif($specAmount['name']=='invoice_item_payment_age'){
-                                $argArray = explode(',', $specAmount['arg']);
-                                $result = $FunctionHelper->$specAmount['name']($argArray[0],$argArray[1],$invoiceArray);
-                            }elseif($specAmount['name']=='payment_date'){
+                            }elseif($specAmount['name']=='max_due_invoice_age' || $specAmount['name']=='is_mango_customer' || $specAmount['name']=='is_cash_invoice' || $specAmount['name']=='payment_date' || $specAmount['name']=='invoice_payment_age' || $specAmount['name']=='invoice_item_payment_age'){
                                 $result = $FunctionHelper->$specAmount['name']($invoiceArray);
                             }
+
                             if(isset($result)){
                                 $specPost['amount'][$k]['type'] = 'number';
                                 $specPost['amount'][$k]['number'] = $result;
@@ -362,6 +345,7 @@ class CommonComponent extends Component
                             }
                         }
                     }
+
                     $specAmountEvaluation = $FunctionHelper->postfix_evaluator($specPost['amount']);
                     $wonOffers[$key]['value'] = $specAmountEvaluation;
                     $wonOffers[$key]['offer_id'] = $offer_id;

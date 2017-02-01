@@ -375,6 +375,19 @@ class PosController extends AppController
 
         $invoiceArray = [];
 
+        $this->loadModel('Invoices');
+        $oldest = $this->Invoices->find('all', ['conditions'=>['customer_id'=>$customer_id, 'due >'=>0, 'delivery_status'=>array_flip(Configure::read('invoice_delivery_status'))['delivered'], 'status'=>1], 'order'=>['delivery_date ASC'], 'limit'=>1])->first();
+        if($oldest){
+            $dateDiff = (time()-$oldest['invoice_date'])/(60*60*24);
+            if($dateDiff>0){
+                $invoiceArray['max_due_invoice_age'] = $dateDiff;
+            }else{
+                $invoiceArray['max_due_invoice_age'] = 0;
+            }
+        }else{
+            $invoiceArray['max_due_invoice_age'] = 0;
+        }
+
         $invoiceArray['customer_level_no'] = $customer_level_no;
         $invoiceArray['customer_unit_global_id'] = $customerUnitInfo['global_id'];
         if($customerInfo['is_mango']==1):
@@ -391,10 +404,12 @@ class PosController extends AppController
             $invoiceArray['due'] = 0;
             $invoiceArray['delivery_date'] = strtotime(date('d-m-Y'));
             $invoiceArray['updated_date'] = strtotime(date('d-m-Y'));
+            $invoiceArray['last_payment_date'] = time();
         }else{
             $invoiceArray['due'] = 1;
             $invoiceArray['delivery_date'] = strtotime(date('d-m-Y'));
             $invoiceArray['updated_date'] = strtotime(date('d-m-Y',strtotime(date("d-m-Y", time()) . " + 365 day")));
+            $invoiceArray['last_payment_date'] = strtotime('01-01-2027');
         }
 
         $invoiceArray['invoiced_products'][0]['customer_level_no'] = $customer_level_no;
@@ -491,6 +506,19 @@ class PosController extends AppController
         $invoiceArray = [];
         $offerArray = [];
 
+        $this->loadModel('Invoices');
+        $oldest = $this->Invoices->find('all', ['conditions'=>['customer_id'=>$customer_id, 'due >'=>0, 'delivery_status'=>array_flip(Configure::read('invoice_delivery_status'))['delivered'], 'status'=>1], 'order'=>['delivery_date ASC'], 'limit'=>1])->first();
+        if($oldest){
+            $dateDiff = (time()-$oldest['invoice_date'])/(60*60*24);
+            if($dateDiff>0){
+                $invoiceArray['max_due_invoice_age'] = $dateDiff;
+            }else{
+                $invoiceArray['max_due_invoice_age'] = 0;
+            }
+        }else{
+            $invoiceArray['max_due_invoice_age'] = 0;
+        }
+
         $invoiceArray['customer_level_no'] = $customer_level_no;
         $invoiceArray['customer_unit_global_id'] = $customerUnitInfo['global_id'];
         if($customerInfo['is_mango']==1):
@@ -507,10 +535,12 @@ class PosController extends AppController
             $invoiceArray['due'] = 0;
             $invoiceArray['delivery_date'] = strtotime(date('d-m-Y'));
             $invoiceArray['updated_date'] = strtotime(date('d-m-Y'));
+            $invoiceArray['last_payment_date'] = time();
         }else{
             $invoiceArray['due'] = 1;
             $invoiceArray['delivery_date'] = strtotime(date('d-m-Y'));
             $invoiceArray['updated_date'] = strtotime(date('d-m-Y',strtotime(date("d-m-Y", time()) . " + 365 day")));
+            $invoiceArray['last_payment_date'] = strtotime('01-01-2027');
         }
 
         foreach($item_array as $key=>$item){
@@ -557,6 +587,7 @@ class PosController extends AppController
         }
 
         $wonOffers = [];
+        $ApplicableWonOffers = [];
         foreach($offerArray as $serial=>$offer){
             $offer = $this->Offers->get($offer);
             $conditions = json_decode($offer['conditions'], true);
@@ -571,7 +602,13 @@ class PosController extends AppController
 
             if(isset($conditionKey)){
                 $applicablePostfix = $conditionPostfix[$conditionKey];
-                $wonOffers[$serial] = $this->Common->getWonOffer($applicablePostfix, $invoiceArray, $offer->id);
+                $ApplicableWonOffers[$serial] = $this->Common->getWonOffer($applicablePostfix, $invoiceArray, $offer->id);
+            }
+        }
+
+        foreach($ApplicableWonOffers as $applicableWonOffer){
+            foreach($applicableWonOffer as $won){
+                $wonOffers[] = $won;
             }
         }
 
