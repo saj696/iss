@@ -309,70 +309,28 @@ use Cake\Core\Configure;
                                 obj.closest('.itemTr').find('.item_bonus').val(res.bonus_quantity);
                                 obj.closest('.itemTr').find('.offer_id').val(res.offer_id);
 
-                                // redo
-                                // other calculation
-                                var unit_price = parseFloat(obj.closest('.itemTr').find('.unit_price').val());
-                                var item_cash_discount = parseFloat(obj.closest('.itemTr').find('.item_cash_discount').val());
-                                var item_net_total = item_quantity*unit_price-item_cash_discount;
-
-                                if(item_net_total){
-                                    obj.closest('.itemTr').find('.item_net_total').val(item_net_total);
-                                }else{
-                                    obj.closest('.itemTr').find('.item_net_total').val(0);
-                                }
-
-                                // calculate total amount
-                                var total_amount = 0;
-                                $( ".item_net_total" ).each(function( index ) {
-                                    if(parseFloat($(this).val())>0){
-                                        total_amount += parseFloat($(this).val());
-                                    }
-                                });
-                                if(total_amount){
-                                    $('.total_amount').html(total_amount);
-                                    $('.total_amount_hidden').val(total_amount);
-                                }else{
-                                    $('.total_amount').html(0);
-                                    $('.total_amount_hidden').val(0);
-                                }
+                                // other calculations
+                                calculateNetTotal(item_quantity, obj);
+                                calculateTotalAmount();
                             }else{
                                 obj.closest('.itemTr').find('.item_cash_discount').val(0);
                                 obj.closest('.itemTr').find('.item_bonus').val(0);
+                                calculateNetTotal(item_quantity, obj);
+                                calculateTotalAmount();
                             }
                         }else{
                             obj.closest('.itemTr').find('.item_cash_discount').val(0);
                             obj.closest('.itemTr').find('.item_bonus').val(0);
+                            calculateNetTotal(item_quantity, obj);
+                            calculateTotalAmount();
                         }
                     }
                 });
             }
 
-            // other calculation
-            var unit_price = parseFloat($(this).closest('.itemTr').find('.unit_price').val());
-            var item_cash_discount = parseFloat($(this).closest('.itemTr').find('.item_cash_discount').val());
-            var item_net_total = item_quantity*unit_price-item_cash_discount;
-
-            if(item_net_total){
-                $(this).closest('.itemTr').find('.item_net_total').val(item_net_total);
-            }else{
-                $(this).closest('.itemTr').find('.item_net_total').val(0);
-            }
-
-            // calculate total amount
-            var total_amount = 0;
-            $( ".item_net_total" ).each(function( index ) {
-                if(parseFloat($(this).val())>0){
-                    total_amount += parseFloat($(this).val());
-                }
-            });
-            if(total_amount){
-                $('.total_amount').html(total_amount);
-                $('.total_amount_hidden').val(total_amount);
-            }else{
-                $('.total_amount').html(0);
-                $('.total_amount_hidden').val(0);
-            }
-
+            // other calculations
+            calculateNetTotal(item_quantity, obj);
+            calculateTotalAmount();
         });
 
         $(document).on('change', '.invoice_type', function(){
@@ -402,24 +360,39 @@ use Cake\Core\Configure;
             var count = $('.itemTr').length;
             if (count > 1) {
                 obj.closest('.itemTr').remove();
-
                 // total amount recalculate
-                var total_amount = 0;
-                $( ".item_net_total" ).each(function( index ) {
-                    if(parseFloat($(this).val())>0){
-                        total_amount += parseFloat($(this).val());
-                    }
-                });
-                if(total_amount){
-                    $('.total_amount').html(total_amount);
-                    $('.total_amount_hidden').val(total_amount);
-                }else{
-                    $('.total_amount').html(0);
-                    $('.total_amount_hidden').val(0);
-                }
+                calculateTotalAmount();
             }
         });
     });
+
+    function calculateNetTotal(item_quantity, obj){
+        var unit_price = parseFloat(obj.closest('.itemTr').find('.unit_price').val());
+        var item_cash_discount = parseFloat(obj.closest('.itemTr').find('.item_cash_discount').val());
+        var item_net_total = item_quantity*unit_price-item_cash_discount;
+
+        if(item_net_total){
+            obj.closest('.itemTr').find('.item_net_total').val(item_net_total);
+        }else{
+            obj.closest('.itemTr').find('.item_net_total').val(0);
+        }
+    }
+
+    function calculateTotalAmount(){
+        var total_amount = 0;
+        $( ".item_net_total" ).each(function( index ) {
+            if(parseFloat($(this).val())>0){
+                total_amount += parseFloat($(this).val());
+            }
+        });
+        if(total_amount){
+            $('.total_amount').html(total_amount);
+            $('.total_amount_hidden').val(total_amount);
+        }else{
+            $('.total_amount').html(0);
+            $('.total_amount_hidden').val(0);
+        }
+    }
 
     function uniqueArray(arr) {
         var i,

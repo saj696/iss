@@ -219,6 +219,68 @@ class ReportExploreOffersController extends AppController
         $this->set(compact('dropArray', 'param', 'maxCalDateArr'));
     }
 
+    public function calculation(){
+        $data = $this->request->data;
+        App::import('Helper', 'FunctionHelper');
+        $FunctionHelper = new FunctionHelper(new View());
+        $this->loadComponent('Common');
+        $start_date = strtotime($data['start_date']);
+        $end_date = strtotime($data['end_date']);
+        $offer_id = $data['offer_id'];
+        $unit_id = $data['unit_id'];
+
+        $customers = TableRegistry::get('customers')->find('all', ['conditions' => ['administrative_unit_id' => $unit_id], 'fields' => ['id', 'name']])->hydrate(false)->toArray();
+
+        $this->loadModel('Offers');
+        $offer = $this->Offers->get($offer_id, ['contain'=>['OfferItems']]);
+
+        $conditions = json_decode($offer['conditions'], true);
+        $condition_postfix = json_decode($offer['condition_postfix'], true);
+        $wonOffers = [];
+
+        foreach($customers as $customer){
+            $max_calculated_date = $this->getCalMaxDate($offer_id, $customer['id']);
+
+            if($start_date>$max_calculated_date){
+                $invoicing = $offer['invoicing'];
+
+                if($invoicing==array_flip(Configure::read('special_offer_invoicing'))['Single']){
+                    $applicablePostfix = $condition_postfix[0];
+                    if($conditions[0]['time_level']==array_flip(Configure::read('offer_time_level'))['Instant'] && $conditions[0]['context']==array_flip(Configure::read('offer_contexts'))['Invoice']){
+                        $customerInvoices = TableRegistry::get('invoices')->find()->hydrate(false);
+                        $customerInvoices->contain(['InvoicedProducts']);
+                        $customerInvoices->where(['customer_id'=>$customer['id']]);
+                        $customerInvoices->where(['invoice_date >='=>$start_date]);
+                        $customerInvoices->where(['invoice_date <='=>$end_date]);
+
+                        $invoiceArrayMultiple = $customerInvoices->toArray()?$customerInvoices->toArray():[];
+
+                        foreach($invoiceArrayMultiple as $serial=>$invoiceArray){
+                            $wonOffers[$customer['id']][$serial] = $this->Common->getWonOffer($applicablePostfix, $invoiceArray, $offer_id);
+                        }
+                    }
+                }elseif($invoicing != array_flip(Configure::read('special_offer_invoicing'))['Single']){
+                    if($conditions[0]['time_level']==array_flip(Configure::read('offer_time_level'))['Instant'] && $conditions[0]['context']==array_flip(Configure::read('offer_contexts'))['Invoice']){
+                        $customerInvoices = TableRegistry::get('invoices')->find()->hydrate(false);
+                        $customerInvoices->contain(['InvoicedProducts']);
+                        $customerInvoices->where(['customer_id'=>$customer['id']]);
+                        $customerInvoices->where(['invoice_date >='=>$start_date]);
+                        $customerInvoices->where(['invoice_date <='=>$end_date]);
+
+                        $invoiceArrayMultiple = $customerInvoices->toArray()?$customerInvoices->toArray():[];
+                        $wonOffers[$customer['id']] = $this->Common->getWonCumulativeOffer($condition_postfix, $invoiceArrayMultiple, $offer_id);
+                    }
+                }
+            }
+        }
+
+        $this->autoRender = false;
+        echo '<pre>';
+        print_r($wonOffers);
+        echo '</pre>';
+        exit;
+    }
+
     public function getCalMaxDate($offer_id, $customer_id){
         $this->loadModel('CustomerAwards');
         $customerAwards = $this->CustomerAwards->find('all');
@@ -233,52 +295,6 @@ class ReportExploreOffersController extends AppController
         }else{
             return 0;
         }
-    }
-
-    public function calculation(){
-        $data = $this->request->data;
-        App::import('Helper', 'FunctionHelper');
-        $FunctionHelper = new FunctionHelper(new View());
-        $this->loadComponent('Common');
-        $max_date_in_int = $data['max_date'];
-        $start_date = strtotime($data['start_date']);
-        $end_date = strtotime($data['end_date']);
-        $offer_id = $data['offer_id'];
-        $customer = $data['customer'];
-
-        $this->loadModel('Offers');
-        $offer = $this->Offers->get($offer_id, ['contain'=>['OfferItems']]);
-
-        $conditions = json_decode($offer['conditions'], true);
-        $condition_postfix = json_decode($offer['condition_postfix'], true);
-
-        if($max_date_in_int>$start_date){
-            $level_no = sizeof($conditions);
-            if($level_no==1){
-                $applicablePostfix = $condition_postfix[0];
-                if($conditions[0]['time_level']==array_flip(Configure::read('offer_time_level'))['Instant'] && $conditions[0]['context']==array_flip(Configure::read('offer_contexts'))['Invoice']){
-
-                    $customerInvoices = TableRegistry::get('invoices')->find()->hydrate(false);
-                    $customerInvoices->contain(['InvoicedProducts']);
-                    $customerInvoices->where(['customer_id'=>$customer]);
-                    $customerInvoices->where(['invoice_date >='=>$start_date]);
-                    $customerInvoices->where(['invoice_date <='=>$end_date]);
-
-                    $invoiceArrayMultiple = $customerInvoices->toArray()?$customerInvoices->toArray():[];
-
-                    foreach($invoiceArrayMultiple as $serial=>$invoiceArray){
-                        $wonOffers[$serial] = $this->Common->getWonOffer($applicablePostfix, $invoiceArray, $offer_id);
-                    }
-                }
-            }
-        }else{
-
-        }
-
-        echo '<pre>';
-        print_r($wonOffers);
-        echo '</pre>';
-        exit;
     }
 
 }

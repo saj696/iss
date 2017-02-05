@@ -730,40 +730,52 @@ class FunctionHelper extends Helper
         return $location_info['no_of_direct_successors'];
     }
 
-    public function invoice_item_payment_age($itemName, $unitName, $invoice){
-        $item_info = TableRegistry::get('items')->find('all', ['conditions'=>['name'=>str_replace("'", '', $itemName)]])->first();
-        $unit_info = TableRegistry::get('units')->find('all', ['conditions'=>['unit_display_name'=>str_replace("'", '', $unitName)]])->first();
-        $item_id = $item_info['id'];
-        $unit_id = $unit_info['id'];
+//    public function invoice_item_payment_age($itemName, $unitName, $invoice){
+//        $item_info = TableRegistry::get('items')->find('all', ['conditions'=>['name'=>str_replace("'", '', $itemName)]])->first();
+//        $unit_info = TableRegistry::get('units')->find('all', ['conditions'=>['unit_display_name'=>str_replace("'", '', $unitName)]])->first();
+//        $item_id = $item_info['id'];
+//        $unit_id = $unit_info['id'];
+//
+//        if(sizeof($invoice)>0){
+//            foreach($invoice['invoiced_products'] as $invoiced_product){
+//                if($invoiced_product['item_id']==$item_id && $invoiced_product['manufacture_unit_id']==$unit_id){
+//                    if($invoice['invoice_type']==1){
+//                        if($invoiced_product['due']==0){
+//                            if($invoiced_product['updated_date']-$invoiced_product['delivery_date']==0){
+//                                return 0;
+//                            }else{
+//                                return ($invoiced_product['updated_date']-$invoiced_product['delivery_date'])/3600*24;
+//                            }
+//                        }else{
+//                            return 999999;
+//                        }
+//                    }elseif($invoice['invoice_type']==2){
+//                        if($invoiced_product['due']==0){
+//                            if($invoiced_product['updated_date']-$invoiced_product['delivery_date']==0){
+//                                return 0;
+//                            }else{
+//                                return ($invoiced_product['updated_date']-$invoiced_product['delivery_date'])/3600*24;
+//                            }
+//                        }else{
+//                            return 999999;
+//                        }
+//                    }
+//                }else{
+//                    return 0;
+//                }
+//            }
+//        }
+//    }
 
-        if(sizeof($invoice)>0){
-            foreach($invoice['invoiced_products'] as $invoiced_product){
-                if($invoiced_product['item_id']==$item_id && $invoiced_product['manufacture_unit_id']==$unit_id){
-                    if($invoice['invoice_type']==1){
-                        if($invoiced_product['due']==0){
-                            if($invoiced_product['updated_date']-$invoiced_product['delivery_date']==0){
-                                return 0;
-                            }else{
-                                return ($invoiced_product['updated_date']-$invoiced_product['delivery_date'])/3600*24;
-                            }
-                        }else{
-                            return 999999;
-                        }
-                    }elseif($invoice['invoice_type']==2){
-                        if($invoiced_product['due']==0){
-                            if($invoiced_product['updated_date']-$invoiced_product['delivery_date']==0){
-                                return 0;
-                            }else{
-                                return ($invoiced_product['updated_date']-$invoiced_product['delivery_date'])/3600*24;
-                            }
-                        }else{
-                            return 999999;
-                        }
-                    }
-                }else{
-                    return 0;
-                }
-            }
+    public function invoice_item_payment_age($invoiceArray){
+        $invoice_date = $invoiceArray['invoice_date'];
+        $last_payment_date = $invoiceArray['last_payment_date'];
+
+        if($last_payment_date && $last_payment_date>0){
+            $diff = $last_payment_date - $invoice_date;
+            return round($diff/(24*3600));
+        }else{
+            return 3000;
         }
     }
 

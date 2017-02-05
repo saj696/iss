@@ -37,9 +37,9 @@ $status = Configure::read('status_options');
                         ?>
                     </div>
                     <div class="col-md-12 text-center">
-                        <span class="btn yellow loadCustomer" style="margin:10px 0 20px 0">Load Customers</span>
+                        <span class="btn yellow calculate" style="margin:10px 0 20px 0">Calculate</span>
                     </div>
-                    <div class="load_customers" style="display: none;">
+                    <div class="load_result" style="display: none;">
                     </div>
                 </div>
                 <?= $this->Form->end() ?>
@@ -95,42 +95,44 @@ $status = Configure::read('status_options');
             });
         });
 
-        $(document).on('click', '.loadCustomer', function () {
-            var unit = $('.unit').val();
+        $(document).on('click', '.calculate', function () {
+            var unit_id = $('.unit').val();
             var offer_id = $('.offer').val();
+            var start_date = $('.start_date').val();
+            var end_date = $('.end_date').val();
 
-            if(unit>0 && offer_id>0) {
+            if(unit_id>0 && offer_id>0) {
                 $.ajax({
                     type: 'POST',
-                    url: '<?= $this->Url->build("/ReportExploreOffers/ajax/customers")?>',
-                    data: {unit:unit, offer_id:offer_id},
+                    url: '<?= $this->Url->build("/ReportExploreOffers/calculation")?>',
+                    data: {unit_id:unit_id, offer_id:offer_id, start_date:start_date, end_date:end_date},
                     success: function (data, status) {
-                        $('.load_customers').show();
-                        $('.load_customers').html(data);
+//                        $('.load_result').show();
+//                        $('.load_result').html(data);
                     }
                 });
             }else{
                 toastr.error('Select an Administrative Unit!');
-                $('.load_customers').hide();
+                $('.load_result').hide();
             }
         });
 
-        $(document).on('click', '.calculate', function(){
-            var max_date = $(this).closest('.customerTr').find('span').attr("data-max");
-            var customer = $(this).closest('.customerTr').find('span').attr("data-customer");
-            var start_date = $('.start_date').val();
-            var end_date = $('.end_date').val();
-            var offer_id = $('.offer').val();
-
-            $.ajax({
-                type: 'POST',
-                url: '<?= $this->Url->build("/ReportExploreOffers/calculation")?>',
-                data: {max_date:max_date, start_date:start_date, end_date:end_date, offer_id:offer_id, customer:customer},
-                success: function (data, status) {
-
-                }
-            });
-        });
+//        $(document).on('click', '.calculate', function(){
+//            var max_date = $(this).closest('.customerTr').find('span').attr("data-max");
+//            var customer = $(this).closest('.customerTr').find('span').attr("data-customer");
+//            var start_date = $('.start_date').val();
+//            var end_date = $('.end_date').val();
+//            var offer_id = $('.offer').val();
+//
+//            $.ajax({
+//                type: 'POST',
+//                url: '<?//= $this->Url->build("/ReportExploreOffers/calculation")?>//',
+//                data: {max_date:max_date, start_date:start_date, end_date:end_date, offer_id:offer_id, customer:customer},
+//                success: function (data, status) {
+//
+//                }
+//            });
+//        });
     });
 
 </script>
