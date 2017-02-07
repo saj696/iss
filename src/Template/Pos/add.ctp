@@ -45,6 +45,9 @@ use Cake\Core\Configure;
                         <?php
                         echo $this->Form->input('po_date', ['label'=>'PO date', 'type'=>'text', 'class'=>'form-control datepicker', 'templates'=>['label' => '<label {{attrs}} class="col-sm-5 control-label text-right" >{{text}}</label>','input' => '<div class="col-sm-6 container_{{name}}"> <input {{attrs}} class="form-control" type="{{type}}" name="{{name}}"></div>']]);
                         echo $this->Form->input('customer_id', ['label'=>'Customer', 'empty'=>'Select', 'options'=>[], 'class'=>'form-control customer_id', 'templates'=>['label' =>'<label {{attrs}} class="col-sm-5 control-label text-right" >{{text}}</label>', 'select' => '<div id="container_{{name}}" class="col-sm-6 customer_select"><select name="{{name}}"{{attrs}} class="form-control">{{content}}</select></div>']]);
+                        ?>
+                        <div class="pull-right address col-md-9" style="display: none; border:1px solid grey; margin: 0 48px 17px; padding: 5px;"></div>
+                        <?php
                         echo $this->Form->input('available_credit', ['label'=>'Available Credit', 'type'=>'text', 'readonly', 'class'=>'form-control available_credit', 'templates'=>['label' => '<label {{attrs}} class="col-sm-5 control-label text-right" >{{text}}</label>','input' => '<div class="col-sm-6 container_{{name}}"> <input {{attrs}} class="form-control" type="{{type}}" name="{{name}}"></div>']]);
                         echo $this->Form->input('credit_invoice_days', ['label'=>'Credit Invoice Days', 'readonly', 'type'=>'text', 'class'=>'numbersOnly form-control credit_invoice_days', 'templates'=>['label' => '<label {{attrs}} class="col-sm-5 control-label text-right" >{{text}}</label>','input' => '<div class="col-sm-6 container_{{name}}"> <input {{attrs}} class="form-control" type="{{type}}" name="{{name}}"></div>']]);
                         echo $this->Form->input('field_po_no', ['label'=>'Field PO No.', 'type'=>'text', 'class'=>'form-control', 'templates'=>['label' => '<label {{attrs}} class="col-sm-5 control-label text-right" >{{text}}</label>','input' => '<div class="col-sm-6 container_{{name}}"> <input {{attrs}} class="form-control" type="{{type}}" name="{{name}}"></div>']]);
@@ -213,7 +216,7 @@ use Cake\Core\Configure;
             if(customer_id>0){
                 $.ajax({
                     type: 'POST',
-                    url: '<?= $this->Url->build("/Pos/getCustomerDetail")?>',
+                    url: '<?= $this->Url->build("/Invoices/getCustomerDetail")?>',
                     data: {customer_id: customer_id},
                     success: function (data, status) {
                         var data = JSON.parse(data);
@@ -221,6 +224,8 @@ use Cake\Core\Configure;
                         $('.available_credit').val(data.available_credit);
                         $('.cash_invoice_days').val(data.cash_invoice_days);
                         $('.credit_invoice_days').val(data.credit_invoice_days);
+                        $('.address').html(data.address);
+                        $('.address').show();
                     }
                 });
             }else{
@@ -228,6 +233,8 @@ use Cake\Core\Configure;
                 $('.available_credit').val(0);
                 $('.cash_invoice_days').val(0);
                 $('.credit_invoice_days').val(0);
+                $('.address').html('');
+                $('.address').hide();
             }
         });
 

@@ -33,6 +33,21 @@ class ReportExploreOffersController extends AppController
      */
     public function index()
     {
+//        $arr = [];
+//        $arr['cid']=10;
+//        $arr['cid']=10;
+//
+//        if(count($arr) == count($arr, COUNT_RECURSIVE))
+//        {
+//            echo 'array is not multidimensional';
+//        }
+//        else
+//        {
+//            echo 'array is multidimensional';
+//        }
+//
+//        exit;
+
 //        App::import('Helper', 'FunctionHelper');
 //        $FunctionHelper = new FunctionHelper(new View());
 //
@@ -243,7 +258,6 @@ class ReportExploreOffersController extends AppController
 
             if($start_date>$max_calculated_date){
                 $invoicing = $offer['invoicing'];
-
                 if($invoicing==array_flip(Configure::read('special_offer_invoicing'))['Single']){
                     $applicablePostfix = $condition_postfix[0];
                     if($conditions[0]['time_level']==array_flip(Configure::read('offer_time_level'))['Instant'] && $conditions[0]['context']==array_flip(Configure::read('offer_contexts'))['Invoice']){
@@ -252,11 +266,18 @@ class ReportExploreOffersController extends AppController
                         $customerInvoices->where(['customer_id'=>$customer['id']]);
                         $customerInvoices->where(['invoice_date >='=>$start_date]);
                         $customerInvoices->where(['invoice_date <='=>$end_date]);
-
                         $invoiceArrayMultiple = $customerInvoices->toArray()?$customerInvoices->toArray():[];
-
+                        $achieved_total_cash_discounts[$customer['id']] = $this->get_achieved_total_cash_discounts($invoiceArrayMultiple);
                         foreach($invoiceArrayMultiple as $serial=>$invoiceArray){
-                            $wonOffers[$customer['id']][$serial] = $this->Common->getWonOffer($applicablePostfix, $invoiceArray, $offer_id);
+                            $allWonOffers[$customer['id']][$serial] = $this->Common->getWonOffer($applicablePostfix, $invoiceArray, $offer_id);
+                        }
+
+                        if(sizeof($allWonOffers)>0){
+                            foreach($allWonOffers as $customer_id=>$offers){
+                                foreach($offers as $offer){
+                                    $wonOffers[$customer_id] = $offer;
+                                }
+                            }
                         }
                     }
                 }elseif($invoicing != array_flip(Configure::read('special_offer_invoicing'))['Single']){
@@ -266,8 +287,8 @@ class ReportExploreOffersController extends AppController
                         $customerInvoices->where(['customer_id'=>$customer['id']]);
                         $customerInvoices->where(['invoice_date >='=>$start_date]);
                         $customerInvoices->where(['invoice_date <='=>$end_date]);
-
                         $invoiceArrayMultiple = $customerInvoices->toArray()?$customerInvoices->toArray():[];
+                        $achieved_total_cash_discounts[$customer['id']] = $this->get_achieved_total_cash_discounts($invoiceArrayMultiple);
                         $wonOffers[$customer['id']] = $this->Common->getWonCumulativeOffer($condition_postfix, $invoiceArrayMultiple, $offer_id);
                     }
                 }
@@ -275,8 +296,38 @@ class ReportExploreOffersController extends AppController
         }
 
         $this->autoRender = false;
+
+        $final = [];
+        $wonOffers = array_filter($wonOffers);
+
+        if(sizeof($wonOffers)>0){
+            foreach($wonOffers as $customer_id=>$wonOffer){
+                foreach($wonOffer as $k=>$offer){
+                    if($offer['offer_type']==310000){
+                        if(isset($final[$customer_id]['cash_discount'])){
+                            $final[$customer_id]['cash_discount'] += $offer['value'];
+                        }else{
+                            $final[$customer_id]['cash_discount'] = 0;
+                            $final[$customer_id]['cash_discount'] += $offer['value'];
+                        }
+                    }elseif($offer['offer_type']==312000 || $offer['offer_type']==313000){
+                        $final[$customer_id]['awards'][$k]['cash_equivalent'] = $offer['value'];
+                        $final[$customer_id]['awards'][$k]['name'] = $offer['offer_name'];
+                    }elseif($offer['offer_type']==317000){
+                        if(isset($final[$customer_id]['product_bonus'])){
+                            $final[$customer_id]['product_bonus'] += $offer['value'];
+                        }else{
+                            $final[$customer_id]['product_bonus'] = 0;
+                            $final[$customer_id]['product_bonus'] += $offer['value'];
+                        }
+                    }
+                }
+            }
+        }
+
+
         echo '<pre>';
-        print_r($wonOffers);
+        print_r($final);
         echo '</pre>';
         exit;
     }
@@ -295,6 +346,18 @@ class ReportExploreOffersController extends AppController
         }else{
             return 0;
         }
+    }
+
+    public function get_achieved_total_cash_discounts($invoiceArray){
+        $total = 0;
+        foreach($invoiceArray as $invoice){
+            foreach($invoice['invoiced_products'] as $invoiced_product){
+                if($invoiced_product['instant_discount']>0){
+                    $total += $invoiced_product['instant_discount'];
+                }
+            }
+        }
+        return $total;
     }
 
 }

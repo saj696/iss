@@ -141,6 +141,7 @@ class ApprovePosController extends AppController
                         $invoicedProducts = $this->InvoicedProducts->newEntity();
                         $itemUnitInfo = $this->ItemUnits->get($item_unit_id);
                         $invoicedProductsData['invoice_id'] = $result['id'];
+                        $invoicedProductsData['invoice_type'] = $data['invoice_type'];
                         $invoicedProductsData['customer_level_no'] = $data['customer_level_no'];
                         $invoicedProductsData['customer_unit_global_id'] = $customerUnitInfo['global_id'];
                         $invoicedProductsData['customer_id'] = $data['customer_id'];
@@ -325,11 +326,11 @@ class ApprovePosController extends AppController
     {
         $data = $this->request->data;
         $unit = $data['unit'];
-        $customers = TableRegistry::get('customers')->find('all', ['conditions' => ['administrative_unit_id' => $unit], 'fields'=>['id', 'name']])->hydrate(false)->toArray();
+        $customers = TableRegistry::get('customers')->find('all', ['conditions' => ['administrative_unit_id' => $unit], 'fields'=>['id', 'name', 'code']])->hydrate(false)->toArray();
 
         $dropArray = [];
         foreach($customers as $customer):
-            $dropArray[$customer['id']] = $customer['name'];
+            $dropArray[$customer['id']] = $customer['name'].'-'.$customer['code'];
         endforeach;
 
         $this->viewBuilder()->layout('ajax');
@@ -351,6 +352,7 @@ class ApprovePosController extends AppController
         $arr['available_credit'] = ($customer->credit_limit - $currentDue)>0?($customer->credit_limit - $currentDue):0;
         $arr['cash_invoice_days'] = $customer->cash_invoice_days?$customer->cash_invoice_days:0;
         $arr['credit_invoice_days'] = $customer->credit_invoice_days?$customer->credit_invoice_days:0;
+        $arr['address'] = $customer->address?$customer->address:'';
 
         $arr = json_encode($arr);
         $this->response->body($arr);
