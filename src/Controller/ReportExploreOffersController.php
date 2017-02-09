@@ -33,6 +33,28 @@ class ReportExploreOffersController extends AppController
      */
     public function index()
     {
+//        $limitStart = pow(2,(Configure::read('max_level_no')- 1-1)*5);
+//        $limitEnd = pow(2,(Configure::read('max_level_no')- 1)*5);
+//
+//        $administrativeUnits =  TableRegistry::get('administrative_units')->query()->hydrate(false);
+//        $administrativeUnits->where('global_id -'. 1245184 .'>= '.$limitStart);
+//        $administrativeUnits->where('global_id -'. 1245184 .'< '.$limitEnd)->orWhere(['global_id'=>1245184]);
+//        $administrativeUnits->where(['level_no'=>2]);
+//        $administrativeUnits->select(['global_id', 'level_no', 'unit_name']);
+//
+//        echo '<pre>';
+//        print_r($administrativeUnits->toArray());
+//        echo '</pre>';
+//        exit;
+
+        App::import('Helper', 'FunctionHelper');
+        $FunctionHelper = new FunctionHelper(new View());
+        $arr = $FunctionHelper->cash_sales(1214464, 1485907200, 1490918400, [118, 119, 1, 5, 20], 4);
+        echo '<pre>';
+        print_r($arr);
+        echo '</pre>';
+        exit;
+
 //        $arr[0]['global'] = 1111;
 //        $arr[0]['net'] = 10;
 //        $arr[1]['global'] = 1111;
@@ -63,29 +85,29 @@ class ReportExploreOffersController extends AppController
 //        echo '</pre>';
 //        exit;
 
-        $searchUnitInfo = TableRegistry::get('administrative_units')->find()->where(['id'=>1048576])->first();
-
-        $limitStart = pow(2,(Configure::read('max_level_no')- $searchUnitInfo['level_no']-1)*5);
-        $limitEnd = pow(2,(Configure::read('max_level_no')- $searchUnitInfo['level_no'])*5);
-
-        $administrativeUnits =  TableRegistry::get('administrative_units')->query()->hydrate(false);
-        $administrativeUnits->where('global_id -'. 1048576 .'>= '.$limitStart);
-        $administrativeUnits->where('global_id -'. 1048576 .'< '.$limitEnd);
-        $administrativeUnits->where(['level_no'=>2]);
-        $administrativeUnits->select(['global_id']);
-
-        if($administrativeUnits->toArray()){
-            $mainArray = $administrativeUnits->toArray();
-            $simple = [];
-            foreach($mainArray as $arr){
-                $simple[] = $arr['global_id'];
-            }
-        }
-
-        echo '<pre>';
-        print_r($simple);
-        echo '</pre>';
-        exit;
+//        $searchUnitInfo = TableRegistry::get('administrative_units')->find()->where(['id'=>1048576])->first();
+//
+//        $limitStart = pow(2,(Configure::read('max_level_no')- $searchUnitInfo['level_no']-1)*5);
+//        $limitEnd = pow(2,(Configure::read('max_level_no')- $searchUnitInfo['level_no'])*5);
+//
+//        $administrativeUnits =  TableRegistry::get('administrative_units')->query()->hydrate(false);
+//        $administrativeUnits->where('global_id -'. 1048576 .'>= '.$limitStart);
+//        $administrativeUnits->where('global_id -'. 1048576 .'< '.$limitEnd);
+//        $administrativeUnits->where(['level_no'=>2]);
+//        $administrativeUnits->select(['global_id']);
+//
+//        if($administrativeUnits->toArray()){
+//            $mainArray = $administrativeUnits->toArray();
+//            $simple = [];
+//            foreach($mainArray as $arr){
+//                $simple[] = $arr['global_id'];
+//            }
+//        }
+//
+//        echo '<pre>';
+//        print_r($simple);
+//        echo '</pre>';
+//        exit;
 
 //        $arr = [];
 //        $arr['cid']=10;
@@ -100,16 +122,6 @@ class ReportExploreOffersController extends AppController
 //            echo 'array is multidimensional';
 //        }
 //
-//        exit;
-
-//        App::import('Helper', 'FunctionHelper');
-//        $FunctionHelper = new FunctionHelper(new View());
-//
-//        $ar = "2<3<4".'$';
-//
-//        $res = $FunctionHelper->postfix_converter($ar);
-//        $result = $FunctionHelper->postfix_evaluator($res);
-//        echo $result;
 //        exit;
 
 

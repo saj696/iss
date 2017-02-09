@@ -965,98 +965,122 @@ class FunctionHelper extends Helper
     }
 
     public function credit_sales($unit_global_id, $start_time, $end_time, $itemUnitArray, $group_by_level){
+        $searchUnitInfo = TableRegistry::get('administrative_units')->find()->where(['global_id'=>$unit_global_id])->first();
+
+        $limitStart = pow(2,(Configure::read('max_level_no')- $searchUnitInfo['level_no']-1)*5);
+        $limitEnd = pow(2,(Configure::read('max_level_no')- $searchUnitInfo['level_no'])*5);
+
         $invoices = TableRegistry::get('invoiced_products')->find('all');
-        $invoices->where(['customer_unit_global_id'=>$unit_global_id]);
-        $invoices->where(['customer_unit_global_id'=>$unit_global_id]);
+        $invoices->where('customer_unit_global_id -'. $unit_global_id .'>= '.$limitStart);
+        $invoices->where('customer_unit_global_id -'. $unit_global_id .'< '.$limitEnd);
         $invoices->where(['invoice_date >='=>$start_time]);
         $invoices->where(['invoice_date <='=>$end_time]);
         $invoices->where(['item_unit_id IN'=>$itemUnitArray]);
         $invoices->where(['invoice_type'=>array_flip(Configure::read('invoice_type'))['Credit']]);
 
-        if($invoices->toArray()){
-            $newInvoiceArray = [];
-            foreach($invoices as $invoice){
-                if(isset($newInvoiceArray[$invoice['customer_unit_global_id']])){
-                    $newInvoiceArray[$invoice['customer_unit_global_id']] += $invoice['net_total'];
-                }else{
-                    $newInvoiceArray[$invoice['customer_unit_global_id']] = $invoice['net_total'];
-                }
+        $newInvoiceArray = [];
+        foreach($invoices as $invoice){
+            if(isset($newInvoiceArray[$invoice['customer_unit_global_id']])){
+                $newInvoiceArray[$invoice['customer_unit_global_id']] += $invoice['net_total'];
+            }else{
+                $newInvoiceArray[$invoice['customer_unit_global_id']] = $invoice['net_total'];
             }
+        }
 
-            $searchUnitInfo = TableRegistry::get('administrative_units')->find()->where(['id'=>$unit_global_id])->first();
+        $searchUnitInfo = TableRegistry::get('administrative_units')->find()->where(['global_id'=>$unit_global_id])->first();
 
-            $limitStart = pow(2,(Configure::read('max_level_no')- $searchUnitInfo['level_no']-1)*5);
-            $limitEnd = pow(2,(Configure::read('max_level_no')- $searchUnitInfo['level_no'])*5);
+        $limitStart = pow(2,(Configure::read('max_level_no')- $searchUnitInfo['level_no']-1)*5);
+        $limitEnd = pow(2,(Configure::read('max_level_no')- $searchUnitInfo['level_no'])*5);
+        $administrativeUnits =  TableRegistry::get('administrative_units')->query()->hydrate(false);
+        $administrativeUnits->where('global_id -'. $unit_global_id .'>= '.$limitStart);
 
-            $administrativeUnits =  TableRegistry::get('administrative_units')->query()->hydrate(false);
-            $administrativeUnits->where('global_id -'. $unit_global_id .'>= '.$limitStart);
+        if($searchUnitInfo['level_no']==$group_by_level){
+            $administrativeUnits->where('global_id -'. $unit_global_id .'< '.$limitEnd)->orWhere(['global_id'=>$unit_global_id]);
+        }else{
             $administrativeUnits->where('global_id -'. $unit_global_id .'< '.$limitEnd);
-            $administrativeUnits->where(['level_no'=>$group_by_level]);
-            $administrativeUnits->select(['global_id', 'level_no', 'unit_name']);
+        }
 
-            if($administrativeUnits->toArray()){
-                $xxx = [];
-                foreach($administrativeUnits->toArray() as $key=>$expectedUnits){
-                    $xxx[$key]['name'] = $expectedUnits['unit_name'];
-                    $xxx[$key]['total'] = 0;
-                    $childs = self::get_child_global_ids($expectedUnits['level_no'], $expectedUnits['global_id']);
+        $administrativeUnits->where(['level_no'=>$group_by_level]);
+        $administrativeUnits->select(['global_id', 'level_no', 'unit_name']);
+
+        if($administrativeUnits->toArray()){
+            $xxx = [];
+            foreach($administrativeUnits->toArray() as $key=>$expectedUnits){
+                $xxx[$key]['name'] = $expectedUnits['unit_name'];
+                $xxx[$key]['total'] = 0;
+                $childs = self::get_child_global_ids($expectedUnits['level_no'], $expectedUnits['global_id']);
+                if(sizeof($childs)>0){
                     foreach($childs as $child){
                         $xxx[$key]['total'] += isset($newInvoiceArray[$child])?$newInvoiceArray[$child]:0;
                     }
+                }else{
+                    $xxx[$key]['total'] = isset($newInvoiceArray[$expectedUnits['global_id']])?$newInvoiceArray[$expectedUnits['global_id']]:0;
                 }
-
-                return $xxx;
-            }else{
-                return [];
             }
+
+            return $xxx;
+        }else{
+            return [];
         }
     }
 
     public function cash_sales($unit_global_id, $start_time, $end_time, $itemUnitArray, $group_by_level){
+        $searchUnitInfo = TableRegistry::get('administrative_units')->find()->where(['global_id'=>$unit_global_id])->first();
+
+        $limitStart = pow(2,(Configure::read('max_level_no')- $searchUnitInfo['level_no']-1)*5);
+        $limitEnd = pow(2,(Configure::read('max_level_no')- $searchUnitInfo['level_no'])*5);
+
         $invoices = TableRegistry::get('invoiced_products')->find('all');
-        $invoices->where(['customer_unit_global_id'=>$unit_global_id]);
-        $invoices->where(['customer_unit_global_id'=>$unit_global_id]);
+        $invoices->where('customer_unit_global_id -'. $unit_global_id .'>= '.$limitStart);
+        $invoices->where('customer_unit_global_id -'. $unit_global_id .'< '.$limitEnd);
         $invoices->where(['invoice_date >='=>$start_time]);
         $invoices->where(['invoice_date <='=>$end_time]);
         $invoices->where(['item_unit_id IN'=>$itemUnitArray]);
         $invoices->where(['invoice_type'=>array_flip(Configure::read('invoice_type'))['Cash']]);
 
-        if($invoices->toArray()){
-            $newInvoiceArray = [];
-            foreach($invoices as $invoice){
-                if(isset($newInvoiceArray[$invoice['customer_unit_global_id']])){
-                    $newInvoiceArray[$invoice['customer_unit_global_id']] += $invoice['net_total'];
-                }else{
-                    $newInvoiceArray[$invoice['customer_unit_global_id']] = $invoice['net_total'];
-                }
+        $newInvoiceArray = [];
+        foreach($invoices as $invoice){
+            if(isset($newInvoiceArray[$invoice['customer_unit_global_id']])){
+                $newInvoiceArray[$invoice['customer_unit_global_id']] += $invoice['net_total'];
+            }else{
+                $newInvoiceArray[$invoice['customer_unit_global_id']] = $invoice['net_total'];
             }
+        }
 
-            $searchUnitInfo = TableRegistry::get('administrative_units')->find()->where(['id'=>$unit_global_id])->first();
+        $searchUnitInfo = TableRegistry::get('administrative_units')->find()->where(['global_id'=>$unit_global_id])->first();
 
-            $limitStart = pow(2,(Configure::read('max_level_no')- $searchUnitInfo['level_no']-1)*5);
-            $limitEnd = pow(2,(Configure::read('max_level_no')- $searchUnitInfo['level_no'])*5);
+        $limitStart = pow(2,(Configure::read('max_level_no')- $searchUnitInfo['level_no']-1)*5);
+        $limitEnd = pow(2,(Configure::read('max_level_no')- $searchUnitInfo['level_no'])*5);
+        $administrativeUnits =  TableRegistry::get('administrative_units')->query()->hydrate(false);
+        $administrativeUnits->where('global_id -'. $unit_global_id .'>= '.$limitStart);
 
-            $administrativeUnits =  TableRegistry::get('administrative_units')->query()->hydrate(false);
-            $administrativeUnits->where('global_id -'. $unit_global_id .'>= '.$limitStart);
+        if($searchUnitInfo['level_no']==$group_by_level){
+            $administrativeUnits->where('global_id -'. $unit_global_id .'< '.$limitEnd)->orWhere(['global_id'=>$unit_global_id]);
+        }else{
             $administrativeUnits->where('global_id -'. $unit_global_id .'< '.$limitEnd);
-            $administrativeUnits->where(['level_no'=>$group_by_level]);
-            $administrativeUnits->select(['global_id', 'level_no', 'unit_name']);
+        }
 
-            if($administrativeUnits->toArray()){
-                $xxx = [];
-                foreach($administrativeUnits->toArray() as $key=>$expectedUnits){
-                    $xxx[$key]['name'] = $expectedUnits['unit_name'];
-                    $xxx[$key]['total'] = 0;
-                    $childs = self::get_child_global_ids($expectedUnits['level_no'], $expectedUnits['global_id']);
+        $administrativeUnits->where(['level_no'=>$group_by_level]);
+        $administrativeUnits->select(['global_id', 'level_no', 'unit_name']);
+
+        if($administrativeUnits->toArray()){
+            $xxx = [];
+            foreach($administrativeUnits->toArray() as $key=>$expectedUnits){
+                $xxx[$key]['name'] = $expectedUnits['unit_name'];
+                $xxx[$key]['total'] = 0;
+                $childs = self::get_child_global_ids($expectedUnits['level_no'], $expectedUnits['global_id']);
+                if(sizeof($childs)>0){
                     foreach($childs as $child){
                         $xxx[$key]['total'] += isset($newInvoiceArray[$child])?$newInvoiceArray[$child]:0;
                     }
+                }else{
+                    $xxx[$key]['total'] = isset($newInvoiceArray[$expectedUnits['global_id']])?$newInvoiceArray[$expectedUnits['global_id']]:0;
                 }
-
-                return $xxx;
-            }else{
-                return [];
             }
+
+            return $xxx;
+        }else{
+            return [];
         }
     }
 
@@ -1082,5 +1106,9 @@ class FunctionHelper extends Helper
         }else{
             return [];
         }
+    }
+
+    public function cash_collection($unit_global_id, $start_time, $end_time, $is_cash_invoice, $group_by_level){
+
     }
 }
