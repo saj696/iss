@@ -33,6 +33,60 @@ class ReportExploreOffersController extends AppController
      */
     public function index()
     {
+//        $arr[0]['global'] = 1111;
+//        $arr[0]['net'] = 10;
+//        $arr[1]['global'] = 1111;
+//        $arr[1]['net'] = 20;
+//        $arr[2]['global'] = 1111;
+//        $arr[2]['net'] = 35;
+//        $arr[3]['global'] = 3333;
+//        $arr[3]['net'] = 45;
+//        $arr[4]['global'] = 4444;
+//        $arr[4]['net'] = 55;
+//
+//        $newInvoiceArray = [];
+//        foreach($arr as $invoice){
+//            if(isset($newInvoiceArray[$invoice['global']])){
+//                $newInvoiceArray[$invoice['global']] += $invoice['net'];
+//            }else{
+//                $newInvoiceArray[$invoice['global']] = $invoice['net'];
+//            }
+//        }
+//
+//        $yyy = ['1111','3333'];
+//        foreach($yyy as $yy){
+//
+//        }
+//
+//        echo '<pre>';
+//        print_r($newInvoiceArray);
+//        echo '</pre>';
+//        exit;
+
+        $searchUnitInfo = TableRegistry::get('administrative_units')->find()->where(['id'=>1048576])->first();
+
+        $limitStart = pow(2,(Configure::read('max_level_no')- $searchUnitInfo['level_no']-1)*5);
+        $limitEnd = pow(2,(Configure::read('max_level_no')- $searchUnitInfo['level_no'])*5);
+
+        $administrativeUnits =  TableRegistry::get('administrative_units')->query()->hydrate(false);
+        $administrativeUnits->where('global_id -'. 1048576 .'>= '.$limitStart);
+        $administrativeUnits->where('global_id -'. 1048576 .'< '.$limitEnd);
+        $administrativeUnits->where(['level_no'=>2]);
+        $administrativeUnits->select(['global_id']);
+
+        if($administrativeUnits->toArray()){
+            $mainArray = $administrativeUnits->toArray();
+            $simple = [];
+            foreach($mainArray as $arr){
+                $simple[] = $arr['global_id'];
+            }
+        }
+
+        echo '<pre>';
+        print_r($simple);
+        echo '</pre>';
+        exit;
+
 //        $arr = [];
 //        $arr['cid']=10;
 //        $arr['cid']=10;
@@ -295,41 +349,112 @@ class ReportExploreOffersController extends AppController
             }
         }
 
-        $this->autoRender = false;
-
-        $final = [];
+        $finalArray = [];
         $wonOffers = array_filter($wonOffers);
 
         if(sizeof($wonOffers)>0){
             foreach($wonOffers as $customer_id=>$wonOffer){
                 foreach($wonOffer as $k=>$offer){
                     if($offer['offer_type']==310000){
-                        if(isset($final[$customer_id]['cash_discount'])){
-                            $final[$customer_id]['cash_discount'] += $offer['value'];
+                        $finalArray[$customer_id]['type'] = array_flip(Configure::read('explore_offer_types'))['cash_discount'];
+                        if(isset($finalArray[$customer_id]['cash_discount'])){
+                            $finalArray[$customer_id]['cash_discount'] += $offer['value'];
                         }else{
-                            $final[$customer_id]['cash_discount'] = 0;
-                            $final[$customer_id]['cash_discount'] += $offer['value'];
+                            $finalArray[$customer_id]['cash_discount'] = 0;
+                            $finalArray[$customer_id]['cash_discount'] += $offer['value'];
                         }
-                    }elseif($offer['offer_type']==312000 || $offer['offer_type']==313000){
-                        $final[$customer_id]['awards'][$k]['cash_equivalent'] = $offer['value'];
-                        $final[$customer_id]['awards'][$k]['name'] = $offer['offer_name'];
+                    }elseif($offer['offer_type']==312000){
+                        $finalArray[$customer_id]['type'] = array_flip(Configure::read('explore_offer_types'))['trip'];
+                        $finalArray[$customer_id]['awards'][$k]['cash_equivalent'] = $offer['value'];
+                        $finalArray[$customer_id]['awards'][$k]['name'] = $offer['offer_name'];
+                    }elseif($offer['offer_type']==313000){
+                        $finalArray[$customer_id]['type'] = array_flip(Configure::read('explore_offer_types'))['gift'];
+                        $finalArray[$customer_id]['awards'][$k]['cash_equivalent'] = $offer['value'];
+                        $finalArray[$customer_id]['awards'][$k]['name'] = $offer['offer_name'];
                     }elseif($offer['offer_type']==317000){
-                        if(isset($final[$customer_id]['product_bonus'])){
-                            $final[$customer_id]['product_bonus'] += $offer['value'];
+                        $finalArray[$customer_id]['type'] = array_flip(Configure::read('explore_offer_types'))['product_bonus'];
+                        if(isset($finalArray[$customer_id]['product_bonus'])){
+                            $finalArray[$customer_id]['product_bonus'] += $offer['value'];
                         }else{
-                            $final[$customer_id]['product_bonus'] = 0;
-                            $final[$customer_id]['product_bonus'] += $offer['value'];
+                            $finalArray[$customer_id]['product_bonus'] = 0;
+                            $finalArray[$customer_id]['product_bonus'] += $offer['value'];
                         }
                     }
                 }
             }
         }
 
+        $this->viewBuilder()->layout('ajax');
+        $this->set(compact('finalArray', 'achieved_total_cash_discounts', 'customers'));
+    }
 
-        echo '<pre>';
-        print_r($final);
-        echo '</pre>';
-        exit;
+    public function save(){
+        $user = $this->Auth->user();
+
+        $this->loadModel('CustomerAwards');
+        $this->loadModel('AdministrativeUnits');
+
+        try {
+            $saveStatus = 0;
+            $conn = ConnectionManager::get('default');
+            $conn->transactional(function () use ($user, &$saveStatus)
+            {
+                $data = $this->request->data;
+                $offer_id = $data['offer_id'];
+                $start_date = strtotime($data['start_date']);
+                $end_date = strtotime($data['end_date']);
+                $unit_id = $data['unit_id'];
+                $offerArray = $data['offer'];
+
+                foreach($offerArray as $customer_id=>$offers){
+                    $CustomerAwards = $this->CustomerAwards->newEntity();
+                    $data['customer_id'] = $customer_id;
+                    $customerAdministrativeUnitInfo = $this->AdministrativeUnits->get($unit_id);
+                    $data['parent_global_id'] = $customerAdministrativeUnitInfo['global_id'];
+
+                    $mark = 0;
+
+                    if($offers['type']==array_flip(Configure::read('explore_offer_types'))['cash_discount']){
+                        $data['award_account_code'] = 310000;
+                        $data['amount'] = $offers['cash_discount'];
+                        $data['remaining_amount'] = $offers['due'];
+                        if($offers['cash_discount']>0){
+                            $mark=1;
+                        }
+                    }elseif($offers['type']==array_flip(Configure::read('explore_offer_types'))['product_bonus']){
+                        $data['award_account_code'] = 317000;
+                        $data['amount'] = $offers['product_bonus'];
+                        // work to do both in calculation.ctp and here
+                    }elseif($offers['type']==array_flip(Configure::read('explore_offer_types'))['trip']){
+                        $data['award_account_code'] = 312000;
+                        // work to do both in calculation.ctp and here
+                    }elseif($offers['type']==array_flip(Configure::read('explore_offer_types'))['gift']){
+                        $data['award_account_code'] = 313000;
+                        // work to do both in calculation.ctp and here
+                    }
+
+                    $data['customer_offer_id'] = $offer_id;
+                    $data['offer_period_start'] = $start_date;
+                    $data['offer_period_end'] = $end_date;
+                    $data['action_status'] = Configure::read('customer_award_status')['pending'];
+                    $data['created_by'] = $user['id'];
+                    $data['created_date'] = time();
+
+                    if($mark==1){
+                        $CustomerAwards = $this->CustomerAwards->patchEntity($CustomerAwards, $data);
+                        $this->CustomerAwards->save($CustomerAwards);
+                    }
+                }
+            });
+
+            echo 'Action taken successfully. Thank you!';
+        } catch (\Exception $e) {
+            echo '<pre>';
+            print_r($e);
+            echo '</pre>';
+            exit;
+        }
+        return $this->redirect(['action' => 'index']);
     }
 
     public function getCalMaxDate($offer_id, $customer_id){

@@ -24,7 +24,7 @@ $status = Configure::read('status_options');
             </div>
 
             <div class="portlet-body">
-                <?= $this->Form->create('',['class' => 'form-horizontal', 'role' => 'form', 'action'=>'loadReport/report']) ?>
+                <?= $this->Form->create('',['class' => 'form-horizontal', 'role' => 'form', 'action'=>'save']) ?>
                 <div class="row">
                     <div class="col-md-7 col-md-offset-2">
                         <?php
@@ -39,7 +39,7 @@ $status = Configure::read('status_options');
                     <div class="col-md-12 text-center">
                         <span class="btn yellow calculate" style="margin:10px 0 20px 0">Calculate</span>
                     </div>
-                    <div class="load_result" style="display: none;">
+                    <div class="row popContainerExploreOffer" style="display: none; height: 80%; min-width: 50%; overflow: auto">
                     </div>
                 </div>
                 <?= $this->Form->end() ?>
@@ -107,14 +107,18 @@ $status = Configure::read('status_options');
                     url: '<?= $this->Url->build("/ReportExploreOffers/calculation")?>',
                     data: {unit_id:unit_id, offer_id:offer_id, start_date:start_date, end_date:end_date},
                     success: function (data, status) {
-//                        $('.load_result').show();
-//                        $('.load_result').html(data);
+                        $('.popContainerExploreOffer').show();
+                        $('.popContainerExploreOffer').html(data);
                     }
                 });
             }else{
                 toastr.error('Select an Administrative Unit!');
                 $('.load_result').hide();
             }
+        });
+
+        $(document).on("click",".crossSpan",function() {
+            $(".popContainerExploreOffer").hide();
         });
 
 //        $(document).on('click', '.calculate', function(){

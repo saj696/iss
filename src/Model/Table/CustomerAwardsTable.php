@@ -54,11 +54,11 @@ class CustomerAwardsTable extends Table
     public function validationDefault(Validator $validator)
     {
         $validator
-            ->add('id', 'valid', ['rule' => 'integer'])
+            ->add('id', 'valid', ['rule' => 'isInteger'])
             ->allowEmpty('id', 'create');
             
         $validator
-            ->add('award_account_code', 'valid', ['rule' => 'integer'])
+            ->add('award_account_code', 'valid', ['rule' => 'isInteger'])
             ->requirePresence('award_account_code', 'create')
             ->notEmpty('award_account_code');
             
@@ -68,38 +68,20 @@ class CustomerAwardsTable extends Table
             ->notEmpty('amount');
             
         $validator
-            ->add('offer_period_start', 'valid', ['rule' => 'integer'])
+            ->add('offer_period_start', 'valid', ['rule' => 'isInteger'])
             ->allowEmpty('offer_period_start');
             
         $validator
-            ->add('offer_period_end', 'valid', ['rule' => 'integer'])
+            ->add('offer_period_end', 'valid', ['rule' => 'isInteger'])
             ->allowEmpty('offer_period_end');
             
         $validator
-            ->add('action_status', 'valid', ['rule' => 'integer'])
+            ->add('action_status', 'valid', ['rule' => 'isInteger'])
             ->allowEmpty('action_status');
             
         $validator
-            ->add('action_taken_at', 'valid', ['rule' => 'integer'])
+            ->add('action_taken_at', 'valid', ['rule' => 'isInteger'])
             ->allowEmpty('action_taken_at');
-            
-        $validator
-            ->add('created_by', 'valid', ['rule' => 'integer'])
-            ->requirePresence('created_by', 'create')
-            ->notEmpty('created_by');
-            
-        $validator
-            ->add('created_date', 'valid', ['rule' => 'integer'])
-            ->requirePresence('created_date', 'create')
-            ->notEmpty('created_date');
-            
-        $validator
-            ->add('updated_by', 'valid', ['rule' => 'integer'])
-            ->allowEmpty('updated_by');
-            
-        $validator
-            ->add('updated_date', 'valid', ['rule' => 'integer'])
-            ->allowEmpty('updated_date');
 
         return $validator;
     }
@@ -114,9 +96,6 @@ class CustomerAwardsTable extends Table
     public function buildRules(RulesChecker $rules)
     {
         $rules->add($rules->existsIn(['customer_id'], 'Customers'));
-        $rules->add($rules->existsIn(['parent_global_id'], 'ParentGlobals'));
-        $rules->add($rules->existsIn(['award_id'], 'Awards'));
-        $rules->add($rules->existsIn(['customer_offer_id'], 'CustomerOffers'));
         return $rules;
     }
 }
