@@ -49,7 +49,8 @@ class ReportExploreOffersController extends AppController
 
         App::import('Helper', 'FunctionHelper');
         $FunctionHelper = new FunctionHelper(new View());
-        $arr = $FunctionHelper->cash_sales(1214464, 1485907200, 1490918400, [118, 119, 1, 5, 20], 4);
+        $arr = $FunctionHelper->credit_collection(1048576, 1451606400, 1490918400, 1, 2);
+
         echo '<pre>';
         print_r($arr);
         echo '</pre>';

@@ -1084,6 +1084,126 @@ class FunctionHelper extends Helper
         }
     }
 
+    public function cash_collection($unit_global_id, $start_time, $end_time, $is_adjustment, $group_by_level){
+        $searchUnitInfo = TableRegistry::get('administrative_units')->find()->where(['global_id'=>$unit_global_id])->first();
+
+        $limitStart = pow(2,(Configure::read('max_level_no')- $searchUnitInfo['level_no']-1)*5);
+        $limitEnd = pow(2,(Configure::read('max_level_no')- $searchUnitInfo['level_no'])*5);
+
+        $payments = TableRegistry::get('invoice_payments')->find('all');
+        $payments->where('parent_global_id -'. $unit_global_id .'>= '.$limitStart);
+        $payments->where('parent_global_id -'. $unit_global_id .'< '.$limitEnd);
+        $payments->where(['payment_collection_date >='=>$start_time]);
+        $payments->where(['payment_collection_date <='=>$end_time]);
+        $payments->innerJoin('invoices', 'invoices.id = invoice_payments.invoice_id');
+        $payments->where(['invoices.invoice_type'=>array_flip(Configure::read('invoice_type'))['Cash']]);
+
+        $newPaymentArray = [];
+        foreach($payments as $payment){
+            if(isset($newPaymentArray[$payment['parent_global_id']])){
+                $newPaymentArray[$payment['parent_global_id']] += $payment['invoice_wise_payment_amount'];
+            }else{
+                $newPaymentArray[$payment['parent_global_id']] = $payment['invoice_wise_payment_amount'];
+            }
+        }
+
+        $searchUnitInfo = TableRegistry::get('administrative_units')->find()->where(['global_id'=>$unit_global_id])->first();
+
+        $limitStart = pow(2,(Configure::read('max_level_no')- $searchUnitInfo['level_no']-1)*5);
+        $limitEnd = pow(2,(Configure::read('max_level_no')- $searchUnitInfo['level_no'])*5);
+        $administrativeUnits =  TableRegistry::get('administrative_units')->query()->hydrate(false);
+        $administrativeUnits->where('global_id -'. $unit_global_id .'>= '.$limitStart);
+
+        if($searchUnitInfo['level_no']==$group_by_level){
+            $administrativeUnits->where('global_id -'. $unit_global_id .'< '.$limitEnd)->orWhere(['global_id'=>$unit_global_id]);
+        }else{
+            $administrativeUnits->where('global_id -'. $unit_global_id .'< '.$limitEnd);
+        }
+
+        $administrativeUnits->where(['level_no'=>$group_by_level]);
+        $administrativeUnits->select(['global_id', 'level_no', 'unit_name']);
+
+        if($administrativeUnits->toArray()){
+            $xxx = [];
+            foreach($administrativeUnits->toArray() as $key=>$expectedUnits){
+                $xxx[$key]['name'] = $expectedUnits['unit_name'];
+                $xxx[$key]['total'] = 0;
+                $childs = self::get_child_global_ids($expectedUnits['level_no'], $expectedUnits['global_id']);
+                if(sizeof($childs)>0){
+                    foreach($childs as $child){
+                        $xxx[$key]['total'] += isset($newPaymentArray[$child])?$newPaymentArray[$child]:0;
+                    }
+                }else{
+                    $xxx[$key]['total'] = isset($newPaymentArray[$expectedUnits['global_id']])?$newPaymentArray[$expectedUnits['global_id']]:0;
+                }
+            }
+
+            return $xxx;
+        }else{
+            return [];
+        }
+    }
+
+    public function credit_collection($unit_global_id, $start_time, $end_time, $is_adjustment, $group_by_level){
+        $searchUnitInfo = TableRegistry::get('administrative_units')->find()->where(['global_id'=>$unit_global_id])->first();
+
+        $limitStart = pow(2,(Configure::read('max_level_no')- $searchUnitInfo['level_no']-1)*5);
+        $limitEnd = pow(2,(Configure::read('max_level_no')- $searchUnitInfo['level_no'])*5);
+
+        $payments = TableRegistry::get('invoice_payments')->find('all');
+        $payments->where('parent_global_id -'. $unit_global_id .'>= '.$limitStart);
+        $payments->where('parent_global_id -'. $unit_global_id .'< '.$limitEnd);
+        $payments->where(['payment_collection_date >='=>$start_time]);
+        $payments->where(['payment_collection_date <='=>$end_time]);
+        $payments->innerJoin('invoices', 'invoices.id = invoice_payments.invoice_id');
+        $payments->where(['invoices.invoice_type'=>array_flip(Configure::read('invoice_type'))['Credit']]);
+
+        $newPaymentArray = [];
+        foreach($payments as $payment){
+            if(isset($newPaymentArray[$payment['parent_global_id']])){
+                $newPaymentArray[$payment['parent_global_id']] += $payment['invoice_wise_payment_amount'];
+            }else{
+                $newPaymentArray[$payment['parent_global_id']] = $payment['invoice_wise_payment_amount'];
+            }
+        }
+
+        $searchUnitInfo = TableRegistry::get('administrative_units')->find()->where(['global_id'=>$unit_global_id])->first();
+
+        $limitStart = pow(2,(Configure::read('max_level_no')- $searchUnitInfo['level_no']-1)*5);
+        $limitEnd = pow(2,(Configure::read('max_level_no')- $searchUnitInfo['level_no'])*5);
+        $administrativeUnits =  TableRegistry::get('administrative_units')->query()->hydrate(false);
+        $administrativeUnits->where('global_id -'. $unit_global_id .'>= '.$limitStart);
+
+        if($searchUnitInfo['level_no']==$group_by_level){
+            $administrativeUnits->where('global_id -'. $unit_global_id .'< '.$limitEnd)->orWhere(['global_id'=>$unit_global_id]);
+        }else{
+            $administrativeUnits->where('global_id -'. $unit_global_id .'< '.$limitEnd);
+        }
+
+        $administrativeUnits->where(['level_no'=>$group_by_level]);
+        $administrativeUnits->select(['global_id', 'level_no', 'unit_name']);
+
+        if($administrativeUnits->toArray()){
+            $xxx = [];
+            foreach($administrativeUnits->toArray() as $key=>$expectedUnits){
+                $xxx[$key]['name'] = $expectedUnits['unit_name'];
+                $xxx[$key]['total'] = 0;
+                $childs = self::get_child_global_ids($expectedUnits['level_no'], $expectedUnits['global_id']);
+                if(sizeof($childs)>0){
+                    foreach($childs as $child){
+                        $xxx[$key]['total'] += isset($newPaymentArray[$child])?$newPaymentArray[$child]:0;
+                    }
+                }else{
+                    $xxx[$key]['total'] = isset($newPaymentArray[$expectedUnits['global_id']])?$newPaymentArray[$expectedUnits['global_id']]:0;
+                }
+            }
+
+            return $xxx;
+        }else{
+            return [];
+        }
+    }
+
     public function get_child_global_ids($own_level, $own_global_id, $search_level = null){
         $limitStart = pow(2,(Configure::read('max_level_no')- $own_level-1)*5);
         $limitEnd = pow(2,(Configure::read('max_level_no')- $own_level)*5);
@@ -1106,9 +1226,5 @@ class FunctionHelper extends Helper
         }else{
             return [];
         }
-    }
-
-    public function cash_collection($unit_global_id, $start_time, $end_time, $is_cash_invoice, $group_by_level){
-
     }
 }
