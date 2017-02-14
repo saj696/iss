@@ -235,7 +235,108 @@ class CommonComponent extends Component
         }
         return $item;
     }
+	  public function getAccountWisePaymentAmount($customer_id, array $payment_account, $start_date, $end_date)
+    {
+        $paymentsTable = TableRegistry::get('payments');
+        $query = $paymentsTable->find()
+            ->where(['customer_id' => $customer_id, 'status' => 1])
+            ->andWhere(['payment_account IN' => $payment_account])
+            ->andWhere(['is_adjustment' => 1])
+            ->andWhere(
+                function ($exp) use ($start_date, $end_date) {
+                    return $exp->between('collection_date', $start_date, $end_date);
+                });
+        $query = $query->select(['result' => $query->func()->sum('amount')])->hydrate(false)->toArray();
 
+        if (!empty($query[0]['result'])) {
+            $result = $query[0]['result'];
+        } else {
+            $result = 0;
+        }
+        return $result;
+
+    }
+
+    public function getChildCategories($category_global_id, $level_no)
+    {
+        $limitStart = pow(2, (Configure::read('category_max_level_no') - $level_no - 1) * 6);
+        $limitEnd = pow(2, (Configure::read('category_max_level_no') - $level_no) * 6);
+
+        $categories = TableRegistry::get('categories')->query();
+        $categories->where('global_id -' . $category_global_id . '>= ' . $limitStart);
+        $categories->where('global_id -' . $category_global_id . '< ' . $limitEnd);
+        $categories->where('categories.number_of_direct_successors=0');
+        $categories->where('categories.status!= 99')->hydrate(false);
+        $result = [];
+        foreach ($categories as $category):
+            array_push($result, $category['id']);
+        endforeach;
+        return $result;
+    }
+
+    public function get_administrative_units($level)
+    {
+        $user = $this->Auth->user();
+        $ad_u_id = $user['administrative_unit_id'];
+        $data_global = TableRegistry::get('administrative_units')->get($ad_u_id);
+
+        if ($user['level_no'] == $level) {
+            $result = [];
+            $data_global = TableRegistry::get('administrative_units')->find()
+                ->select(['id', 'unit_name', 'global_id'])
+                ->where(['id' => $ad_u_id])
+                ->toArray();
+            $result = $data_global;
+            return $result;
+        }
+
+        $limitStart = pow(2, (Configure::read('max_level_no') - $user['level_no'] - 1) * 5);
+        $limitEnd = pow(2, (Configure::read('max_level_no') - $user['level_no']) * 5);
+        $associated = TableRegistry::get('administrative_units')->query();
+        $associated->select(['id', 'unit_name', 'global_id']);
+        $associated->where('global_id -' . $data_global['global_id'] . '>= ' . $limitStart);
+        $associated->where('global_id -' . $data_global['global_id'] . '< ' . $limitEnd);
+        $associated->where(['level_no' => $level]);
+        $associated->hydrate(false);
+
+        return $associated->toArray();
+    }
+
+ public function administrative_unit_wise_credit_limit($top_global_id, $provided_level_no)
+        // $top_global_id's hierarchy must be greater than $provided_level_no
+        //e.g ::  (area,territory)
+    {
+        $searchUnitInfo = TableRegistry::get('administrative_units')->find()->where(['global_id' => $top_global_id])->hydrate(false)->first();
+        $limitStart = pow(2, (Configure::read('max_level_no') - $searchUnitInfo['level_no'] - 1) * 5);
+        $limitEnd = pow(2, (Configure::read('max_level_no') - $searchUnitInfo['level_no']) * 5);
+        $conn = ConnectionManager::get('default');
+        if ($provided_level_no < 5) {
+            $expression = (pow(2, (1 + 5 * $provided_level_no)) - 1) * pow(2, (5 * (Configure::read('max_level_no') - $provided_level_no)));
+            //here it is :: 2^(1+5*level) -1  * 2^(5*(max_level-level))
+            $stmt = $conn->execute('
+            SELECT unit_global_id  & ' . $expression . ' as GLOBAL_ID,SUM(credit_limit) as CREDIT_LIMIT from customers
+            WHERE  unit_global_id-' . $top_global_id . ' >= ' . $limitStart . ' AND unit_global_id-' . $top_global_id . ' < ' . $limitEnd . '
+            GROUP BY GLOBAL_ID');
+            $result = $stmt->fetchAll('assoc');
+        } else {
+            if ($searchUnitInfo['level_no'] == 4) {
+                $stmt = $conn->execute('
+            SELECT id, SUM(credit_limit) as CREDIT_LIMIT from customers
+            WHERE   unit_global_id = ' . $top_global_id . '
+            GROUP BY id');
+                $result = $stmt->fetchAll('assoc');
+
+            } else {
+                $stmt = $conn->execute('
+            SELECT id, SUM(credit_limit) as CREDIT_LIMIT from customers
+            WHERE  unit_global_id-' . $top_global_id . ' >= ' . $limitStart . ' AND unit_global_id-' . $top_global_id . ' < ' . $limitEnd . '
+            GROUP BY id');
+                $result = $stmt->fetchAll('assoc');
+            }
+        }
+        return $result;
+
+    }
 //    Output item name generation
     public function specific_item_name_resolver($warehouse_id, $item_id)
     {
