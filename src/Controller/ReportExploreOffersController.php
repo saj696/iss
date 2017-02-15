@@ -47,16 +47,16 @@ class ReportExploreOffersController extends AppController
 //        echo '</pre>';
 //        exit;
 
-        App::import('Helper', 'FunctionHelper');
-        $FunctionHelper = new FunctionHelper(new View());
+//        App::import('Helper', 'FunctionHelper');
+//        $FunctionHelper = new FunctionHelper(new View());
 //        $arr = $FunctionHelper->total_collection(1048576, 1451606400, 1513036800, 0, 5);
 //        $arr = $FunctionHelper->opening_due(1048576, 1513036800, 5);
-        $arr = $FunctionHelper->sales_budget(1048576, 1485907200, 1488240000, 4);
-
-        echo '<pre>';
-        print_r($arr);
-        echo '</pre>';
-        exit;
+//        $arr = $FunctionHelper->sales_budget(1048576, 1485907200, 1488240000, 3);
+//
+//        echo '<pre>';
+//        print_r($arr);
+//        echo '</pre>';
+//        exit;
 
 //        $arr[0]['global'] = 1111;
 //        $arr[0]['net'] = 10;
