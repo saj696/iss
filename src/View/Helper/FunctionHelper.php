@@ -1731,7 +1731,7 @@ class FunctionHelper extends Helper
         }
 
         $fractionStartMonth = $conn->execute('
-            SELECT administrative_unit_global_id  & ' . $expression . ' as global_id, SUM(sales_amount*((DAY(FROM_UNIXTIME(budget_period_end))-"'.(date('d', $start_time)).'")/DAY(FROM_UNIXTIME(budget_period_end)))) as total_amount from sales_budgets
+            SELECT administrative_unit_global_id  & ' . $expression . ' as global_id, SUM(sales_amount*((DAY(FROM_UNIXTIME(budget_period_end))+1-"'.(date('d', $start_time)).'")/DAY(FROM_UNIXTIME(budget_period_end)))) as total_amount from sales_budgets
             WHERE budget_period_start <= ' . $start_time . '
             AND budget_period_end >= ' . $start_time . '
             AND administrative_unit_global_id-' . $unit_global_id . ' >= ' . $limitStart . ' AND administrative_unit_global_id-' . $unit_global_id . ' < ' . $limitEnd . '
