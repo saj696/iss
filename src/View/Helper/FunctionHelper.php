@@ -4,6 +4,7 @@ namespace App\View\Helper;
 use App\Model\Table\AdministrativeUnitsTable;
 use App\Model\Table\ItemUnitsTable;
 use Cake\Core\App;
+use Cake\Datasource\ConnectionManager;
 use Cake\View\Helper;
 use Cake\View\View;
 use Cake\Core\Configure;
@@ -650,30 +651,30 @@ class FunctionHelper extends Helper
         return $payment_total;
     }
 
-    public function sales_budget($period_start, $period_end, $level, $unit){
-        if(!is_int($period_start)){$period_start = strtotime($period_start);}
-        if(!is_int($period_end)){$period_end = strtotime($period_end);}
-
-        $budget = TableRegistry::get('sales_budgets')->find('all', ['conditions'=>[
-            'sales_budgets.budget_period_start >='=>$period_start,
-            'sales_budgets.budget_period_end <='=>$period_end,
-        ]]);
-
-        if($level==Configure::read('max_level_no')+1){
-            if($unit){
-                $budget->where(['sales_budgets.administrative_unit_id'=>$unit]);
-            }
-        }else{
-            if($unit){
-                $adminUnitInfo = TableRegistry::get('administrative_units')->find('all', ['conditions'=>['unit_name'=>$unit]])->first();
-                $budget->where(['sales_budgets.administrative_unit_global_id'=>$adminUnitInfo['global_id']]);
-            }
-        }
-
-        $budget->select(['total_budget'=>'SUM(sales_budgets.sales_amount)']);
-        $total_budget = $budget->first()['total_budget']?$budget->first()['total_budget']:0;
-        return $total_budget;
-    }
+//    public function sales_budget($period_start, $period_end, $level, $unit){
+//        if(!is_int($period_start)){$period_start = strtotime($period_start);}
+//        if(!is_int($period_end)){$period_end = strtotime($period_end);}
+//
+//        $budget = TableRegistry::get('sales_budgets')->find('all', ['conditions'=>[
+//            'sales_budgets.budget_period_start >='=>$period_start,
+//            'sales_budgets.budget_period_end <='=>$period_end,
+//        ]]);
+//
+//        if($level==Configure::read('max_level_no')+1){
+//            if($unit){
+//                $budget->where(['sales_budgets.administrative_unit_id'=>$unit]);
+//            }
+//        }else{
+//            if($unit){
+//                $adminUnitInfo = TableRegistry::get('administrative_units')->find('all', ['conditions'=>['unit_name'=>$unit]])->first();
+//                $budget->where(['sales_budgets.administrative_unit_global_id'=>$adminUnitInfo['global_id']]);
+//            }
+//        }
+//
+//        $budget->select(['total_budget'=>'SUM(sales_budgets.sales_amount)']);
+//        $total_budget = $budget->first()['total_budget']?$budget->first()['total_budget']:0;
+//        return $total_budget;
+//    }
 
     public function location_age($unit){
         $location_info = TableRegistry::get('administrative_units')->find('all', ['conditions'=>['global_id'=>$unit]])->first();
@@ -1687,6 +1688,96 @@ class FunctionHelper extends Helper
                 return [];
             }
         }
+    }
+
+    public function sales_budget($unit_global_id, $start_time, $end_time, $group_by_level){
+        $searchUnitInfo = TableRegistry::get('administrative_units')->find()->where(['global_id' => $unit_global_id])->hydrate(false)->first();
+        $limitStart = pow(2, (Configure::read('max_level_no') - $searchUnitInfo['level_no'] - 1) * 5);
+        $limitEnd = pow(2, (Configure::read('max_level_no') - $searchUnitInfo['level_no']) * 5);
+        $conn = ConnectionManager::get('default');
+
+        $start_time_day = intval(date('d', $start_time));
+        $start_time_month = intval(date('m', $start_time));
+        $start_time_year = intval(date('Y', $start_time));
+        $end_time_day = intval(date('d', $end_time));
+        $end_time_month = intval(date('m', $end_time));
+        $end_time_year = intval(date('Y', $end_time));
+
+        if($start_time_month==12){
+            $middle_month_start_date = strtotime('01'.'-'.'01'.'-'.($start_time_year+1));
+        }else{
+            $middle_month_start_date = strtotime('01'.'-'.($start_time_month+1).'-'.$start_time_year);
+        }
+
+        if($end_time_month==1){
+            $middle_month_end_date = strtotime(Configure::read('month_end')[12].'-'.'12'.'-'.($start_time_year-1));
+        }else{
+            $middle_month_end_date = strtotime(Configure::read('month_end')[$end_time_month-1].'-'.($end_time_month-1).'-'.$end_time_year);
+        }
+
+        $expression = (pow(2, (1 + 5 * $group_by_level)) - 1) * pow(2, (5 * (Configure::read('max_level_no') - $group_by_level)));
+
+        $middleArray = $conn->execute('
+            SELECT administrative_unit_global_id  & ' . $expression . ' as global_id, SUM(sales_amount) as total_amount from sales_budgets
+            WHERE budget_period_start >= ' . $middle_month_start_date . '
+            AND budget_period_end <= ' . $middle_month_end_date . '
+            AND administrative_unit_global_id-' . $unit_global_id . ' >= ' . $limitStart . ' AND administrative_unit_global_id-' . $unit_global_id . ' < ' . $limitEnd . '
+            GROUP BY global_id');
+
+        $middleArrayResult = $middleArray->fetchAll('assoc');
+        $middleArrayFinal = [];
+        foreach($middleArrayResult as $middle){
+            $middleArrayFinal[$middle['global_id']] = $middle['total_amount'];
+        }
+
+        $fractionStartMonth = $conn->execute('
+            SELECT administrative_unit_global_id  & ' . $expression . ' as global_id, SUM(sales_amount*((DAY(FROM_UNIXTIME(budget_period_end))-"'.(date('d', $start_time)).'")/DAY(FROM_UNIXTIME(budget_period_end)))) as total_amount from sales_budgets
+            WHERE budget_period_start <= ' . $start_time . '
+            AND budget_period_end >= ' . $start_time . '
+            AND administrative_unit_global_id-' . $unit_global_id . ' >= ' . $limitStart . ' AND administrative_unit_global_id-' . $unit_global_id . ' < ' . $limitEnd . '
+            GROUP BY global_id');
+
+        $fractionStartMonthResult = $fractionStartMonth->fetchAll('assoc');
+        $fractionStartMonthFinal = [];
+        foreach($fractionStartMonthResult as $fractionStartMonth){
+            $fractionStartMonthFinal[$fractionStartMonth['global_id']] = $fractionStartMonth['total_amount'];
+        }
+
+        $fractionEndMonth = $conn->execute('
+            SELECT administrative_unit_global_id  & ' . $expression . ' as global_id, SUM(sales_amount*((DAY(FROM_UNIXTIME(budget_period_end)))/DAY(FROM_UNIXTIME(budget_period_end)))) as total_amount from sales_budgets
+            WHERE budget_period_start >= ' . $end_time . '
+            AND budget_period_end <= ' . $end_time . '
+            AND administrative_unit_global_id-' . $unit_global_id . ' >= ' . $limitStart . ' AND administrative_unit_global_id-' . $unit_global_id . ' < ' . $limitEnd . '
+            GROUP BY global_id');
+
+        $fractionEndMonthResult = $fractionEndMonth->fetchAll('assoc');
+        $fractionEndMonthFinal = [];
+        foreach($fractionEndMonthResult as $fractionEndMonth){
+            $fractionEndMonthFinal[$fractionEndMonth['global_id']] = $fractionEndMonth['total_amount'];
+        }
+
+        $myArray = [$middleArrayFinal, $fractionStartMonthFinal, $fractionEndMonthFinal];
+        $sumArray = [];
+
+        foreach ($myArray as $k=>$subArray) {
+            foreach ($subArray as $id=>$value) {
+                if(isset($sumArray[$id])){
+                    $sumArray[$id]+=$value;
+                }else{
+                    $sumArray[$id]=$value;
+                }
+            }
+        }
+
+        $xxx = [];
+        $i = 0;
+        foreach($sumArray as $id=>$sum){
+            $xxx[$i]['global_id'] = $id;
+            $xxx[$i]['total'] = $sum;
+            $i++;
+        }
+
+        return $xxx;
     }
 
     public function get_child_global_ids($own_level, $own_global_id, $search_level = null){
