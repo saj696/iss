@@ -1699,9 +1699,14 @@ class FunctionHelper extends Helper
         $start_time_day = intval(date('d', $start_time));
         $start_time_month = intval(date('m', $start_time));
         $start_time_year = intval(date('Y', $start_time));
+        $start_time_month_year_concat = $start_time_month.'-'.$start_time_year;
+        $start_time_month_first_date = strtotime('01-'.$start_time_month.'-'.$start_time_year);
+
         $end_time_day = intval(date('d', $end_time));
         $end_time_month = intval(date('m', $end_time));
         $end_time_year = intval(date('Y', $end_time));
+        $end_time_month_year_concat = $end_time_month.'-'.$end_time_year;
+        $end_time_month_end_date = strtotime(Configure::read('month_end')[$end_time_month].'-'.$end_time_month.'-'.$start_time_year);
 
         if($start_time_month==12){
             $middle_month_start_date = strtotime('01'.'-'.'01'.'-'.($start_time_year+1));
@@ -1717,46 +1722,63 @@ class FunctionHelper extends Helper
 
         $expression = (pow(2, (1 + 5 * $group_by_level)) - 1) * pow(2, (5 * (Configure::read('max_level_no') - $group_by_level)));
 
-        $middleArray = $conn->execute('
+        if($start_time_month_year_concat==$end_time_month_year_concat){
+            $middleArray = $conn->execute('
+            SELECT administrative_unit_global_id  & ' . $expression . ' as global_id, SUM(sales_amount*("'.intval(date('d', $end_time)).'"+1-"'.intval(date('d', $start_time)).'")/DAY(FROM_UNIXTIME(budget_period_end))) as total_amount from sales_budgets
+            WHERE budget_period_start >= ' . $start_time_month_first_date . '
+            AND budget_period_end <= ' . $end_time_month_end_date . '
+            AND administrative_unit_global_id-' . $unit_global_id . ' >= ' . $limitStart . ' AND administrative_unit_global_id-' . $unit_global_id . ' < ' . $limitEnd . '
+            GROUP BY global_id');
+
+            $middleArrayResult = $middleArray->fetchAll('assoc');
+            $middleArrayFinal = [];
+            foreach($middleArrayResult as $middle){
+                $middleArrayFinal[$middle['global_id']] = $middle['total_amount'];
+            }
+            $myArray = [$middleArrayFinal];
+        }else{
+            $middleArray = $conn->execute('
             SELECT administrative_unit_global_id  & ' . $expression . ' as global_id, SUM(sales_amount) as total_amount from sales_budgets
             WHERE budget_period_start >= ' . $middle_month_start_date . '
             AND budget_period_end <= ' . $middle_month_end_date . '
             AND administrative_unit_global_id-' . $unit_global_id . ' >= ' . $limitStart . ' AND administrative_unit_global_id-' . $unit_global_id . ' < ' . $limitEnd . '
             GROUP BY global_id');
 
-        $middleArrayResult = $middleArray->fetchAll('assoc');
-        $middleArrayFinal = [];
-        foreach($middleArrayResult as $middle){
-            $middleArrayFinal[$middle['global_id']] = $middle['total_amount'];
-        }
+            $middleArrayResult = $middleArray->fetchAll('assoc');
+            $middleArrayFinal = [];
+            foreach($middleArrayResult as $middle){
+                $middleArrayFinal[$middle['global_id']] = $middle['total_amount'];
+            }
 
-        $fractionStartMonth = $conn->execute('
-            SELECT administrative_unit_global_id  & ' . $expression . ' as global_id, SUM(sales_amount*((DAY(FROM_UNIXTIME(budget_period_end))+1-"'.(date('d', $start_time)).'")/DAY(FROM_UNIXTIME(budget_period_end)))) as total_amount from sales_budgets
+            $fractionStartMonth = $conn->execute('
+            SELECT administrative_unit_global_id  & ' . $expression . ' as global_id, SUM(sales_amount*((DAY(FROM_UNIXTIME(budget_period_end))+1-"'.intval(date('d', $start_time)).'")/DAY(FROM_UNIXTIME(budget_period_end)))) as total_amount from sales_budgets
             WHERE budget_period_start <= ' . $start_time . '
             AND budget_period_end >= ' . $start_time . '
             AND administrative_unit_global_id-' . $unit_global_id . ' >= ' . $limitStart . ' AND administrative_unit_global_id-' . $unit_global_id . ' < ' . $limitEnd . '
             GROUP BY global_id');
 
-        $fractionStartMonthResult = $fractionStartMonth->fetchAll('assoc');
-        $fractionStartMonthFinal = [];
-        foreach($fractionStartMonthResult as $fractionStartMonth){
-            $fractionStartMonthFinal[$fractionStartMonth['global_id']] = $fractionStartMonth['total_amount'];
-        }
+            $fractionStartMonthResult = $fractionStartMonth->fetchAll('assoc');
+            $fractionStartMonthFinal = [];
+            foreach($fractionStartMonthResult as $fractionStartMonth){
+                $fractionStartMonthFinal[$fractionStartMonth['global_id']] = $fractionStartMonth['total_amount'];
+            }
 
-        $fractionEndMonth = $conn->execute('
+            $fractionEndMonth = $conn->execute('
             SELECT administrative_unit_global_id  & ' . $expression . ' as global_id, SUM(sales_amount*((DAY(FROM_UNIXTIME(budget_period_end)))/DAY(FROM_UNIXTIME(budget_period_end)))) as total_amount from sales_budgets
             WHERE budget_period_start >= ' . $end_time . '
             AND budget_period_end <= ' . $end_time . '
             AND administrative_unit_global_id-' . $unit_global_id . ' >= ' . $limitStart . ' AND administrative_unit_global_id-' . $unit_global_id . ' < ' . $limitEnd . '
             GROUP BY global_id');
 
-        $fractionEndMonthResult = $fractionEndMonth->fetchAll('assoc');
-        $fractionEndMonthFinal = [];
-        foreach($fractionEndMonthResult as $fractionEndMonth){
-            $fractionEndMonthFinal[$fractionEndMonth['global_id']] = $fractionEndMonth['total_amount'];
+            $fractionEndMonthResult = $fractionEndMonth->fetchAll('assoc');
+            $fractionEndMonthFinal = [];
+            foreach($fractionEndMonthResult as $fractionEndMonth){
+                $fractionEndMonthFinal[$fractionEndMonth['global_id']] = $fractionEndMonth['total_amount'];
+            }
+
+            $myArray = [$middleArrayFinal, $fractionStartMonthFinal, $fractionEndMonthFinal];
         }
 
-        $myArray = [$middleArrayFinal, $fractionStartMonthFinal, $fractionEndMonthFinal];
         $sumArray = [];
 
         foreach ($myArray as $k=>$subArray) {

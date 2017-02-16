@@ -51,8 +51,8 @@ class ReportExploreOffersController extends AppController
 //        $FunctionHelper = new FunctionHelper(new View());
 //        $arr = $FunctionHelper->total_collection(1048576, 1451606400, 1513036800, 0, 5);
 //        $arr = $FunctionHelper->opening_due(1048576, 1513036800, 5);
-//        $arr = $FunctionHelper->sales_budget(1048576, 1485907200, 1488240000, 3);
-//
+//        $arr = $FunctionHelper->sales_budget(1048576, 1486684800, 1487548800, 3);
+
 //        echo '<pre>';
 //        print_r($arr);
 //        echo '</pre>';
