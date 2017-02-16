@@ -94,7 +94,7 @@
     <?php endif; ?>
     <tr>
         <td colspan="12" class="text-center">
-            <button style="cursor: pointer;" class="btn btn-danger crossSpan">Close</button>
+            <span style="cursor: pointer;" class="btn btn-danger crossSpan">Close</span>
             <button type="submit" style="cursor: pointer;" class="btn btn-success crossSpan">Save</button>
         </td>
     </tr>

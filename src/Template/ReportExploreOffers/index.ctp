@@ -39,7 +39,7 @@ $status = Configure::read('status_options');
                     <div class="col-md-12 text-center">
                         <span class="btn yellow calculate" style="margin:10px 0 20px 0">Calculate</span>
                     </div>
-                    <div class="row popContainerExploreOffer" style="display: none; height: 80%; min-width: 50%; overflow: auto">
+                    <div class="row popContainerExploreOffer" style="display: none; max-height: 80%; min-width: 50%; overflow: auto">
                     </div>
                 </div>
                 <?= $this->Form->end() ?>
