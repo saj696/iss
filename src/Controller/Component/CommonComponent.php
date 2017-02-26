@@ -49,8 +49,8 @@ class CommonComponent extends Component
         );
     }
 
-	
-   public function get_bulk_unit_sum_from_stock($warehouse_id, $item_id)
+
+    public function get_bulk_unit_sum_from_stock($warehouse_id, $item_id)
     {
         $stock_table = TableRegistry::get('stocks');
         $stock_info = $stock_table->find('all')->contain(['Items', 'Units', 'Warehouses'])
@@ -67,17 +67,17 @@ class CommonComponent extends Component
             foreach ($stock_info as $stock):
                 if ($stock['unit']['unit_size'] == 0) {
                     if ($stock['unit']['unit_type'] == 1 || $stock['unit']['unit_type'] == 3) {
-                        $value = $stock['quantity'] /1000;
+                        $value = $stock['quantity'] / 1000;
                         $sum += $value;
                     } else {
                         $sum += $stock['quantity'];
                     }
                 } else {
                     if ($stock['unit']['unit_type'] == 1 || $stock['unit']['unit_type'] == 3) {
-                        $value = $stock['unit']['converted_quantity'] * $stock['quantity'] /1000;
+                        $value = $stock['unit']['converted_quantity'] * $stock['quantity'] / 1000;
                         $sum += $value;
                     } else {
-                        $value = $stock['unit']['converted_quantity'] *$stock['quantity'];
+                        $value = $stock['unit']['converted_quantity'] * $stock['quantity'];
                         $sum += $value;
                     }
                 }
@@ -88,6 +88,7 @@ class CommonComponent extends Component
 
         }
     }
+
     public function initiate_stock($warehouse_id, $item_id, $manufacture_unit_id, $quantity)
     {
         $time = time();
@@ -122,6 +123,7 @@ class CommonComponent extends Component
         }
 
     }
+
     public function pay_invoice_due($customer_id, $amount, $payment_account_code)
     {
         $response_array = [];
@@ -144,7 +146,8 @@ class CommonComponent extends Component
             } else {
                 $due_available = 0;
             }
-            pr($due_available);die;
+            pr($due_available);
+            die;
         }
 
         $time = time();
@@ -214,6 +217,7 @@ class CommonComponent extends Component
         return array($closest_key, $array[$closest_key]);
         return $item;
     }
+
 // item name resolver
     public function item_name_resolver($warehouse_id)
     {
@@ -235,7 +239,8 @@ class CommonComponent extends Component
         }
         return $item;
     }
-	  public function getAccountWisePaymentAmount($customer_id, array $payment_account, $start_date, $end_date)
+
+    public function getAccountWisePaymentAmount($customer_id, array $payment_account, $start_date, $end_date)
     {
         $paymentsTable = TableRegistry::get('payments');
         $query = $paymentsTable->find()
@@ -302,7 +307,7 @@ class CommonComponent extends Component
         return $associated->toArray();
     }
 
- public function administrative_unit_wise_credit_limit($top_global_id, $provided_level_no)
+    public function administrative_unit_wise_credit_limit($top_global_id, $provided_level_no)
         // $top_global_id's hierarchy must be greater than $provided_level_no
         //e.g ::  (area,territory)
     {
@@ -337,6 +342,7 @@ class CommonComponent extends Component
         return $result;
 
     }
+
 //    Output item name generation
     public function specific_item_name_resolver($warehouse_id, $item_id)
     {
@@ -362,37 +368,39 @@ class CommonComponent extends Component
         return $item;
     }
 
-    public function getPdf($html){
-        \Composer\Autoload\includeFile(ROOT . '\vendor' . DS  . 'mpdf' . DS .'mpdf' . DS . 'mpdf.php');
-        $mpdf=new mPDF();
-        $mpdf->useAdobeCJK=true;
+    public function getPdf($html)
+    {
+        \Composer\Autoload\includeFile(ROOT . '\vendor' . DS . 'mpdf' . DS . 'mpdf' . DS . 'mpdf.php');
+        $mpdf = new mPDF();
+        $mpdf->useAdobeCJK = true;
         //$mpdf->autoLangToFont(AUTOFONT_ALL);
-        $mpdf->WriteHTML(file_get_contents(WWW_ROOT.'css/mpdf.css'),1);
-        $mpdf->WriteHTML(file_get_contents(WWW_ROOT.'css/report.css'),1);
-        $mpdf->WriteHTML(file_get_contents(WWW_ROOT.'assets/global/plugins/bootstrap/css/bootstrap.min.css'),1);
+        $mpdf->WriteHTML(file_get_contents(WWW_ROOT . 'css/mpdf.css'), 1);
+        $mpdf->WriteHTML(file_get_contents(WWW_ROOT . 'css/report.css'), 1);
+        $mpdf->WriteHTML(file_get_contents(WWW_ROOT . 'assets/global/plugins/bootstrap/css/bootstrap.min.css'), 1);
         $mpdf->WriteHTML($html);
         $mpdf->Output();
     }
 
-    public function getWonOffer($applicablePostfix, $invoiceArray, $offer_id){
+    public function getWonOffer($applicablePostfix, $invoiceArray, $offer_id)
+    {
         App::import('Helper', 'FunctionHelper');
         $FunctionHelper = new FunctionHelper(new View());
         $wonOffers = [];
         // general condition check
         $general = $applicablePostfix['general'];
 
-        foreach($general as $k=>$genPost){
-            if($genPost['type']=='function'){
-                if($genPost['name']=='item_unit_quantity' || $genPost['name']=='item_bulk_quantity'){
+        foreach ($general as $k => $genPost) {
+            if ($genPost['type'] == 'function') {
+                if ($genPost['name'] == 'item_unit_quantity' || $genPost['name'] == 'item_bulk_quantity') {
                     $argArray = explode(',', $genPost['arg']);
-                    $result = $FunctionHelper->$genPost['name']($argArray[0],$argArray[1],$invoiceArray);
-                }elseif($genPost['name']=='max_due_invoice_age' || $genPost['name']=='is_mango_customer' || $genPost['name']=='is_cash_invoice' || $genPost['name']=='payment_date' || $genPost['name']=='invoice_payment_age'){
+                    $result = $FunctionHelper->$genPost['name']($argArray[0], $argArray[1], $invoiceArray);
+                } elseif ($genPost['name'] == 'max_due_invoice_age' || $genPost['name'] == 'is_mango_customer' || $genPost['name'] == 'is_cash_invoice' || $genPost['name'] == 'payment_date' || $genPost['name'] == 'invoice_payment_age') {
                     $result = $FunctionHelper->$genPost['name']($invoiceArray);
                 }
 
-                if(isset($result)){
-                    $general[$k]['type']='number';
-                    $general[$k]['number']=$result;
+                if (isset($result)) {
+                    $general[$k]['type'] = 'number';
+                    $general[$k]['number'] = $result;
                     unset($general[$k]['name']);
                     unset($general[$k]['arg']);
                 }
@@ -402,21 +410,21 @@ class CommonComponent extends Component
         $generalEvaluation = $FunctionHelper->postfix_evaluator($general);
 
         // If general condition is true then specific condition will be evaluated
-        if($generalEvaluation){
+        if ($generalEvaluation) {
             $specific = $applicablePostfix['specific'];
-            foreach($specific as $key=>$specPost){
-                foreach($specPost['condition'] as $k=>$specCon){
-                    if($specCon['type']=='function'){
+            foreach ($specific as $key => $specPost) {
+                foreach ($specPost['condition'] as $k => $specCon) {
+                    if ($specCon['type'] == 'function') {
 
-                        if($specCon['name']=='item_unit_quantity' || $specCon['name']=='item_bulk_quantity'){
+                        if ($specCon['name'] == 'item_unit_quantity' || $specCon['name'] == 'item_bulk_quantity') {
                             $argArray = explode(',', $specCon['arg']);
-                            $result = $FunctionHelper->$specCon['name']($argArray[0],$argArray[1],$invoiceArray);
+                            $result = $FunctionHelper->$specCon['name']($argArray[0], $argArray[1], $invoiceArray);
 
-                        }elseif($specCon['name']=='max_due_invoice_age' || $specCon['name']=='is_mango_customer' || $specCon['name']=='is_cash_invoice' || $specCon['name']=='payment_date' || $specCon['name']=='invoice_payment_age' || $specCon['name']=='invoice_item_payment_age'){
+                        } elseif ($specCon['name'] == 'max_due_invoice_age' || $specCon['name'] == 'is_mango_customer' || $specCon['name'] == 'is_cash_invoice' || $specCon['name'] == 'payment_date' || $specCon['name'] == 'invoice_payment_age' || $specCon['name'] == 'invoice_item_payment_age') {
                             $result = $FunctionHelper->$specCon['name']($invoiceArray);
                         }
 
-                        if(isset($result)){
+                        if (isset($result)) {
                             $specPost['condition'][$k]['type'] = 'number';
                             $specPost['condition'][$k]['number'] = $result;
                             unset($specPost['condition'][$k]['name']);
@@ -428,18 +436,18 @@ class CommonComponent extends Component
                 $specConEvaluation = $FunctionHelper->postfix_evaluator($specPost['condition']);
 
                 // If specific condition is true then amount will be evaluated
-                if($specConEvaluation){
-                    foreach($specPost['amount'] as $k=>$specAmount){
-                        if($specAmount['type']=='function'){
+                if ($specConEvaluation) {
+                    foreach ($specPost['amount'] as $k => $specAmount) {
+                        if ($specAmount['type'] == 'function') {
 
-                            if($specAmount['name']=='item_unit_quantity' || $specAmount['name']=='item_bulk_quantity'){
+                            if ($specAmount['name'] == 'item_unit_quantity' || $specAmount['name'] == 'item_bulk_quantity') {
                                 $argArray = explode(',', $specAmount['arg']);
-                                $result = $FunctionHelper->$specAmount['name']($argArray[0],$argArray[1],$invoiceArray);
-                            }elseif($specAmount['name']=='max_due_invoice_age' || $specAmount['name']=='is_mango_customer' || $specAmount['name']=='is_cash_invoice' || $specAmount['name']=='payment_date' || $specAmount['name']=='invoice_payment_age' || $specAmount['name']=='invoice_item_payment_age'){
+                                $result = $FunctionHelper->$specAmount['name']($argArray[0], $argArray[1], $invoiceArray);
+                            } elseif ($specAmount['name'] == 'max_due_invoice_age' || $specAmount['name'] == 'is_mango_customer' || $specAmount['name'] == 'is_cash_invoice' || $specAmount['name'] == 'payment_date' || $specAmount['name'] == 'invoice_payment_age' || $specAmount['name'] == 'invoice_item_payment_age') {
                                 $result = $FunctionHelper->$specAmount['name']($invoiceArray);
                             }
 
-                            if(isset($result)){
+                            if (isset($result)) {
                                 $specPost['amount'][$k]['type'] = 'number';
                                 $specPost['amount'][$k]['number'] = $result;
                                 unset($specPost['amount'][$k]['name']);
@@ -464,31 +472,32 @@ class CommonComponent extends Component
         return $wonOffers;
     }
 
-    public function getWonCumulativeOffer($applicablePostfixArray, $invoiceArray, $offer_id){
+    public function getWonCumulativeOffer($applicablePostfixArray, $invoiceArray, $offer_id)
+    {
         App::import('Helper', 'FunctionHelper');
         $FunctionHelper = new FunctionHelper(new View());
         $wonOffers = [];
         $passedLevelOneInvoices = [];
         $passedLevelTwoInvoices = [];
 
-        foreach($applicablePostfixArray as $key=>$applicablePostfix){
-            if($key==0){
+        foreach ($applicablePostfixArray as $key => $applicablePostfix) {
+            if ($key == 0) {
                 // general condition check
-                foreach($invoiceArray as $invoice){
+                foreach ($invoiceArray as $invoice) {
                     $general = $applicablePostfixArray[$key]['general'];
 
-                    foreach($general as $k=>$genPost){
-                        if($genPost['type']=='function'){
-                            if($genPost['name']=='item_unit_quantity' || $genPost['name']=='item_bulk_quantity'){
+                    foreach ($general as $k => $genPost) {
+                        if ($genPost['type'] == 'function') {
+                            if ($genPost['name'] == 'item_unit_quantity' || $genPost['name'] == 'item_bulk_quantity') {
                                 $argArray = explode(',', $genPost['arg']);
-                                $result = $FunctionHelper->$genPost['name']($argArray[0],$argArray[1],$invoice);
-                            }elseif($genPost['name']=='max_due_invoice_age' || $genPost['name']=='is_mango_customer' || $genPost['name']=='is_cash_invoice' || $genPost['name']=='payment_date' || $genPost['name']=='invoice_payment_age'){
+                                $result = $FunctionHelper->$genPost['name']($argArray[0], $argArray[1], $invoice);
+                            } elseif ($genPost['name'] == 'max_due_invoice_age' || $genPost['name'] == 'is_mango_customer' || $genPost['name'] == 'is_cash_invoice' || $genPost['name'] == 'payment_date' || $genPost['name'] == 'invoice_payment_age') {
                                 $result = $FunctionHelper->$genPost['name']($invoice);
                             }
 
-                            if(isset($result)){
-                                $general[$k]['type']='number';
-                                $general[$k]['number']=$result;
+                            if (isset($result)) {
+                                $general[$k]['type'] = 'number';
+                                $general[$k]['number'] = $result;
                                 unset($general[$k]['name']);
                                 unset($general[$k]['arg']);
                             }
@@ -496,27 +505,27 @@ class CommonComponent extends Component
                     }
 
                     $generalEvaluation = $FunctionHelper->postfix_evaluator($general);
-                    if($generalEvaluation){
+                    if ($generalEvaluation) {
                         $passedLevelOneInvoices[] = $invoice;
                     }
                 }
-            }elseif($key==1){
+            } elseif ($key == 1) {
                 // general condition check
-                foreach($invoiceArray as $invoice){
+                foreach ($invoiceArray as $invoice) {
                     $general = $applicablePostfixArray[$key]['general'];
 
-                    foreach($general as $k=>$genPost){
-                        if($genPost['type']=='function'){
-                            if($genPost['name']=='item_unit_quantity' || $genPost['name']=='item_bulk_quantity' || $genPost['name']=='item_unit_quantity_in_credit_invoices_over_a_period' || $genPost['name']=='item_unit_quantity_in_cash_invoices_over_a_period'){
+                    foreach ($general as $k => $genPost) {
+                        if ($genPost['type'] == 'function') {
+                            if ($genPost['name'] == 'item_unit_quantity' || $genPost['name'] == 'item_bulk_quantity' || $genPost['name'] == 'item_unit_quantity_in_credit_invoices_over_a_period' || $genPost['name'] == 'item_unit_quantity_in_cash_invoices_over_a_period') {
                                 $argArray = explode(',', $genPost['arg']);
-                                $result = $FunctionHelper->$genPost['name']($argArray[0],$argArray[1],$invoice);
-                            }elseif($genPost['name']=='max_due_invoice_age' || $genPost['name']=='is_mango_customer' || $genPost['name']=='is_cash_invoice' || $genPost['name']=='payment_date' || $genPost['name']=='invoice_payment_age'){
+                                $result = $FunctionHelper->$genPost['name']($argArray[0], $argArray[1], $invoice);
+                            } elseif ($genPost['name'] == 'max_due_invoice_age' || $genPost['name'] == 'is_mango_customer' || $genPost['name'] == 'is_cash_invoice' || $genPost['name'] == 'payment_date' || $genPost['name'] == 'invoice_payment_age') {
                                 $result = $FunctionHelper->$genPost['name']($invoice);
                             }
 
-                            if(isset($result)){
-                                $general[$k]['type']='number';
-                                $general[$k]['number']=$result;
+                            if (isset($result)) {
+                                $general[$k]['type'] = 'number';
+                                $general[$k]['number'] = $result;
                                 unset($general[$k]['name']);
                                 unset($general[$k]['arg']);
                             }
@@ -524,26 +533,26 @@ class CommonComponent extends Component
                     }
 
                     $generalEvaluation = $FunctionHelper->postfix_evaluator($general);
-                    if($generalEvaluation){
+                    if ($generalEvaluation) {
                         $passedLevelTwoInvoices[] = $invoice;
                     }
                 }
 
                 // Specifics check
-                if(sizeof($passedLevelTwoInvoices)>0) {
+                if (sizeof($passedLevelTwoInvoices) > 0) {
                     $specific = $applicablePostfix['specific'];
-                    foreach($specific as $sl=>$specPost){
-                        foreach($specPost['condition'] as $k=>$specCon){
-                            if($specCon['type']=='function'){
+                    foreach ($specific as $sl => $specPost) {
+                        foreach ($specPost['condition'] as $k => $specCon) {
+                            if ($specCon['type'] == 'function') {
 
-                                if($specCon['name']=='item_unit_quantity' || $specCon['name']=='item_bulk_quantity' || $specCon['name']=='item_unit_quantity_in_credit_invoices_over_a_period' || $specCon['name']=='item_unit_quantity_in_cash_invoices_over_a_period'){
+                                if ($specCon['name'] == 'item_unit_quantity' || $specCon['name'] == 'item_bulk_quantity' || $specCon['name'] == 'item_unit_quantity_in_credit_invoices_over_a_period' || $specCon['name'] == 'item_unit_quantity_in_cash_invoices_over_a_period') {
                                     $argArray = explode(',', $specCon['arg']);
-                                    $result = $FunctionHelper->$specCon['name']($argArray[0],$argArray[1],$passedLevelTwoInvoices);
-                                }elseif($specCon['name']=='max_due_invoice_age' || $specCon['name']=='is_mango_customer' || $specCon['name']=='is_cash_invoice' || $specCon['name']=='payment_date' || $specCon['name']=='invoice_payment_age' || $specCon['name']=='invoice_item_payment_age'){
+                                    $result = $FunctionHelper->$specCon['name']($argArray[0], $argArray[1], $passedLevelTwoInvoices);
+                                } elseif ($specCon['name'] == 'max_due_invoice_age' || $specCon['name'] == 'is_mango_customer' || $specCon['name'] == 'is_cash_invoice' || $specCon['name'] == 'payment_date' || $specCon['name'] == 'invoice_payment_age' || $specCon['name'] == 'invoice_item_payment_age') {
                                     $result = $FunctionHelper->$specCon['name']($passedLevelTwoInvoices);
                                 }
 
-                                if(isset($result)){
+                                if (isset($result)) {
                                     $specPost['condition'][$k]['type'] = 'number';
                                     $specPost['condition'][$k]['number'] = $result;
                                     unset($specPost['condition'][$k]['name']);
@@ -555,18 +564,18 @@ class CommonComponent extends Component
                         $specConEvaluation = $FunctionHelper->postfix_evaluator($specPost['condition']);
 
                         // If specific condition is true then amount will be evaluated
-                        if($specConEvaluation){
-                            foreach($specPost['amount'] as $k=>$specAmount){
-                                if($specAmount['type']=='function'){
+                        if ($specConEvaluation) {
+                            foreach ($specPost['amount'] as $k => $specAmount) {
+                                if ($specAmount['type'] == 'function') {
 
-                                    if($specAmount['name']=='item_unit_quantity' || $specAmount['name']=='item_bulk_quantity' || $specAmount['name']=='item_unit_quantity_in_credit_invoices_over_a_period' || $specAmount['name']=='item_unit_quantity_in_cash_invoices_over_a_period'){
+                                    if ($specAmount['name'] == 'item_unit_quantity' || $specAmount['name'] == 'item_bulk_quantity' || $specAmount['name'] == 'item_unit_quantity_in_credit_invoices_over_a_period' || $specAmount['name'] == 'item_unit_quantity_in_cash_invoices_over_a_period') {
                                         $argArray = explode(',', $specAmount['arg']);
-                                        $result = $FunctionHelper->$specAmount['name']($argArray[0],$argArray[1],$passedLevelTwoInvoices);
-                                    }elseif($specAmount['name']=='max_due_invoice_age' || $specAmount['name']=='is_mango_customer' || $specAmount['name']=='is_cash_invoice' || $specAmount['name']=='payment_date' || $specAmount['name']=='invoice_payment_age' || $specAmount['name']=='invoice_item_payment_age'){
+                                        $result = $FunctionHelper->$specAmount['name']($argArray[0], $argArray[1], $passedLevelTwoInvoices);
+                                    } elseif ($specAmount['name'] == 'max_due_invoice_age' || $specAmount['name'] == 'is_mango_customer' || $specAmount['name'] == 'is_cash_invoice' || $specAmount['name'] == 'payment_date' || $specAmount['name'] == 'invoice_payment_age' || $specAmount['name'] == 'invoice_item_payment_age') {
                                         $result = $FunctionHelper->$specAmount['name']($passedLevelTwoInvoices);
                                     }
 
-                                    if(isset($result)){
+                                    if (isset($result)) {
                                         $specPost['amount'][$k]['type'] = 'number';
                                         $specPost['amount'][$k]['number'] = $result;
                                         unset($specPost['amount'][$k]['name']);
@@ -593,52 +602,52 @@ class CommonComponent extends Component
         return $wonOffers;
     }
 
-    public function getCustomerDue($customer_id, $date){
+    public function getCustomerDue($customer_id, $date)
+    {
         $closestUptoDateDue = TableRegistry::get('personal_accounts')->find()->hydrate(false);
-        $closestUptoDateDue->where(['account_code'=>Configure::read('account_receivable_code')]);
-        $closestUptoDateDue->where(['applies_to_id'=>$customer_id]);
-        $closestUptoDateDue->where(['upto_date <'=>$date]);
-        $closestUptoDateDue->order(['upto_date'=> 'DESC']);
+        $closestUptoDateDue->where(['account_code' => Configure::read('account_receivable_code')]);
+        $closestUptoDateDue->where(['applies_to_id' => $customer_id]);
+        $closestUptoDateDue->where(['upto_date <' => $date]);
+        $closestUptoDateDue->order(['upto_date' => 'DESC']);
         $closestUptoDateDue->first();
 
-        if($closestUptoDateDue->toArray()){
+        if ($closestUptoDateDue->toArray()) {
             $uptoDateDue = $closestUptoDateDue->toArray()[0]['balance_value'];
             $uptoDate = $closestUptoDateDue->toArray()[0]['upto_date'];
-        }else{
+        } else {
             $uptoDateDue = 0;
             $uptoDate = strtotime('01-01-2010');
         }
 
         $betweenDateInvoices = TableRegistry::get('invoices')->find()->hydrate(false);
-        $betweenDateInvoices->where(['invoice_date >='=>$uptoDate]);
-        $betweenDateInvoices->where(['invoice_date <='=>$date]);
-        $betweenDateInvoices->where(['customer_id'=>$customer_id]);
+        $betweenDateInvoices->where(['invoice_date >=' => $uptoDate]);
+        $betweenDateInvoices->where(['invoice_date <=' => $date]);
+        $betweenDateInvoices->where(['customer_id' => $customer_id]);
         $betweenDateInvoices->where(['invoice_date', 'customer_id', 'net_total']);
-        $betweenDateInvoices->select(['net_total'=>'SUM(net_total)']);
+        $betweenDateInvoices->select(['net_total' => 'SUM(net_total)']);
 
-        if($betweenDateInvoices->toArray()){
+        if ($betweenDateInvoices->toArray()) {
             $betweenDateInvoicesNetTotal = $betweenDateInvoices->toArray()[0]['net_total'];
-        }else{
+        } else {
             $betweenDateInvoicesNetTotal = 0;
         }
         $betweenDatePayments = TableRegistry::get('invoice_payments')->find()->hydrate(false);
-        $betweenDatePayments->where(['payment_collection_date >='=>$uptoDate]);
-        $betweenDatePayments->where(['payment_collection_date <='=>$date]);
-        $betweenDatePayments->where(['customer_id'=>$customer_id]);
-        $betweenDatePayments->select(['invoice_wise_payment_amount'=>'SUM(invoice_wise_payment_amount)']);
+        $betweenDatePayments->where(['payment_collection_date >=' => $uptoDate]);
+        $betweenDatePayments->where(['payment_collection_date <=' => $date]);
+        $betweenDatePayments->where(['customer_id' => $customer_id]);
+        $betweenDatePayments->select(['invoice_wise_payment_amount' => 'SUM(invoice_wise_payment_amount)']);
         $betweenDatePayments->first();
-        if($betweenDatePayments->toArray()){
+        if ($betweenDatePayments->toArray()) {
             $betweenDatePaymentsNetTotal = $betweenDatePayments->toArray()[0]['invoice_wise_payment_amount'];
-        }else{
+        } else {
             $betweenDatePaymentsNetTotal = 0;
         }
 
         $finalDue = $uptoDateDue + $betweenDateInvoicesNetTotal - $betweenDatePaymentsNetTotal;
         return $finalDue;
     }
-	
-	  public
-    function get_balance_value_of_account_head($code)
+
+    public function get_balance_value_of_account_head($code)
     {
         $res = TableRegistry::get('accounts')->find('all')
             ->where(['code' => $code, 'status' => 1])
@@ -650,8 +659,7 @@ class CommonComponent extends Component
         return $result;
     }
 
-    public
-    function gross_due_of_customer($customer_id)
+    public function gross_due_of_customer($customer_id)
     {
         $invoice_table = TableRegistry::get('invoices');
         $result = $invoice_table->find()
@@ -664,8 +672,7 @@ class CommonComponent extends Component
         }
     }
 
-    public
-    function get_total_credit_note_amount($code, $date)
+    public function get_total_credit_note_amount($code, $date)
     {
         $get_account_data = $this->get_balance_value_of_account_head($code);
         $start_date = $get_account_data['upto_date'];
@@ -708,6 +715,101 @@ class CommonComponent extends Component
         $adjustable_amount = ($sum_of_credit_note_approved_adjusted_all + $get_account_data['balance_value']) - $total_of_credit_note_adjusted;
 
         return $adjustable_amount;
+    }
+
+    public function getUnitOpeningDue($space_level, $space_global_id, $group_by_level, $date){
+        $limitStart = pow(2, (Configure::read('max_level_no') - $space_level - 1) * 5);
+        $limitEnd = pow(2, (Configure::read('max_level_no') - $space_level) * 5);
+        $conn = ConnectionManager::get('default');
+
+        if($space_level < Configure::read('max_level_no') && $group_by_level <= Configure::read('max_level_no')){
+            $expression = (pow(2, (1 + 5 * $group_by_level)) - 1) * pow(2, (5 * (Configure::read('max_level_no') - $group_by_level)));
+
+            $query = $conn->execute('
+            SELECT customer_unit_global_id  & ' . $expression . ' as global_id, SUM(due) as total_due from invoices
+            WHERE invoice_date <= ' . $date . '
+            AND customer_unit_global_id-' . $space_global_id . ' >= ' . $limitStart . ' AND customer_unit_global_id-' . $space_global_id . ' < ' . $limitEnd . '
+            GROUP BY global_id');
+
+        }elseif($space_level < Configure::read('max_level_no') && $group_by_level <= Configure::read('max_level_no')+1){
+            $query = $conn->execute('
+            SELECT customer_id as global_id, SUM(due) as total_due from invoices
+            WHERE invoice_date <= ' . $date . '
+            AND customer_unit_global_id-' . $space_global_id . ' >= ' . $limitStart . ' AND customer_unit_global_id-' . $space_global_id . ' < ' . $limitEnd . '
+            GROUP BY customer_id');
+
+        }elseif($space_level == Configure::read('max_level_no') && $group_by_level == $space_level){
+            $expression = (pow(2, (1 + 5 * $group_by_level)) - 1) * pow(2, (5 * (Configure::read('max_level_no') - $group_by_level)));
+
+            $query = $conn->execute('
+            SELECT customer_unit_global_id  & ' . $expression . ' as global_id, SUM(due) as total_due from invoices
+            WHERE invoice_date <= ' . $date . '
+            AND customer_unit_global_id = ' . $space_global_id . '
+            GROUP BY global_id');
+
+        }elseif($space_level == Configure::read('max_level_no') && $group_by_level > $space_level){
+            $query = $conn->execute('
+            SELECT customer_id as global_id, SUM(due) as total_due from invoices
+            WHERE invoice_date <= ' . $date . '
+            AND customer_unit_global_id = ' . $space_global_id . '
+            GROUP BY customer_id');
+        }
+
+        $result = $query->fetchAll('assoc');
+        return $result;
+    }
+
+    public function get_unit_credit_note_amount($space_level, $space_global_id, $start_date, $end_date, $group_by_level)
+    {
+        $code = 130000;
+        $approval_status = array_flip(Configure::read('credit_note_approval_status'))['approved'];
+        $limitStart = pow(2, (Configure::read('max_level_no') - $space_level - 1) * 5);
+        $limitEnd = pow(2, (Configure::read('max_level_no') - $space_level) * 5);
+        $conn = ConnectionManager::get('default');
+
+        if($space_level < Configure::read('max_level_no') && $group_by_level <= Configure::read('max_level_no')){
+            $expression = (pow(2, (1 + 5 * $group_by_level)) - 1) * pow(2, (5 * (Configure::read('max_level_no') - $group_by_level)));
+
+            $query = $conn->execute('
+            SELECT parent_global_id  & ' . $expression . ' as global_id, SUM(total_after_demurrage) as total from credit_notes
+            WHERE date >= ' . $start_date . '
+            AND date <= ' . $end_date . '
+            AND approval_status = ' . $approval_status . '
+            AND parent_global_id-' . $space_global_id . ' >= ' . $limitStart . ' AND parent_global_id-' . $space_global_id . ' < ' . $limitEnd . '
+            GROUP BY global_id');
+
+        }elseif($space_level < Configure::read('max_level_no') && $group_by_level <= Configure::read('max_level_no')+1){
+            $query = $conn->execute('
+            SELECT customer_id as global_id, SUM(total_after_demurrage) as total from credit_notes
+            WHERE date >= ' . $start_date . '
+            AND date <= ' . $end_date . '
+            AND approval_status = ' . $approval_status . '
+            AND parent_global_id-' . $space_global_id . ' >= ' . $limitStart . ' AND parent_global_id-' . $space_global_id . ' < ' . $limitEnd . '
+            GROUP BY customer_id');
+
+        }elseif($space_level == Configure::read('max_level_no') && $group_by_level == $space_level){
+            $expression = (pow(2, (1 + 5 * $group_by_level)) - 1) * pow(2, (5 * (Configure::read('max_level_no') - $group_by_level)));
+
+            $query = $conn->execute('
+            SELECT parent_global_id  & ' . $expression . ' as global_id, SUM(total_after_demurrage) as total from credit_notes
+            WHERE date >= ' . $start_date . '
+            AND date <= ' . $end_date . '
+            AND approval_status = ' . $approval_status . '
+            AND parent_global_id = ' . $space_global_id . '
+            GROUP BY global_id');
+
+        }elseif($space_level == Configure::read('max_level_no') && $group_by_level > $space_level){
+            $query = $conn->execute('
+            SELECT customer_id as global_id, SUM(total_after_demurrage) as total from credit_notes
+            WHERE date >= ' . $start_date . '
+            AND date <= ' . $end_date . '
+            AND approval_status = ' . $approval_status . '
+            AND parent_global_id = ' . $space_global_id . '
+            GROUP BY customer_id');
+        }
+
+        $result = $query->fetchAll('assoc');
+        return $result;
     }
 
 }

@@ -31,6 +31,14 @@ class ReportSalesCollectionsController extends AppController
      */
     public function index()
     {
+//        $this->loadComponent('Common');
+//        $arr = $this->Common->get_unit_credit_note_amount(0, 1048576, 1420070400, 1490918400, 5);
+//
+//        echo '<pre>';
+//        print_r($arr);
+//        echo '</pre>';
+//        exit;
+
         $user = $this->Auth->user();
         $user_level = $user['level_no'];
 
@@ -53,11 +61,14 @@ class ReportSalesCollectionsController extends AppController
             unset($exploreLevels[$i + 1]);
         }
 
-        $report_types = [
-            '',
-        ];
+//        $reportTypes = [
+//            'cash_sales'=>'Cash Sales',
+//            'credit_sales'=>'Credit Sales',
+//            'cash_collection'=>'Cash Collection',
+//            'credit_collection'=>'Credit Collection',
+//        ];
 
-        $this->set(compact('exploreLevels'));
+        $this->set(compact('exploreLevels', 'reportTypes'));
         $this->set('_serialize', ['exploreLevels']);
     }
 

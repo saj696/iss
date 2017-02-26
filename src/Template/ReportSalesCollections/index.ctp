@@ -10,7 +10,7 @@ $status = Configure::read('status_options');
             <a href="<?= $this->Url->build(('/Dashboard'), true); ?>"><?= __('Dashboard') ?></a>
             <i class="fa fa-angle-right"></i>
         </li>
-        <li><?= $this->Html->link(__('Customer Ledger Report'), ['action' => 'index']) ?></li>
+        <li><?= $this->Html->link(__('Sales & Collection Report'), ['action' => 'index']) ?></li>
     </ul>
 </div>
 
@@ -19,7 +19,7 @@ $status = Configure::read('status_options');
         <div class="portlet box grey-cascade">
             <div class="portlet-title">
                 <div class="caption">
-                    <i class="fa fa-plus-square-o fa-lg"></i><?= __('Customer Ledger Report') ?>
+                    <i class="fa fa-plus-square-o fa-lg"></i><?= __('Sales & Collection Report') ?>
                 </div>
             </div>
 
@@ -33,7 +33,7 @@ $status = Configure::read('status_options');
                         echo $this->Form->input('explore_level', ['label'=>'Explore Level', 'options'=>$exploreLevels, 'class'=>'form-control explore_level', 'empty'=>'Select', 'required'=>'required']);
                         echo $this->Form->input('explore_unit', ['options'=>[], 'class'=>'explore_unit form-control', 'empty'=>'Select', 'required'=>'required']);
                         echo $this->Form->input('display_unit', ['options'=>[], 'empty'=>'Select', 'required'=>'required', 'class'=>'form-control display_unit']);
-                        echo $this->Form->input('report_type', ['empty'=>'Select', 'required'=>'required', 'class'=>'form-control customer']);
+//                        echo $this->Form->input('report_type', ['options'=>$reportTypes, 'empty'=>'Select', 'required'=>'required', 'class'=>'form-control']);
                         ?>
                     </div>
                     <div class="col-md-12 text-center">
@@ -61,9 +61,8 @@ $status = Configure::read('status_options');
         $(document).on('change', '.explore_level', function () {
             var obj = $(this);
             var explore_level = obj.val();
-            obj.closest('.input').next().find('.explore_unit').html('<option value="">Select</option>');
-            obj.closest('.input').next().find('.display_unit').html('<option value="">Select</option>');
-            $('.unit').html('<option value="">Select</option>');
+            $('.explore_unit').html('<option value="">Select</option>');
+            $('.display_unit').html('<option value="">Select</option>');
 
             $.ajax({
                 type: 'POST',
@@ -80,7 +79,6 @@ $status = Configure::read('status_options');
             var obj = $(this);
             var explore_unit = obj.val();
             var explore_level = $('.explore_level').val();
-            obj.closest('.input').next().find('.display_unit').html('<option value="">Select</option>');
             $('.display_unit').html('<option value="">Select</option>');
 
             $.ajax({
