@@ -636,5 +636,78 @@ class CommonComponent extends Component
         $finalDue = $uptoDateDue + $betweenDateInvoicesNetTotal - $betweenDatePaymentsNetTotal;
         return $finalDue;
     }
+	
+	  public
+    function get_balance_value_of_account_head($code)
+    {
+        $res = TableRegistry::get('accounts')->find('all')
+            ->where(['code' => $code, 'status' => 1])
+            ->orderDesc('created_date')
+            ->hydrate(false)->first();
+
+        $result['upto_date'] = $res['upto_date'];
+        $result['balance_value'] = $res['balance_value'];
+        return $result;
+    }
+
+    public
+    function gross_due_of_customer($customer_id)
+    {
+        $invoice_table = TableRegistry::get('invoices');
+        $result = $invoice_table->find()
+            ->where(['customer_id' => $customer_id, 'status' => 1]);
+        $total_due = $result->select(['gross_due' => $result->func()->sum('due')])->hydrate(false)->toArray();
+        if (empty($total_due)) {
+            return 0;
+        } else {
+            return $total_due[0]['gross_due'];
+        }
+    }
+
+    public
+    function get_total_credit_note_amount($code, $date)
+    {
+        $get_account_data = $this->get_balance_value_of_account_head($code);
+        $start_date = $get_account_data['upto_date'];
+        $end_date = $date - 3600; //1 hour before
+        $credit_note_approved_adjusted =
+            TableRegistry::get('credit_notes')
+                ->find('all')
+                ->select(['total_after_demurrage', 'id', 'remaining_amount'])
+                ->hydrate(false)
+                ->where(['approval_status' => 3])
+                ->orWhere(['adjustment_status' => 1])
+                ->orWhere(['adjustment_status' => 2])
+                ->andWhere(
+                    function ($exp) use ($start_date, $end_date) {
+                        return $exp->between('date', $start_date, $end_date);
+                    })
+                ->andWhere(['status' => 1])->toArray();
+
+        $sum_of_credit_note_approved_adjusted_all = 0;
+        foreach ($credit_note_approved_adjusted as $approved_adjusted_all):
+            $sum_of_credit_note_approved_adjusted_all += $approved_adjusted_all['remaining_amount'];
+        endforeach;
+
+
+        $credit_note_adjusted = TableRegistry::get('credit_note_adjustments')
+            ->find('all')
+            ->select(['adjustment_amount', 'adjustment_date', 'credit_note_id'])
+            ->hydrate(false)
+            ->Where(
+                function ($exp) use ($start_date, $end_date) {
+                    return $exp->between('adjustment_date', $start_date, $end_date);
+                })
+            ->andWhere(['status' => 1])->toArray();
+
+        $total_of_credit_note_adjusted = 0;
+        foreach ($credit_note_adjusted as $adjusted):
+            $total_of_credit_note_adjusted += $adjusted['adjustment_amount'];
+        endforeach;
+
+        $adjustable_amount = ($sum_of_credit_note_approved_adjusted_all + $get_account_data['balance_value']) - $total_of_credit_note_adjusted;
+
+        return $adjustable_amount;
+    }
 
 }
