@@ -7,7 +7,6 @@
  */
 use Cake\Core\Configure;
 $webroot =  $this->request->webroot;
-$tTypeCon = Configure::read('transaction_type_display');
 ?>
 
 <div class="col-md-12" style="margin-top: 20px;">
@@ -28,94 +27,53 @@ $tTypeCon = Configure::read('transaction_type_display');
 
         <div id="PrintArea">
             <div class="row">
-                <h4 class="text-center"><?= __('Customer Ledger') ?></h4>
+                <h4 class="text-center"><?= __('Sales & Collection Report') ?></h4>
             </div>
 
             <div class="row">
                 <div class="col-md-12 report-table" style="overflow: auto;">
                     <table class="table table-bordered">
                         <thead>
-                            <tr>
-                                <td colspan="6">Opening Balance</td>
-                                <td><?= $finalDue?></td>
-                            </tr>
                             <tr style="border-bottom: 3px solid lightgrey">
                                 <td><?= __('Sl#') ?></td>
-                                <td><?= __('Date') ?></td>
-                                <td><?= __('Transaction No.') ?></td>
-                                <td><?= __('T.Type')?></td>
-                                <td><?= __('Inv Amount')?></td>
-                                <td><?= __('Pay Amount')?></td>
-                                <td><?= __('Balance')?></td>
+                                <td><?= __('Unit Name') ?></td>
+                                <td><?= __('Credit Limit') ?></td>
+                                <td><?= __('Opening Due') ?></td>
+                                <td><?= __('Credit Sales') ?></td>
+                                <td><?= __('Credit Note') ?></td>
+                                <td><?= __('Cash Sales') ?></td>
+                                <td><?= __('Net Total Sales') ?></td>
+                                <td><?= __('Credit Collection') ?></td>
+                                <td><?= __('Cash Collection') ?></td>
+                                <td><?= __('Adjustment') ?></td>
+                                <td><?= __('Total Recovery') ?></td>
+                                <td><?= __('Closing Due') ?></td>
                             </tr>
                         </thead>
                         <tbody>
-                        <?php
-                        if(sizeof($finalArray)>0):
-                            $i=0;
-                            $balance = $finalDue;
-                            $totalInvoiceAmount = 0;
-                            $totalPaymentAmount = 0;
-                            foreach($finalArray as $date=>$detail):
-                                foreach($detail as $invOrPay=>$info):
-                                    foreach($info as $field):?>
-                                    <tr>
-                                        <td><?= $i+1?></td>
-                                        <td><?= date('d-m-Y', $date)?></td>
-                                        <td>
-                                            <?php
-                                            if($invOrPay=='inv'):
-                                                echo $field['id'];
-                                            else:
-                                                echo $field['id'].' - '.$field['sl_no'];
-                                            endif;
-                                            ?>
-                                        </td>
-                                        <td><?= $tTypeCon[$invOrPay][$field['type']]?$tTypeCon[$invOrPay][$field['type']]:''?></td>
-                                        <td class="text-center">
-                                            <?php
-                                            if($invOrPay=='inv'){
-                                                echo $field['net_total'];
-                                                $balance += $field['net_total'];
-                                                $totalInvoiceAmount += $field['net_total'];
-                                            }else{
-                                                echo '';
-                                            }
-                                            ?>
-                                        </td>
-                                        <td class="text-center">
-                                            <?php
-                                            if($invOrPay=='pay'){
-                                                echo $field['net_total'];
-                                                $balance -= $field['net_total'];
-                                                $totalPaymentAmount += $field['net_total'];
-                                            }else{
-                                                echo '';
-                                            }
-                                            ?>
-                                        </td>
-                                        <td class="text-center"><?= $balance?></td>
-                                    </tr>
-                                <?php
-                                    $i++;
-                                    endforeach;
-                                endforeach;
-                                ?>
                             <?php
+                            $sl = 0;
+                            foreach($finalArray as $unit=>$data):
+                                ?>
+                                <tr>
+                                    <td><?=$sl+1?></td>
+                                    <td><?=$nameArray[$unit]?></td>
+                                    <td><?=$data['opening_due']?></td>
+                                    <td><?=$data['opening_due']?></td>
+                                    <td><?=$data['credit_sales']?></td>
+                                    <td><?=$data['credit_note']?></td>
+                                    <td><?=$data['cash_sales']?></td>
+                                    <td><?=$data['total_sales']?></td>
+                                    <td><?=$data['credit_collection']?></td>
+                                    <td><?=$data['cash_collection']?></td>
+                                    <td><?=$data['adjustment']?></td>
+                                    <td><?=$data['recovery']?></td>
+                                    <td><?=$data['closing_due']?></td>
+                                </tr>
+                            <?php
+                            $sl++;
                             endforeach;
                             ?>
-                            <tr>
-                                <td colspan="4">Total</td>
-                                <td colspan="1" class="text-center"><?= $totalInvoiceAmount?></td>
-                                <td colspan="1" class="text-center"><?= $totalPaymentAmount?></td>
-                                <td colspan="1" class="text-center"><?= $balance?></td>
-                            </tr>
-                            <?php
-                        else:?>
-                            <tr><td class="text-center alert-danger" colspan="12"><?= __('No Data Found')?></td></tr>
-                        <?php
-                        endif;
-                        ?>
                         </tbody>
                     </table>
                 </div>

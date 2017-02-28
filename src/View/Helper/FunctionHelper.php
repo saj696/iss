@@ -965,7 +965,7 @@ class FunctionHelper extends Helper
         return $sum;
     }
 
-    public function credit_sales($unit_global_id, $start_time, $end_time, $itemUnitArray, $group_by_level){
+    public function credit_sales($unit_global_id, $start_time, $end_time, $group_by_level, $itemUnitArray=[]){
         $searchUnitInfo = TableRegistry::get('administrative_units')->find()->where(['global_id'=>$unit_global_id])->first();
 
         $limitStart = pow(2,(Configure::read('max_level_no')- $searchUnitInfo['level_no']-1)*5);
@@ -976,7 +976,9 @@ class FunctionHelper extends Helper
         $invoices->where('customer_unit_global_id -'. $unit_global_id .'< '.$limitEnd);
         $invoices->where(['invoice_date >='=>$start_time]);
         $invoices->where(['invoice_date <='=>$end_time]);
-        $invoices->where(['item_unit_id IN'=>$itemUnitArray]);
+        if(sizeof($itemUnitArray)>0){
+            $invoices->where(['item_unit_id IN'=>$itemUnitArray]);
+        }
         $invoices->where(['invoice_type'=>array_flip(Configure::read('invoice_type'))['Credit']]);
 
         $newInvoiceArray = [];
@@ -989,22 +991,7 @@ class FunctionHelper extends Helper
                 }
             }
 
-            $customers = TableRegistry::get('customers')->find();
-            $customers->select(['id', 'name']);
-
-            $customerArray = [];
-            foreach($customers as $customer){
-                $customerArray[$customer['id']] = $customer['name'];
-            }
-
-            $returnArray = [];
-            $i = 0;
-            foreach($newInvoiceArray as $id=>$final){
-                $returnArray[$i]['name'] = $customerArray[$id];
-                $returnArray[$i]['total'] = $final;
-                $i++;
-            }
-            return $returnArray;
+            return $newInvoiceArray;
         }else{
             foreach($invoices as $invoice){
                 if(isset($newInvoiceArray[$invoice['customer_unit_global_id']])){
@@ -1034,15 +1021,14 @@ class FunctionHelper extends Helper
         if($administrativeUnits->toArray()){
             $xxx = [];
             foreach($administrativeUnits->toArray() as $key=>$expectedUnits){
-                $xxx[$key]['name'] = $expectedUnits['unit_name'];
-                $xxx[$key]['total'] = 0;
+                $xxx[$expectedUnits['global_id']] = 0;
                 $childs = self::get_child_global_ids($expectedUnits['level_no'], $expectedUnits['global_id']);
                 if(sizeof($childs)>0){
                     foreach($childs as $child){
-                        $xxx[$key]['total'] += isset($newInvoiceArray[$child])?$newInvoiceArray[$child]:0;
+                        $xxx[$expectedUnits['global_id']] += isset($newInvoiceArray[$child])?$newInvoiceArray[$child]:0;
                     }
                 }else{
-                    $xxx[$key]['total'] = isset($newInvoiceArray[$expectedUnits['global_id']])?$newInvoiceArray[$expectedUnits['global_id']]:0;
+                    $xxx[$expectedUnits['global_id']] = isset($newInvoiceArray[$expectedUnits['global_id']])?$newInvoiceArray[$expectedUnits['global_id']]:0;
                 }
             }
 
@@ -1052,7 +1038,7 @@ class FunctionHelper extends Helper
         }
     }
 
-    public function cash_sales($unit_global_id, $start_time, $end_time, $itemUnitArray, $group_by_level){
+    public function cash_sales($unit_global_id, $start_time, $end_time, $group_by_level, $itemUnitArray=[]){
         $searchUnitInfo = TableRegistry::get('administrative_units')->find()->where(['global_id'=>$unit_global_id])->first();
 
         $limitStart = pow(2,(Configure::read('max_level_no')- $searchUnitInfo['level_no']-1)*5);
@@ -1063,7 +1049,9 @@ class FunctionHelper extends Helper
         $invoices->where('customer_unit_global_id -'. $unit_global_id .'< '.$limitEnd);
         $invoices->where(['invoice_date >='=>$start_time]);
         $invoices->where(['invoice_date <='=>$end_time]);
-        $invoices->where(['item_unit_id IN'=>$itemUnitArray]);
+        if(sizeof($itemUnitArray)>0){
+            $invoices->where(['item_unit_id IN'=>$itemUnitArray]);
+        }
         $invoices->where(['invoice_type'=>array_flip(Configure::read('invoice_type'))['Cash']]);
 
         $newInvoiceArray = [];
@@ -1076,22 +1064,7 @@ class FunctionHelper extends Helper
                 }
             }
 
-            $customers = TableRegistry::get('customers')->find();
-            $customers->select(['id', 'name']);
-
-            $customerArray = [];
-            foreach($customers as $customer){
-                $customerArray[$customer['id']] = $customer['name'];
-            }
-
-            $returnArray = [];
-            $i = 0;
-            foreach($newInvoiceArray as $id=>$final){
-                $returnArray[$i]['name'] = $customerArray[$id];
-                $returnArray[$i]['total'] = $final;
-                $i++;
-            }
-            return $returnArray;
+            return $newInvoiceArray;
         }else{
             foreach($invoices as $invoice){
                 if(isset($newInvoiceArray[$invoice['customer_unit_global_id']])){
@@ -1121,15 +1094,14 @@ class FunctionHelper extends Helper
         if($administrativeUnits->toArray()){
             $xxx = [];
             foreach($administrativeUnits->toArray() as $key=>$expectedUnits){
-                $xxx[$key]['name'] = $expectedUnits['unit_name'];
-                $xxx[$key]['total'] = 0;
+                $xxx[$expectedUnits['global_id']] = 0;
                 $childs = self::get_child_global_ids($expectedUnits['level_no'], $expectedUnits['global_id']);
                 if(sizeof($childs)>0){
                     foreach($childs as $child){
-                        $xxx[$key]['total'] += isset($newInvoiceArray[$child])?$newInvoiceArray[$child]:0;
+                        $xxx[$expectedUnits['global_id']] += isset($newInvoiceArray[$child])?$newInvoiceArray[$child]:0;
                     }
                 }else{
-                    $xxx[$key]['total'] = isset($newInvoiceArray[$expectedUnits['global_id']])?$newInvoiceArray[$expectedUnits['global_id']]:0;
+                    $xxx[$expectedUnits['global_id']] = isset($newInvoiceArray[$expectedUnits['global_id']])?$newInvoiceArray[$expectedUnits['global_id']]:0;
                 }
             }
 
@@ -1139,7 +1111,7 @@ class FunctionHelper extends Helper
         }
     }
 
-    public function total_sales($unit_global_id, $start_time, $end_time, $itemUnitArray, $group_by_level){
+    public function total_sales($unit_global_id, $start_time, $end_time, $group_by_level, $itemUnitArray=[]){
         $searchUnitInfo = TableRegistry::get('administrative_units')->find()->where(['global_id'=>$unit_global_id])->first();
 
         $limitStart = pow(2,(Configure::read('max_level_no')- $searchUnitInfo['level_no']-1)*5);
@@ -1150,7 +1122,9 @@ class FunctionHelper extends Helper
         $invoices->where('customer_unit_global_id -'. $unit_global_id .'< '.$limitEnd);
         $invoices->where(['invoice_date >='=>$start_time]);
         $invoices->where(['invoice_date <='=>$end_time]);
-        $invoices->where(['item_unit_id IN'=>$itemUnitArray]);
+        if(sizeof($itemUnitArray)>0){
+            $invoices->where(['item_unit_id IN'=>$itemUnitArray]);
+        }
 
         $newInvoiceArray = [];
         if($group_by_level==Configure::read('max_level_no')+1){
@@ -1162,22 +1136,7 @@ class FunctionHelper extends Helper
                 }
             }
 
-            $customers = TableRegistry::get('customers')->find();
-            $customers->select(['id', 'name']);
-
-            $customerArray = [];
-            foreach($customers as $customer){
-                $customerArray[$customer['id']] = $customer['name'];
-            }
-
-            $returnArray = [];
-            $i = 0;
-            foreach($newInvoiceArray as $id=>$final){
-                $returnArray[$i]['name'] = $customerArray[$id];
-                $returnArray[$i]['total'] = $final;
-                $i++;
-            }
-            return $returnArray;
+            return $newInvoiceArray;
         }else{
             foreach($invoices as $invoice){
                 if(isset($newInvoiceArray[$invoice['customer_unit_global_id']])){
@@ -1207,15 +1166,14 @@ class FunctionHelper extends Helper
         if($administrativeUnits->toArray()){
             $xxx = [];
             foreach($administrativeUnits->toArray() as $key=>$expectedUnits){
-                $xxx[$key]['name'] = $expectedUnits['unit_name'];
-                $xxx[$key]['total'] = 0;
+                $xxx[$expectedUnits['global_id']] = 0;
                 $childs = self::get_child_global_ids($expectedUnits['level_no'], $expectedUnits['global_id']);
                 if(sizeof($childs)>0){
                     foreach($childs as $child){
-                        $xxx[$key]['total'] += isset($newInvoiceArray[$child])?$newInvoiceArray[$child]:0;
+                        $xxx[$expectedUnits['global_id']] += isset($newInvoiceArray[$child])?$newInvoiceArray[$child]:0;
                     }
                 }else{
-                    $xxx[$key]['total'] = isset($newInvoiceArray[$expectedUnits['global_id']])?$newInvoiceArray[$expectedUnits['global_id']]:0;
+                    $xxx[$expectedUnits['global_id']] = isset($newInvoiceArray[$expectedUnits['global_id']])?$newInvoiceArray[$expectedUnits['global_id']]:0;
                 }
             }
 
@@ -1250,22 +1208,7 @@ class FunctionHelper extends Helper
                 }
             }
 
-            $customers = TableRegistry::get('customers')->find();
-            $customers->select(['id', 'name']);
-
-            $customerArray = [];
-            foreach($customers as $customer){
-                $customerArray[$customer['id']] = $customer['name'];
-            }
-
-            $returnArray = [];
-            $i = 0;
-            foreach($newPaymentArray as $id=>$final){
-                $returnArray[$i]['name'] = $customerArray[$id];
-                $returnArray[$i]['total'] = $final;
-                $i++;
-            }
-            return $returnArray;
+            return $newPaymentArray;
         }else{
             foreach($payments as $payment){
                 if(isset($newPaymentArray[$payment['parent_global_id']])){
@@ -1295,15 +1238,14 @@ class FunctionHelper extends Helper
         if($administrativeUnits->toArray()){
             $xxx = [];
             foreach($administrativeUnits->toArray() as $key=>$expectedUnits){
-                $xxx[$key]['name'] = $expectedUnits['unit_name'];
-                $xxx[$key]['total'] = 0;
+                $xxx[$expectedUnits['global_id']] = 0;
                 $childs = self::get_child_global_ids($expectedUnits['level_no'], $expectedUnits['global_id']);
                 if(sizeof($childs)>0){
                     foreach($childs as $child){
-                        $xxx[$key]['total'] += isset($newPaymentArray[$child])?$newPaymentArray[$child]:0;
+                        $xxx[$expectedUnits['global_id']] += isset($newPaymentArray[$child])?$newPaymentArray[$child]:0;
                     }
                 }else{
-                    $xxx[$key]['total'] = isset($newPaymentArray[$expectedUnits['global_id']])?$newPaymentArray[$expectedUnits['global_id']]:0;
+                    $xxx[$expectedUnits['global_id']] = isset($newPaymentArray[$expectedUnits['global_id']])?$newPaymentArray[$expectedUnits['global_id']]:0;
                 }
             }
 
@@ -1337,22 +1279,8 @@ class FunctionHelper extends Helper
                     $newPaymentArray[$payment['customer_id']] = $payment['invoice_wise_payment_amount'];
                 }
             }
-            $customers = TableRegistry::get('customers')->find();
-            $customers->select(['id', 'name']);
 
-            $customerArray = [];
-            foreach($customers as $customer){
-                $customerArray[$customer['id']] = $customer['name'];
-            }
-
-            $returnArray = [];
-            $i = 0;
-            foreach($newPaymentArray as $id=>$final){
-                $returnArray[$i]['name'] = $customerArray[$id];
-                $returnArray[$i]['total'] = $final;
-                $i++;
-            }
-            return $returnArray;
+            return $newPaymentArray;
         }else{
             foreach($payments as $payment){
                 if(isset($newPaymentArray[$payment['parent_global_id']])){
@@ -1382,15 +1310,14 @@ class FunctionHelper extends Helper
         if($administrativeUnits->toArray()){
             $xxx = [];
             foreach($administrativeUnits->toArray() as $key=>$expectedUnits){
-                $xxx[$key]['name'] = $expectedUnits['unit_name'];
-                $xxx[$key]['total'] = 0;
+                $xxx[$expectedUnits['global_id']] = 0;
                 $childs = self::get_child_global_ids($expectedUnits['level_no'], $expectedUnits['global_id']);
                 if(sizeof($childs)>0){
                     foreach($childs as $child){
-                        $xxx[$key]['total'] += isset($newPaymentArray[$child])?$newPaymentArray[$child]:0;
+                        $xxx[$expectedUnits['global_id']] += isset($newPaymentArray[$child])?$newPaymentArray[$child]:0;
                     }
                 }else{
-                    $xxx[$key]['total'] = isset($newPaymentArray[$expectedUnits['global_id']])?$newPaymentArray[$expectedUnits['global_id']]:0;
+                    $xxx[$expectedUnits['global_id']] = isset($newPaymentArray[$expectedUnits['global_id']])?$newPaymentArray[$expectedUnits['global_id']]:0;
                 }
             }
 
@@ -1423,22 +1350,8 @@ class FunctionHelper extends Helper
                     $newPaymentArray[$payment['customer_id']] = $payment['invoice_wise_payment_amount'];
                 }
             }
-            $customers = TableRegistry::get('customers')->find();
-            $customers->select(['id', 'name']);
 
-            $customerArray = [];
-            foreach($customers as $customer){
-                $customerArray[$customer['id']] = $customer['name'];
-            }
-
-            $returnArray = [];
-            $i = 0;
-            foreach($newPaymentArray as $id=>$final){
-                $returnArray[$i]['name'] = $customerArray[$id];
-                $returnArray[$i]['total'] = $final;
-                $i++;
-            }
-            return $returnArray;
+            return $newPaymentArray;
         }else{
             foreach($payments as $payment){
                 if(isset($newPaymentArray[$payment['parent_global_id']])){
@@ -1468,15 +1381,14 @@ class FunctionHelper extends Helper
         if($administrativeUnits->toArray()){
             $xxx = [];
             foreach($administrativeUnits->toArray() as $key=>$expectedUnits){
-                $xxx[$key]['name'] = $expectedUnits['unit_name'];
-                $xxx[$key]['total'] = 0;
+                $xxx[$expectedUnits['global_id']] = 0;
                 $childs = self::get_child_global_ids($expectedUnits['level_no'], $expectedUnits['global_id']);
                 if(sizeof($childs)>0){
                     foreach($childs as $child){
-                        $xxx[$key]['total'] += isset($newPaymentArray[$child])?$newPaymentArray[$child]:0;
+                        $xxx[$expectedUnits['global_id']] += isset($newPaymentArray[$child])?$newPaymentArray[$child]:0;
                     }
                 }else{
-                    $xxx[$key]['total'] = isset($newPaymentArray[$expectedUnits['global_id']])?$newPaymentArray[$expectedUnits['global_id']]:0;
+                    $xxx[$expectedUnits['global_id']] = isset($newPaymentArray[$expectedUnits['global_id']])?$newPaymentArray[$expectedUnits['global_id']]:0;
                 }
             }
 
@@ -1508,22 +1420,7 @@ class FunctionHelper extends Helper
                 }
             }
 
-            $customers = TableRegistry::get('customers')->find();
-            $customers->select(['id', 'name']);
-
-            $customerArray = [];
-            foreach($customers as $customer){
-                $customerArray[$customer['id']] = $customer['name'];
-            }
-
-            $returnArray = [];
-            $i = 0;
-            foreach($newCnArray as $id=>$final){
-                $returnArray[$i]['name'] = $customerArray[$id];
-                $returnArray[$i]['total'] = $final;
-                $i++;
-            }
-            return $returnArray;
+            return $newCnArray;
         }else{
             foreach($creditNotes as $creditNote){
                 if(isset($newCnArray[$creditNote['parent_global_id']])){
@@ -1553,15 +1450,14 @@ class FunctionHelper extends Helper
         if($administrativeUnits->toArray()){
             $xxx = [];
             foreach($administrativeUnits->toArray() as $key=>$expectedUnits){
-                $xxx[$key]['name'] = $expectedUnits['unit_name'];
-                $xxx[$key]['total'] = 0;
+                $xxx[$expectedUnits['global_id']] = 0;
                 $childs = self::get_child_global_ids($expectedUnits['level_no'], $expectedUnits['global_id']);
                 if(sizeof($childs)>0){
                     foreach($childs as $child){
-                        $xxx[$key]['total'] += isset($newCnArray[$child])?$newCnArray[$child]:0;
+                        $xxx[$expectedUnits['global_id']] += isset($newCnArray[$child])?$newCnArray[$child]:0;
                     }
                 }else{
-                    $xxx[$key]['total'] = isset($newCnArray[$expectedUnits['global_id']])?$newCnArray[$expectedUnits['global_id']]:0;
+                    $xxx[$expectedUnits['global_id']] = isset($newCnArray[$expectedUnits['global_id']])?$newCnArray[$expectedUnits['global_id']]:0;
                 }
             }
 

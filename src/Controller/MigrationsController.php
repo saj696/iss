@@ -31,10 +31,17 @@ class MigrationsController extends AppController
         try {
             $saveStatus = 0;
             $conn = ConnectionManager::get('default');
-            $conn->transactional(function () use (&$saveStatus)
+            $conn->transactional(function () use (&$saveStatus, $conn)
             {
-//                $invoices = TableRegistry::get('invoices_after_migration')->find()->hydrate(false);
-//                $invoices->where(['id >'=>857]);
+//                $query = $conn->execute('SELECT DISTINCT(customer_code) from personal_accounts_temp');
+//                $results = $query->fetchAll('assoc');
+//
+//                foreach($results as $result){
+//                    $query = $conn->execute('DELETE FROM personal_accounts where customer_code= "'.$result['customer_code'].'"');
+//                }
+
+//                $invoices = TableRegistry::get('invoices')->find()->hydrate(false);
+//                $invoices->where(['id >'=>2650]);
 //                $invoices->toArray();
 //
 //                foreach($invoices as $invoice){
@@ -43,7 +50,7 @@ class MigrationsController extends AppController
 //                    $customer = $customer->toArray()[0];
 //
 //                    // update invoice data
-//                    $invoiceUpdate = TableRegistry::get('invoices_after_migration');
+//                    $invoiceUpdate = TableRegistry::get('invoices');
 //                    $query = $invoiceUpdate->query();
 //                    $query->update()->set([
 //                        'customer_level_no' => $customer['level_no'],
@@ -58,8 +65,8 @@ class MigrationsController extends AppController
 
 //                =====================================================================
 
-//                $invoices = TableRegistry::get('personal_accounts_copy')->find()->hydrate(false);
-//                $invoices->where(['id >'=>575]);
+//                $invoices = TableRegistry::get('personal_accounts')->find()->hydrate(false);
+//                $invoices->where(['id >'=>803]);
 //                $invoices->toArray();
 //
 //                foreach($invoices as $invoice){
@@ -68,7 +75,7 @@ class MigrationsController extends AppController
 //                    $customer = $customer->toArray()[0];
 //
 //                    // update invoice data
-//                    $invoiceUpdate = TableRegistry::get('personal_accounts_copy');
+//                    $invoiceUpdate = TableRegistry::get('personal_accounts');
 //                    $query = $invoiceUpdate->query();
 //                    $query->update()->set([
 //                        'applies_to' => 1,

@@ -33,7 +33,6 @@ $status = Configure::read('status_options');
                         echo $this->Form->input('explore_level', ['label'=>'Explore Level', 'options'=>$exploreLevels, 'class'=>'form-control explore_level', 'empty'=>'Select', 'required'=>'required']);
                         echo $this->Form->input('explore_unit', ['options'=>[], 'class'=>'explore_unit form-control', 'empty'=>'Select', 'required'=>'required']);
                         echo $this->Form->input('display_unit', ['options'=>[], 'empty'=>'Select', 'required'=>'required', 'class'=>'form-control display_unit']);
-//                        echo $this->Form->input('report_type', ['options'=>$reportTypes, 'empty'=>'Select', 'required'=>'required', 'class'=>'form-control']);
                         ?>
                     </div>
                     <div class="col-md-12 text-center">

@@ -2,6 +2,9 @@
 namespace App\Controller;
 
 use App\Controller\AppController;
+use App\View\Helper\FunctionHelper;
+use App\View\Helper\SystemHelper;
+use Cake\Core\App;
 use Cake\Core\Configure;
 use Cake\Datasource\ConnectionManager;
 use Cake\Http\Client\Request;
@@ -31,14 +34,6 @@ class ReportSalesCollectionsController extends AppController
      */
     public function index()
     {
-//        $this->loadComponent('Common');
-//        $arr = $this->Common->get_unit_credit_note_amount(0, 1048576, 1420070400, 1490918400, 5);
-//
-//        echo '<pre>';
-//        print_r($arr);
-//        echo '</pre>';
-//        exit;
-
         $user = $this->Auth->user();
         $user_level = $user['level_no'];
 
@@ -53,20 +48,11 @@ class ReportSalesCollectionsController extends AppController
             $exploreLevels[$administrativeLevelsDatum['level_no']] = $administrativeLevelsDatum['level_name'];
         endforeach;
 
-//        $exploreLevels[Configure::read('max_level_no') + 1] = 'Customer';
-
         $configData = $this->SalesBudgetConfigurations->find('all', ['conditions' => ['status' => 1]])->first();
         $configLevel = $configData['level_no'];
         for ($i = $configLevel; $i <= 7; $i++) {
             unset($exploreLevels[$i + 1]);
         }
-
-//        $reportTypes = [
-//            'cash_sales'=>'Cash Sales',
-//            'credit_sales'=>'Credit Sales',
-//            'cash_collection'=>'Cash Collection',
-//            'credit_collection'=>'Credit Collection',
-//        ];
 
         $this->set(compact('exploreLevels', 'reportTypes'));
         $this->set('_serialize', ['exploreLevels']);
@@ -76,56 +62,74 @@ class ReportSalesCollectionsController extends AppController
     {
         if ($this->request->is(['post', 'get'])) {
             $data = $this->request->data;
-            $start_date = strtotime($data['start_date']);
-            $end_date = strtotime($data['end_date']);
-            $explore_level = $data['explore_level'];
-            $unit_id = $data['unit_id'];
-            $customer_id = $data['customer_id'];
 
-            $finalDue = $this->Common->getCustomerDue($customer_id, $start_date);
+            $start_time = strtotime($data['start_date']);
+            $end_time = strtotime($data['end_date']);
+            $unit_level = $data['explore_level'];
+            $unit_global_id = $data['explore_unit'];
+            $group_by_level = $data['display_unit'];
 
-            // invoices between start and end dates
+            $this->loadComponent('Common');
+            App::import('Helper', 'SystemHelper');
+            $FunctionHelper = new FunctionHelper(new View());
+
+            $credit_sales = $FunctionHelper->credit_sales($unit_global_id, $start_time, $end_time, $group_by_level);
+            $cash_sales = $FunctionHelper->cash_sales($unit_global_id, $start_time, $end_time, $group_by_level);
+            $cash_collection = $FunctionHelper->cash_collection($unit_global_id, $start_time, $end_time, 0, $group_by_level);
+            $credit_collection = $FunctionHelper->credit_collection($unit_global_id, $start_time, $end_time, 0, $group_by_level);
+            $credit_notes = $this->Common->get_unit_credit_note_amount($unit_level, $unit_global_id, $start_time, $end_time, $group_by_level);
+            $opening_due = $this->Common->get_unit_opening_due($unit_level, $unit_global_id, $group_by_level, $end_time);
+            $adjustments = $this->Common->get_unit_adjustment_amount($unit_level, $unit_global_id, $start_time, $end_time, $group_by_level);
+
+            $credit_sales_array_keys = array_keys($credit_sales);
+            $cash_sales_array_keys = array_keys($cash_sales);
+            $cash_collection_array_keys = array_keys($cash_collection);
+            $credit_collection_array_keys = array_keys($credit_collection);
+            $credit_notes_array_keys = array_keys($credit_notes);
+            $opening_due_array_keys = array_keys($opening_due);
+            $adjustments_array_keys = array_keys($adjustments);
+
+            $merged_keys = array_unique(array_merge($credit_sales_array_keys, $cash_sales_array_keys, $cash_collection_array_keys, $credit_collection_array_keys, $credit_notes_array_keys, $opening_due_array_keys, $adjustments_array_keys));
+
             $finalArray = [];
 
-            $invoices = TableRegistry::get('invoices')->find()->hydrate(false);
-            $invoices->where(['invoice_date >='=>$start_date]);
-            $invoices->where(['invoice_date <='=>$end_date]);
-            $invoices->where(['customer_id'=>$customer_id]);
-            if($invoices->toArray()){
-                $invoiceArray = $invoices->toArray();
-                foreach($invoiceArray as $isl=>$invAr){
-                    $finalArray[$invAr['invoice_date']]['inv'][$isl]['id'] = $invAr['id'];
-                    $finalArray[$invAr['invoice_date']]['inv'][$isl]['net_total'] = $invAr['net_total'];
-                    $finalArray[$invAr['invoice_date']]['inv'][$isl]['type'] = $invAr['invoice_type'];
-                }
+            foreach($merged_keys as $key){
+                $finalArray[$key]['credit_sales'] = isset($credit_sales[$key])?$credit_sales[$key]:0;;
+                $finalArray[$key]['opening_due'] = round(isset($opening_due[$key])?$opening_due[$key]:0, 2);
+                $finalArray[$key]['credit_note'] = isset($credit_notes[$key])?$credit_notes[$key]:0;
+                $finalArray[$key]['cash_sales'] = isset($cash_sales[$key])?$cash_sales[$key]:0;
+                $finalArray[$key]['total_sales'] = $finalArray[$key]['cash_sales'] + $finalArray[$key]['credit_sales'] - $finalArray[$key]['credit_note'];
+                $finalArray[$key]['credit_collection'] = isset($credit_collection[$key])?$credit_collection[$key]:0;
+                $finalArray[$key]['cash_collection'] = isset($cash_collection[$key])?$cash_collection[$key]:0;
+                $finalArray[$key]['adjustment'] = isset($adjustments[$key])?$adjustments[$key]:0;
+                $finalArray[$key]['recovery'] = $finalArray[$key]['cash_collection']+$finalArray[$key]['credit_collection'];
+                $finalArray[$key]['closing_due'] = $finalArray[$key]['opening_due']+$finalArray[$key]['total_sales']-$finalArray[$key]['recovery'];
             }
 
-            // payments between start and end dates
-            $payments = TableRegistry::get('invoice_payments')->find()->hydrate(false);
-            $payments->contain(['Invoices', 'Payments']);
-            $payments->where(['invoice_payments.payment_collection_date >='=>$start_date]);
-            $payments->where(['invoice_payments.payment_collection_date <='=>$end_date]);
-            $payments->where(['invoice_payments.customer_id'=>$customer_id]);
-            if($payments->toArray()){
-                $paymentArray = $payments->toArray();
-                foreach($paymentArray as $psl=>$payAr){
-                    $finalArray[$payAr['payment_collection_date']]['pay'][$psl]['id'] = $payAr['id'];
-                    $finalArray[$payAr['payment_collection_date']]['pay'][$psl]['net_total'] = $payAr['invoice_wise_payment_amount'];
-                    $finalArray[$payAr['payment_collection_date']]['pay'][$psl]['type'] = $payAr['invoice']['invoice_type'];
-                    $finalArray[$payAr['payment_collection_date']]['pay'][$psl]['sl_no'] = $payAr['payment']['collection_serial_no'];
+            if($group_by_level == Configure::read('max_level_no')+1){
+                $customers = TableRegistry::get('customers')->find();
+                $nameArray = [];
+                foreach($customers->toArray() as $customer){
+                    $nameArray[$customer['id']] = $customer['name'];
+                }
+            }else{
+                $adminUnits = TableRegistry::get('administrative_units')->find();
+                $nameArray = [];
+                foreach($adminUnits->toArray() as $adminUnit){
+                    $nameArray[$adminUnit['global_id']] = $adminUnit['unit_name'];
                 }
             }
 
             if ($param == 'report') {
                 $this->viewBuilder()->layout('report');
-                $this->set(compact('finalArray', 'finalDue', 'data'));
+                $this->set(compact('finalArray', 'nameArray', 'data'));
                 $this->set('_serialize', ['finalArray']);
             } elseif ($param == 'pdf') {
                 $view = new View();
                 $btnHide = 1;
                 $view->layout=false;
-                $view->set(compact('finalArray', 'finalDue', 'data', 'btnHide'));
-                $view->viewPath = 'ReportCustomerLedgers';
+                $view->set(compact('finalArray', 'nameArray', 'data', 'btnHide'));
+                $view->viewPath = 'ReportSalesCollections';
                 $html = $view->render('load_report');
                 $this->loadComponent('Common');
                 $this->Common->getPdf($html);
@@ -138,11 +142,23 @@ class ReportSalesCollectionsController extends AppController
         $data = $this->request->data;
         if ($param == 'explore_units') {
             $explore_level = $data['explore_level'];
-            $units = TableRegistry::get('administrative_units')->find('all', ['conditions' => ['level_no' => $explore_level], 'fields' => ['id', 'unit_name']])->hydrate(false)->toArray();
+            $user = $this->Auth->user();
+            $userAdministrativeUnit = $user['administrative_unit_id'];
+            $this->loadModel('AdministrativeUnits');
+
+            $userAdministrativeUnitInfo = $this->AdministrativeUnits->get($userAdministrativeUnit);
+            $limitStart = pow(2,(Configure::read('max_level_no')- $user['level_no']-1)*5);
+            $limitEnd = pow(2,(Configure::read('max_level_no')- $user['level_no'])*5);
+            $units = TableRegistry::get('administrative_units')->find('all');
+            $units->select(['global_id', 'unit_name']);
+            $units->where(['level_no'=>$explore_level]);
+            $units->where('global_id -'. $userAdministrativeUnitInfo['global_id'] .'>= '.$limitStart);
+            $units->where('global_id -'. $userAdministrativeUnitInfo['global_id'] .'< '.$limitEnd);
+            $units->toArray();
 
             $dropArray = [];
-            foreach ($units as $unit):
-                $dropArray[$unit['id']] = $unit['unit_name'];
+            foreach($units as $unit):
+                $dropArray[$unit['global_id']] = $unit['unit_name'];
             endforeach;
         } elseif ($param == 'display_units') {
             $explore_level = $data['explore_level'];

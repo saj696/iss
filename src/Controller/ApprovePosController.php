@@ -309,9 +309,23 @@ class ApprovePosController extends AppController
 
     public function getUnit()
     {
+        $user = $this->Auth->user();
+        $userAdministrativeUnit = $user['administrative_unit_id'];
+        $this->loadModel('AdministrativeUnits');
+
+        $userAdministrativeUnitInfo = $this->AdministrativeUnits->get($userAdministrativeUnit);
+        $limitStart = pow(2,(Configure::read('max_level_no')- $user['level_no']-1)*5);
+        $limitEnd = pow(2,(Configure::read('max_level_no')- $user['level_no'])*5);
+
         $data = $this->request->data;
         $level = $data['level'];
-        $units = TableRegistry::get('administrative_units')->find('all', ['conditions' => ['level_no' => $level], 'fields'=>['id', 'unit_name']])->hydrate(false)->toArray();
+
+        $units = TableRegistry::get('administrative_units')->find('all');
+        $units->select(['id', 'unit_name']);
+        $units->where(['level_no'=>$level]);
+        $units->where('global_id -'. $userAdministrativeUnitInfo['global_id'] .'>= '.$limitStart);
+        $units->where('global_id -'. $userAdministrativeUnitInfo['global_id'] .'< '.$limitEnd);
+        $units->toArray();
 
         $dropArray = [];
         foreach($units as $unit):

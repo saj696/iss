@@ -717,7 +717,7 @@ class CommonComponent extends Component
         return $adjustable_amount;
     }
 
-    public function getUnitOpeningDue($space_level, $space_global_id, $group_by_level, $date){
+    public function get_unit_opening_due($space_level, $space_global_id, $group_by_level, $date){
         $limitStart = pow(2, (Configure::read('max_level_no') - $space_level - 1) * 5);
         $limitEnd = pow(2, (Configure::read('max_level_no') - $space_level) * 5);
         $conn = ConnectionManager::get('default');
@@ -755,13 +755,17 @@ class CommonComponent extends Component
             GROUP BY customer_id');
         }
 
-        $result = $query->fetchAll('assoc');
-        return $result;
+        $results = $query->fetchAll('assoc');
+        $arr = [];
+        foreach($results as $result){
+            $arr[$result['global_id']] = $result['total_due'];
+        }
+
+        return $arr;
     }
 
     public function get_unit_credit_note_amount($space_level, $space_global_id, $start_date, $end_date, $group_by_level)
     {
-        $code = 130000;
         $approval_status = array_flip(Configure::read('credit_note_approval_status'))['approved'];
         $limitStart = pow(2, (Configure::read('max_level_no') - $space_level - 1) * 5);
         $limitEnd = pow(2, (Configure::read('max_level_no') - $space_level) * 5);
@@ -808,8 +812,67 @@ class CommonComponent extends Component
             GROUP BY customer_id');
         }
 
-        $result = $query->fetchAll('assoc');
-        return $result;
+        $results = $query->fetchAll('assoc');
+        $arr = [];
+        foreach($results as $result){
+            $arr[$result['global_id']] = $result['total'];
+        }
+        return $arr;
+    }
+
+    public function get_unit_adjustment_amount($space_level, $space_global_id, $start_date, $end_date, $group_by_level)
+    {
+        $limitStart = pow(2, (Configure::read('max_level_no') - $space_level - 1) * 5);
+        $limitEnd = pow(2, (Configure::read('max_level_no') - $space_level) * 5);
+        $conn = ConnectionManager::get('default');
+
+        if($space_level < Configure::read('max_level_no') && $group_by_level <= Configure::read('max_level_no')){
+            $expression = (pow(2, (1 + 5 * $group_by_level)) - 1) * pow(2, (5 * (Configure::read('max_level_no') - $group_by_level)));
+
+            $query = $conn->execute('
+            SELECT parent_global_id  & ' . $expression . ' as global_id, SUM(invoice_wise_payment_amount) as total from invoice_payments
+            WHERE created_date >= ' . $start_date . '
+            AND created_date <= ' . $end_date . '
+            AND is_adjustment = 1
+            AND parent_global_id-' . $space_global_id . ' >= ' . $limitStart . ' AND parent_global_id-' . $space_global_id . ' < ' . $limitEnd . '
+            GROUP BY global_id');
+
+        }elseif($space_level < Configure::read('max_level_no') && $group_by_level <= Configure::read('max_level_no')+1){
+            $query = $conn->execute('
+            SELECT customer_id as global_id, SUM(invoice_wise_payment_amount) as total from invoice_payments
+            WHERE created_date >= ' . $start_date . '
+            AND created_date <= ' . $end_date . '
+            AND is_adjustment = 1
+            AND parent_global_id-' . $space_global_id . ' >= ' . $limitStart . ' AND parent_global_id-' . $space_global_id . ' < ' . $limitEnd . '
+            GROUP BY customer_id');
+
+        }elseif($space_level == Configure::read('max_level_no') && $group_by_level == $space_level){
+            $expression = (pow(2, (1 + 5 * $group_by_level)) - 1) * pow(2, (5 * (Configure::read('max_level_no') - $group_by_level)));
+
+            $query = $conn->execute('
+            SELECT parent_global_id  & ' . $expression . ' as global_id, SUM(invoice_wise_payment_amount) as total from invoice_payments
+            WHERE created_date >= ' . $start_date . '
+            AND created_date <= ' . $end_date . '
+            AND is_adjustment = 1
+            AND parent_global_id = ' . $space_global_id . '
+            GROUP BY global_id');
+
+        }elseif($space_level == Configure::read('max_level_no') && $group_by_level > $space_level){
+            $query = $conn->execute('
+            SELECT customer_id as global_id, SUM(invoice_wise_payment_amount) as total from invoice_payments
+            WHERE created_date >= ' . $start_date . '
+            AND created_date <= ' . $end_date . '
+            AND is_adjustment = 1
+            AND parent_global_id = ' . $space_global_id . '
+            GROUP BY customer_id');
+        }
+
+        $results = $query->fetchAll('assoc');
+        $arr = [];
+        foreach($results as $result){
+            $arr[$result['global_id']] = $result['total'];
+        }
+        return $arr;
     }
 
 }
