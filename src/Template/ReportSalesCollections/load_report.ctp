@@ -58,7 +58,7 @@ $webroot =  $this->request->webroot;
                                 <tr>
                                     <td><?=$sl+1?></td>
                                     <td><?=$nameArray[$unit]?></td>
-                                    <td><?=$data['opening_due']?></td>
+                                    <td><?=$data['credit_limit']?></td>
                                     <td><?=$data['opening_due']?></td>
                                     <td><?=$data['credit_sales']?></td>
                                     <td><?=$data['credit_note']?></td>

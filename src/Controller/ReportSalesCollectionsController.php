@@ -80,6 +80,16 @@ class ReportSalesCollectionsController extends AppController
             $credit_notes = $this->Common->get_unit_credit_note_amount($unit_level, $unit_global_id, $start_time, $end_time, $group_by_level);
             $opening_due = $this->Common->get_unit_opening_due($unit_level, $unit_global_id, $group_by_level, $end_time);
             $adjustments = $this->Common->get_unit_adjustment_amount($unit_level, $unit_global_id, $start_time, $end_time, $group_by_level);
+            $credit_limit_array = $this->Common->administrative_unit_wise_credit_limit($unit_global_id, $group_by_level);
+
+            $credit_limit = [];
+            foreach($credit_limit_array as $limit){
+                if($unit_level==Configure::read('max_level_no')+1){
+                    $credit_limit[$limit['id']] = $limit['CREDIT_LIMIT'];
+                }else{
+                    $credit_limit[$limit['GLOBAL_ID']] = $limit['CREDIT_LIMIT'];
+                }
+            }
 
             $credit_sales_array_keys = array_keys($credit_sales);
             $cash_sales_array_keys = array_keys($cash_sales);
@@ -88,13 +98,15 @@ class ReportSalesCollectionsController extends AppController
             $credit_notes_array_keys = array_keys($credit_notes);
             $opening_due_array_keys = array_keys($opening_due);
             $adjustments_array_keys = array_keys($adjustments);
+            $credit_limit_array_keys = array_keys($credit_limit);
 
-            $merged_keys = array_unique(array_merge($credit_sales_array_keys, $cash_sales_array_keys, $cash_collection_array_keys, $credit_collection_array_keys, $credit_notes_array_keys, $opening_due_array_keys, $adjustments_array_keys));
+            $merged_keys = array_unique(array_merge($credit_sales_array_keys, $cash_sales_array_keys, $cash_collection_array_keys, $credit_collection_array_keys, $credit_notes_array_keys, $opening_due_array_keys, $adjustments_array_keys, $credit_limit_array_keys));
 
             $finalArray = [];
 
             foreach($merged_keys as $key){
-                $finalArray[$key]['credit_sales'] = isset($credit_sales[$key])?$credit_sales[$key]:0;;
+                $finalArray[$key]['credit_limit'] = isset($credit_limit[$key])?$credit_limit[$key]:0;
+                $finalArray[$key]['credit_sales'] = isset($credit_sales[$key])?$credit_sales[$key]:0;
                 $finalArray[$key]['opening_due'] = round(isset($opening_due[$key])?$opening_due[$key]:0, 2);
                 $finalArray[$key]['credit_note'] = isset($credit_notes[$key])?$credit_notes[$key]:0;
                 $finalArray[$key]['cash_sales'] = isset($cash_sales[$key])?$cash_sales[$key]:0;
