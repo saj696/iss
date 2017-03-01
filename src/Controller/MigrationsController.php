@@ -41,7 +41,7 @@ class MigrationsController extends AppController
 //                }
 
 //                $invoices = TableRegistry::get('invoices')->find()->hydrate(false);
-//                $invoices->where(['id >'=>2650]);
+//                $invoices->where(['id >'=>2654]);
 //                $invoices->toArray();
 //
 //                foreach($invoices as $invoice){
@@ -66,7 +66,7 @@ class MigrationsController extends AppController
 //                =====================================================================
 
 //                $invoices = TableRegistry::get('personal_accounts')->find()->hydrate(false);
-//                $invoices->where(['id >'=>803]);
+//                $invoices->where(['id >'=>807]);
 //                $invoices->toArray();
 //
 //                foreach($invoices as $invoice){

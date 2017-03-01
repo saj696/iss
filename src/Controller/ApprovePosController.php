@@ -421,12 +421,18 @@ class ApprovePosController extends AppController
         $FunctionHelper = new FunctionHelper(new View());
 
         $ItemUnitInfo = $this->ItemUnits->get($item_unit_id);
-        $bonusQuantityInfo = $this->ItemBonuses->find('all', ['conditions'=>[
-            'item_id'=>$ItemUnitInfo['item_id'],
-            'manufacture_unit_id'=>$ItemUnitInfo['manufacture_unit_id'],
-            'order_quantity_from <='=>$item_quantity,
-            'order_quantity_to >='=>$item_quantity
-        ]])->where(['invoice_type IN'=>[$invoice_type, 3]])->first();
+//        $bonusQuantityInfo = $this->ItemBonuses->find('all', ['conditions'=>[
+//            'item_id'=>$ItemUnitInfo['item_id'],
+//            'manufacture_unit_id'=>$ItemUnitInfo['manufacture_unit_id'],
+//            'order_quantity_from <='=>$item_quantity,
+//            'order_quantity_to >='=>$item_quantity
+//        ]])->where(['invoice_type IN'=>[$invoice_type, 3]])->first();
+
+        $conn = ConnectionManager::get('default');
+        $stmt = $conn->execute('SELECT FLOOR((bonus_quantity/order_quantity_from)*' . $item_quantity . ') as Bonus
+           FROM `item_bonuses` where item_id =' . $ItemUnitInfo['item_id'] . ' AND manufacture_unit_id = ' . $ItemUnitInfo['manufacture_unit_id'] . '
+           AND (invoice_type=' . $invoice_type . ' OR invoice_type = 3)');
+        $result = $stmt->fetchAll('assoc');
 
         $customerUnitInfo = $this->AdministrativeUnits->get($customer_unit);
         $customerInfo = $this->Customers->get($customer_id);
@@ -532,11 +538,19 @@ class ApprovePosController extends AppController
 
         $wonOffers = array_values($wonOffers);
 
-        if(isset($wonOffers[0])){
-            $wonOffers[0]['bonus_quantity'] = isset($bonusQuantityInfo->bonus_quantity)?$bonusQuantityInfo->bonus_quantity:0;
+        if (isset($wonOffers[0])) {
+            $wonOffers[0]['bonus_quantity'] = 0;
+            $wonOffers[0]['is_only_bonus'] = false;
             $arr = json_encode($wonOffers[0]);
-        }else{
-            $arr = json_encode(0);
+        } else {
+            if (isset($result[0]['Bonus'])) {
+                $only_bonus[0]['bonus_quantity'] = $result[0]['Bonus'];
+                $only_bonus[0]['is_only_bonus'] = true;
+            } else {
+                $only_bonus[0]['bonus_quantity'] = 0;
+                $only_bonus[0]['is_only_bonus'] = false;
+            }
+            $arr = json_encode($only_bonus[0]);
         }
 
         $this->response->body($arr);

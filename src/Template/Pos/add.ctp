@@ -31,29 +31,30 @@ use Cake\Core\Configure;
 
             <div class="portlet-body">
                 <?= $this->Form->create($po, ['class' => 'form-horizontal', 'role' => 'form']) ?>
+
                 <div class="row">
                     <div class="col-md-6">
                         <?php
                         echo $this->Form->input('customer_level_no', ['label'=>'Customer Level', 'empty'=>'Select', 'options'=>$administrativeLevels, 'class'=>'form-control level_no', 'templates'=>['label' =>'<label {{attrs}} class="col-sm-5 control-label text-right" >{{text}}</label>', 'select' => '<div id="container_{{name}}" class="col-sm-6"><select name="{{name}}"{{attrs}} class="form-control">{{content}}</select></div>']]);
                         echo $this->Form->input('customer_unit', ['type'=>'select', 'label'=>'Customer Location', 'empty'=>'Select', 'class'=>'form-control customer_unit', 'templates'=>['label' =>'<label {{attrs}} class="col-sm-5 control-label text-right" >{{text}}</label>', 'select' => '<div id="container_{{name}}" class="col-sm-6 unit_select"><select name="{{name}}"{{attrs}} class="form-control">{{content}}</select></div>']]);
                         echo $this->Form->input('credit_limit', ['label'=>'Credit Limit', 'type'=>'text', 'readonly', 'class'=>'form-control credit_limit', 'templates'=>['label' => '<label {{attrs}} class="col-sm-5 control-label text-right" >{{text}}</label>','input' => '<div class="col-sm-6 container_{{name}}"> <input {{attrs}} class="form-control" type="{{type}}" name="{{name}}"></div>']]);
-                        echo $this->Form->input('cash_invoice_days', ['label'=>'Cash Invoice Days', 'type'=>'text', 'readonly', 'class'=>'numbersOnly form-control cash_invoice_days', 'templates'=>['label' => '<label {{attrs}} class="col-sm-5 control-label text-right" >{{text}}</label>','input' => '<div class="col-sm-6 container_{{name}}"> <input {{attrs}} class="form-control" type="{{type}}" name="{{name}}"></div>']]);
+                        echo $this->Form->input('total_due', ['label'=>'Total Due', 'type'=>'text', 'disabled', 'class'=>'form-control total_due', 'templates'=>['label' => '<label {{attrs}} class="col-sm-5 control-label text-right" >{{text}}</label>','input' => '<div class="col-sm-6 container_{{name}}"> <input {{attrs}} class="form-control" type="{{type}}" name="{{name}}"></div>']]);
+                        echo $this->Form->input('available_credit', ['label'=>'Available Credit', 'type'=>'text', 'readonly', 'class'=>'form-control available_credit', 'templates'=>['label' => '<label {{attrs}} class="col-sm-5 control-label text-right" >{{text}}</label>','input' => '<div class="col-sm-6 container_{{name}}"> <input {{attrs}} class="form-control" type="{{type}}" name="{{name}}"></div>']]);
                         echo $this->Form->input('invoice_type', ['type'=>'select', 'options'=>[1=>'Cash', 2=>'Credit'], 'label'=>'Invoice Type', 'empty'=>'Select', 'class'=>'form-control invoice_type', 'templates'=>['label' =>'<label {{attrs}} class="col-sm-5 control-label text-right" >{{text}}</label>', 'select' => '<div id="container_{{name}}" class="col-sm-6"><select name="{{name}}"{{attrs}} class="form-control">{{content}}</select></div>']]);
                         ?>
                     </div>
                     <div class="col-md-6">
                         <?php
+                        echo $this->Form->input('field_po_no', ['label'=>'Field PO No.', 'type'=>'text', 'class'=>'form-control', 'templates'=>['label' => '<label {{attrs}} class="col-sm-5 control-label text-right" >{{text}}</label>','input' => '<div class="col-sm-6 container_{{name}}"> <input {{attrs}} class="form-control" type="{{type}}" name="{{name}}"></div>']]);
                         echo $this->Form->input('po_date', ['label'=>'PO date', 'type'=>'text', 'class'=>'form-control datepicker', 'templates'=>['label' => '<label {{attrs}} class="col-sm-5 control-label text-right" >{{text}}</label>','input' => '<div class="col-sm-6 container_{{name}}"> <input {{attrs}} class="form-control" type="{{type}}" name="{{name}}"></div>']]);
                         echo $this->Form->input('customer_id', ['label'=>'Customer', 'empty'=>'Select', 'options'=>[], 'class'=>'form-control customer_id', 'templates'=>['label' =>'<label {{attrs}} class="col-sm-5 control-label text-right" >{{text}}</label>', 'select' => '<div id="container_{{name}}" class="col-sm-6 customer_select"><select name="{{name}}"{{attrs}} class="form-control">{{content}}</select></div>']]);
-                        ?>
-                        <div class="pull-right address col-md-9" style="display: none; border:1px solid grey; margin: 0 48px 17px; padding: 5px;"></div>
-                        <?php
-                        echo $this->Form->input('available_credit', ['label'=>'Available Credit', 'type'=>'text', 'readonly', 'class'=>'form-control available_credit', 'templates'=>['label' => '<label {{attrs}} class="col-sm-5 control-label text-right" >{{text}}</label>','input' => '<div class="col-sm-6 container_{{name}}"> <input {{attrs}} class="form-control" type="{{type}}" name="{{name}}"></div>']]);
+                        echo $this->Form->input('address', ['label'=>'Customer Address', 'disabled', 'type'=>'textarea', 'rows'=>1,'class'=>'form-control address', 'templates'=>['label' =>'<label {{attrs}} class="col-sm-5 control-label text-right" >{{text}}</label>', 'textarea' => '<div class="col-sm-6"><textarea class="form-control address" name="{{name}}"{{attrs}}>{{value}}</textarea></div>']]);
+                        echo $this->Form->input('cash_invoice_days', ['label'=>'Cash Invoice Days', 'type'=>'text', 'readonly', 'class'=>'numbersOnly form-control cash_invoice_days', 'templates'=>['label' => '<label {{attrs}} class="col-sm-5 control-label text-right" >{{text}}</label>','input' => '<div class="col-sm-6 container_{{name}}"> <input {{attrs}} class="form-control" type="{{type}}" name="{{name}}"></div>']]);
                         echo $this->Form->input('credit_invoice_days', ['label'=>'Credit Invoice Days', 'readonly', 'type'=>'text', 'class'=>'numbersOnly form-control credit_invoice_days', 'templates'=>['label' => '<label {{attrs}} class="col-sm-5 control-label text-right" >{{text}}</label>','input' => '<div class="col-sm-6 container_{{name}}"> <input {{attrs}} class="form-control" type="{{type}}" name="{{name}}"></div>']]);
-                        echo $this->Form->input('field_po_no', ['label'=>'Field PO No.', 'type'=>'text', 'class'=>'form-control', 'templates'=>['label' => '<label {{attrs}} class="col-sm-5 control-label text-right" >{{text}}</label>','input' => '<div class="col-sm-6 container_{{name}}"> <input {{attrs}} class="form-control" type="{{type}}" name="{{name}}"></div>']]);
                         ?>
                     </div>
                 </div>
+
                 <div class="row text-center">
                     <div class="col-md-11" style="margin: 2% 0 2% 0">
                         <?php
@@ -220,21 +221,21 @@ use Cake\Core\Configure;
                     data: {customer_id: customer_id},
                     success: function (data, status) {
                         var data = JSON.parse(data);
+                        $('.total_due').val(data.total_due);
                         $('.credit_limit').val(data.credit_limit);
                         $('.available_credit').val(data.available_credit);
                         $('.cash_invoice_days').val(data.cash_invoice_days);
                         $('.credit_invoice_days').val(data.credit_invoice_days);
                         $('.address').html(data.address);
-                        $('.address').show();
                     }
                 });
             }else{
+                $('.total_due').val(0);
                 $('.credit_limit').val(0);
                 $('.available_credit').val(0);
                 $('.cash_invoice_days').val(0);
                 $('.credit_invoice_days').val(0);
                 $('.address').html('');
-                $('.address').hide();
             }
         });
 
@@ -293,7 +294,7 @@ use Cake\Core\Configure;
             if(item_quantity>0){
                 $.ajax({
                     type: 'POST',
-                    url: '<?= $this->Url->build("/Pos/loadOffer")?>',
+                    url: '<?= $this->Url->build("/Invoices/loadOffer")?>',
                     data: {
                         item_unit_id: itemUnitId,
                         invoice_type:invoice_type,
@@ -303,28 +304,34 @@ use Cake\Core\Configure;
                         customer_unit: customer_unit
                     },
                     success: function (data, status) {
+                        console.log(data);
                         if(data.length>0){
                             var res = JSON.parse(data);
-                            if(res.value>0){
-                                if(res.offer_type=='product bonus'){
-                                    obj.closest('.itemTr').find('.special_offer_item_bonus').val(res.value);
-                                    obj.closest('.itemTr').find('.item_cash_discount').val(0);
+                            console.log(res);
+                            if(res.is_only_bonus==true){
+                                return obj.closest('.itemTr').find('.item_bonus').val(res.bonus_quantity);
+                            }else {
+                                if(res.value>0){
+                                    if(res.offer_type=='product bonus'){
+                                        obj.closest('.itemTr').find('.special_offer_item_bonus').val(res.value);
+                                        obj.closest('.itemTr').find('.item_cash_discount').val(0);
+                                    }else{
+                                        obj.closest('.itemTr').find('.item_cash_discount').val(res.value);
+                                        obj.closest('.itemTr').find('.special_offer_item_bonus').val(0);
+                                    }
+
+                                    obj.closest('.itemTr').find('.item_bonus').val(res.bonus_quantity);
+                                    obj.closest('.itemTr').find('.offer_id').val(res.offer_id);
+
+                                    // other calculations
+                                    calculateNetTotal(item_quantity, obj);
+                                    calculateTotalAmount();
                                 }else{
-                                    obj.closest('.itemTr').find('.item_cash_discount').val(res.value);
-                                    obj.closest('.itemTr').find('.special_offer_item_bonus').val(0);
+                                    obj.closest('.itemTr').find('.item_cash_discount').val(0);
+                                    obj.closest('.itemTr').find('.item_bonus').val(0);
+                                    calculateNetTotal(item_quantity, obj);
+                                    calculateTotalAmount();
                                 }
-
-                                obj.closest('.itemTr').find('.item_bonus').val(res.bonus_quantity);
-                                obj.closest('.itemTr').find('.offer_id').val(res.offer_id);
-
-                                // redo
-                                calculateNetTotal(item_quantity, obj);
-                                calculateTotalAmount();
-                            }else{
-                                obj.closest('.itemTr').find('.item_cash_discount').val(0);
-                                obj.closest('.itemTr').find('.item_bonus').val(0);
-                                calculateNetTotal(item_quantity, obj);
-                                calculateTotalAmount();
                             }
                         }else{
                             obj.closest('.itemTr').find('.item_cash_discount').val(0);
@@ -336,7 +343,7 @@ use Cake\Core\Configure;
                 });
             }
 
-            // other calculation
+            // other calculations
             calculateNetTotal(item_quantity, obj);
             calculateTotalAmount();
         });

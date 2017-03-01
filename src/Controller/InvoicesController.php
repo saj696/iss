@@ -34,7 +34,7 @@ class InvoicesController extends AppController
     {
         $user = $this->Auth->user();
         $invoices = $this->Invoices->find('all', [
-            'conditions' => ['Invoices.status !=' => 99, 'Invoices.created_by'=>$user['id']],
+            'conditions' => ['Invoices.status !=' => 99, 'Invoices.created_by' => $user['id']],
             'contain' => ['Customers']
         ]);
         $this->set('invoices', $this->paginate($invoices));
@@ -89,16 +89,15 @@ class InvoicesController extends AppController
             try {
                 $saveStatus = 0;
                 $conn = ConnectionManager::get('default');
-                $conn->transactional(function () use ($invoice, $user, $time, &$saveStatus)
-                {
-                    $invoiceCycleInfo = $this->InvoiceCycleConfigurations->find('all', ['conditions'=>['status !='=>99]])->first();
+                $conn->transactional(function () use ($invoice, $user, $time, &$saveStatus) {
+                    $invoiceCycleInfo = $this->InvoiceCycleConfigurations->find('all', ['conditions' => ['status !=' => 99]])->first();
                     $data = $this->request->data;
                     $invoiceData['customer_level_no'] = $data['customer_level_no'];
                     $customerUnitInfo = $this->AdministrativeUnits->get($data['customer_unit']);
                     $invoiceData['customer_unit_global_id'] = $customerUnitInfo['global_id'];
                     $invoiceData['customer_id'] = $data['customer_id'];
                     $customerInfo = $this->Customers->get($data['customer_id']);
-                    if($customerInfo['is_mango']==1):
+                    if ($customerInfo['is_mango'] == 1):
                         $invoiceData['customer_type'] = array_flip(Configure::read('po_customer_type'))['mango'];
                     else:
                         $invoiceData['customer_type'] = array_flip(Configure::read('po_customer_type'))['general'];
@@ -107,7 +106,7 @@ class InvoicesController extends AppController
                     $invoiceData['invoice_type'] = $data['invoice_type'];
                     $invoiceData['net_total'] = $data['total_amount_hidden'];
 
-                    if($invoiceCycleInfo['invoice_approved_at']==array_flip(Configure::read('invoice_approved_at'))['Not Needed']){
+                    if ($invoiceCycleInfo['invoice_approved_at'] == array_flip(Configure::read('invoice_approved_at'))['Not Needed']) {
                         $invoiceData['approval_status'] = array_flip(Configure::read('invoice_approval_status'))['not_required'];
                     } else {
                         $invoiceData['approval_status'] = array_flip(Configure::read('invoice_approval_status'))['waiting'];
@@ -127,7 +126,7 @@ class InvoicesController extends AppController
                     $result = $this->Invoices->save($invoice);
 
                     // Invoiced Products table insert
-                    foreach($data['detail'] as $item_unit_id=>$itemDetail):
+                    foreach ($data['detail'] as $item_unit_id => $itemDetail):
                         $invoicedProducts = $this->InvoicedProducts->newEntity();
                         $itemUnitInfo = $this->ItemUnits->get($item_unit_id);
                         $invoicedProductsData['invoice_id'] = $result['id'];
@@ -153,7 +152,7 @@ class InvoicesController extends AppController
                         $invoicedProductsData['net_total'] = $itemDetail['item_net_total'];
                         $invoicedProductsData['due'] = $itemDetail['item_net_total'];
                         $invoicedProductsData['offer_id'] = $itemDetail['offer_id'];
-                        if($itemDetail['offer_id']>0){
+                        if ($itemDetail['offer_id'] > 0) {
                             $offerInfo = $this->Offers->get($itemDetail['offer_id']);
                             $invoicedProductsData['is_credit_note_allowed'] = $offerInfo['is_credit_note_allowed'];
                         }
@@ -164,7 +163,7 @@ class InvoicesController extends AppController
                     endforeach;
 
                     // Event creation
-                    if($invoiceCycleInfo['invoice_approved_at']==array_flip(Configure::read('invoice_approved_at'))['Not Needed']){
+                    if ($invoiceCycleInfo['invoice_approved_at'] == array_flip(Configure::read('invoice_approved_at'))['Not Needed']) {
                         $poEvent = $this->PoEvents->newEntity();
                         $poEventData['reference_type'] = array_flip(Configure::read('po_event_reference_type'))['invoice'];
                         $poEventData['reference_id'] = $result['id'];
@@ -175,7 +174,7 @@ class InvoicesController extends AppController
                         $poEvent = $this->PoEvents->patchEntity($poEvent, $poEventData);
                         $this->PoEvents->save($poEvent);
                     } else {
-                        if($invoiceCycleInfo['allow_delivery_before_approval']==1){
+                        if ($invoiceCycleInfo['allow_delivery_before_approval'] == 1) {
                             // Self event
                             $poEvent = $this->PoEvents->newEntity();
                             $poEventData['reference_type'] = array_flip(Configure::read('po_event_reference_type'))['invoice'];
@@ -187,9 +186,9 @@ class InvoicesController extends AppController
                             $poEvent = $this->PoEvents->patchEntity($poEvent, $poEventData);
                             $this->PoEvents->save($poEvent);
                             // Approval users events
-                            $approvalUsers = $this->Users->find('all', ['conditions'=>['status !='=>99, 'level_no'=>$invoiceCycleInfo['invoice_approved_at'], 'user_group_id'=>$invoiceCycleInfo['approving_user_group']]]);
-                            if(sizeof($approvalUsers)>0){
-                                foreach($approvalUsers as $user){
+                            $approvalUsers = $this->Users->find('all', ['conditions' => ['status !=' => 99, 'level_no' => $invoiceCycleInfo['invoice_approved_at'], 'user_group_id' => $invoiceCycleInfo['approving_user_group']]]);
+                            if (sizeof($approvalUsers) > 0) {
+                                foreach ($approvalUsers as $user) {
                                     $poEvent = $this->PoEvents->newEntity();
                                     $poEventData['reference_type'] = array_flip(Configure::read('po_event_reference_type'))['invoice'];
                                     $poEventData['reference_id'] = $result['id'];
@@ -203,9 +202,9 @@ class InvoicesController extends AppController
                             }
                         } else {
                             // Approval users events
-                            $approvalUsers = $this->Users->find('all', ['conditions'=>['status !='=>99, 'level_no'=>$invoiceCycleInfo['invoice_approved_at'], 'user_group_id'=>$invoiceCycleInfo['approving_user_group']]]);
-                            if(sizeof($approvalUsers)>0){
-                                foreach($approvalUsers as $user){
+                            $approvalUsers = $this->Users->find('all', ['conditions' => ['status !=' => 99, 'level_no' => $invoiceCycleInfo['invoice_approved_at'], 'user_group_id' => $invoiceCycleInfo['approving_user_group']]]);
+                            if (sizeof($approvalUsers) > 0) {
+                                foreach ($approvalUsers as $user) {
                                     $poEvent = $this->PoEvents->newEntity();
                                     $poEventData['reference_type'] = array_flip(Configure::read('po_event_reference_type'))['invoice'];
                                     $poEventData['reference_id'] = $result['id'];
@@ -236,8 +235,7 @@ class InvoicesController extends AppController
         $this->loadModel('AdministrativeLevels');
         $administrativeLevelsData = $this->AdministrativeLevels->find('all', ['conditions' => ['status' => 1]]);
         $administrativeLevels = [];
-        foreach($administrativeLevelsData as $administrativeLevelsDatum)
-        {
+        foreach ($administrativeLevelsData as $administrativeLevelsDatum) {
             $administrativeLevels[$administrativeLevelsDatum['level_no']] = $administrativeLevelsDatum['level_name'];
         }
         $customers = $this->Invoices->Customers->find('list', ['conditions' => ['status' => 1]]);
@@ -315,21 +313,21 @@ class InvoicesController extends AppController
         $this->loadModel('AdministrativeUnits');
 
         $userAdministrativeUnitInfo = $this->AdministrativeUnits->get($userAdministrativeUnit);
-        $limitStart = pow(2,(Configure::read('max_level_no')- $user['level_no']-1)*5);
-        $limitEnd = pow(2,(Configure::read('max_level_no')- $user['level_no'])*5);
+        $limitStart = pow(2, (Configure::read('max_level_no') - $user['level_no'] - 1) * 5);
+        $limitEnd = pow(2, (Configure::read('max_level_no') - $user['level_no']) * 5);
 
         $data = $this->request->data;
         $level = $data['level'];
 
         $units = TableRegistry::get('administrative_units')->find('all');
         $units->select(['id', 'unit_name']);
-        $units->where(['level_no'=>$level]);
-        $units->where('global_id -'. $userAdministrativeUnitInfo['global_id'] .'>= '.$limitStart);
-        $units->where('global_id -'. $userAdministrativeUnitInfo['global_id'] .'< '.$limitEnd);
+        $units->where(['level_no' => $level]);
+        $units->where('global_id -' . $userAdministrativeUnitInfo['global_id'] . '>= ' . $limitStart);
+        $units->where('global_id -' . $userAdministrativeUnitInfo['global_id'] . '< ' . $limitEnd);
         $units->toArray();
 
         $dropArray = [];
-        foreach($units as $unit):
+        foreach ($units as $unit):
             $dropArray[$unit['id']] = $unit['unit_name'];
         endforeach;
 
@@ -341,11 +339,11 @@ class InvoicesController extends AppController
     {
         $data = $this->request->data;
         $unit = $data['unit'];
-        $customers = TableRegistry::get('customers')->find('all', ['conditions' => ['administrative_unit_id' => $unit], 'fields'=>['id', 'name', 'code']])->hydrate(false)->toArray();
+        $customers = TableRegistry::get('customers')->find('all', ['conditions' => ['administrative_unit_id' => $unit], 'fields' => ['id', 'name', 'code']])->hydrate(false)->toArray();
 
         $dropArray = [];
-        foreach($customers as $customer):
-            $dropArray[$customer['id']] = $customer['name'].'-'.$customer['code'];
+        foreach ($customers as $customer):
+            $dropArray[$customer['id']] = $customer['name'] . '-' . $customer['code'];
         endforeach;
 
         $this->viewBuilder()->layout('ajax');
@@ -363,11 +361,12 @@ class InvoicesController extends AppController
         $currentDue = $this->Common->getCustomerDue($customer_id, time());
 
         $arr = [];
-        $arr['credit_limit'] = $customer->credit_limit?$customer->credit_limit:0;
-        $arr['available_credit'] = ($customer->credit_limit - $currentDue)>0?($customer->credit_limit - $currentDue):0;
-        $arr['cash_invoice_days'] = $customer->cash_invoice_days?$customer->cash_invoice_days:0;
-        $arr['credit_invoice_days'] = $customer->credit_invoice_days?$customer->credit_invoice_days:0;
-        $arr['address'] = $customer->address?$customer->address:'';
+        $arr['total_due'] = $currentDue ? $currentDue : 0;
+        $arr['credit_limit'] = $customer->credit_limit ? $customer->credit_limit : 0;
+        $arr['available_credit'] = ($customer->credit_limit - $currentDue) > 0 ? ($customer->credit_limit - $currentDue) : 0;
+        $arr['cash_invoice_days'] = $customer->cash_invoice_days ? $customer->cash_invoice_days : 0;
+        $arr['credit_invoice_days'] = $customer->credit_invoice_days ? $customer->credit_invoice_days : 0;
+        $arr['address'] = $customer->address ? $customer->address : '';
 
         $arr = json_encode($arr);
         $this->response->body($arr);
@@ -383,7 +382,7 @@ class InvoicesController extends AppController
         $item_unit_id = $data['item_unit_id'];
         $invoice_type = $data['invoice_type'];
 
-        $itemPrices = $this->Prices->find('all', ['conditions'=>['item_unit_id'=>$item_unit_id]])->first();
+        $itemPrices = $this->Prices->find('all', ['conditions' => ['item_unit_id' => $item_unit_id]])->first();
 
         if ($invoice_type == 1) {
             $unit_price = $itemPrices['cash_sales_price'];
@@ -402,7 +401,8 @@ class InvoicesController extends AppController
         $this->set(compact('itemName', 'item_unit_id', 'unit_price'));
     }
 
-    public function loadOffer(){
+    public function loadOffer()
+    {
         $data = $this->request->data;
         $item_unit_id = $data['item_unit_id'];
         $invoice_type = $data['invoice_type'];
@@ -423,12 +423,18 @@ class InvoicesController extends AppController
         $FunctionHelper = new FunctionHelper(new View());
 
         $ItemUnitInfo = $this->ItemUnits->get($item_unit_id);
-        $bonusQuantityInfo = $this->ItemBonuses->find('all', ['conditions'=>[
-            'item_id'=>$ItemUnitInfo['item_id'],
-            'manufacture_unit_id'=>$ItemUnitInfo['manufacture_unit_id'],
-            'order_quantity_from <='=>$item_quantity,
-            'order_quantity_to >='=>$item_quantity
-        ]])->where(['invoice_type IN'=>[$invoice_type, 3]])->first();
+//        $bonusQuantityInfo = $this->ItemBonuses->find('all', ['conditions'=>[
+//            'item_id'=>$ItemUnitInfo['item_id'],
+//            'manufacture_unit_id'=>$ItemUnitInfo['manufacture_unit_id'],
+//            'order_quantity_from <='=>$item_quantity,
+//            'order_quantity_to >='=>$item_quantity
+//        ]])->where(['invoice_type IN'=>[$invoice_type, 3]])->first();
+
+        $conn = ConnectionManager::get('default');
+        $stmt = $conn->execute('SELECT FLOOR((bonus_quantity/order_quantity_from)*' . $item_quantity . ') as Bonus
+	   FROM `item_bonuses` where item_id =' . $ItemUnitInfo['item_id'] . ' AND manufacture_unit_id = ' . $ItemUnitInfo['manufacture_unit_id'] . '
+	   AND (invoice_type=' . $invoice_type . ' OR invoice_type = 3)');
+        $result = $stmt->fetchAll('assoc');
 
         $customerUnitInfo = $this->AdministrativeUnits->get($customer_unit);
         $customerInfo = $this->Customers->get($customer_id);
@@ -436,22 +442,22 @@ class InvoicesController extends AppController
         $invoiceArray = [];
 
         $this->loadModel('Invoices');
-        $oldest = $this->Invoices->find('all', ['conditions'=>['customer_id'=>$customer_id, 'due >'=>0, 'delivery_status'=>array_flip(Configure::read('invoice_delivery_status'))['delivered'], 'status'=>1], 'order'=>['delivery_date ASC'], 'limit'=>1])->first();
+        $oldest = $this->Invoices->find('all', ['conditions' => ['customer_id' => $customer_id, 'due >' => 0, 'delivery_status' => array_flip(Configure::read('invoice_delivery_status'))['delivered'], 'status' => 1], 'order' => ['delivery_date ASC'], 'limit' => 1])->first();
 
-        if($oldest){
-            $dateDiff = (time()-$oldest['invoice_date'])/(60*60*24);
-            if($dateDiff>0){
+        if ($oldest) {
+            $dateDiff = (time() - $oldest['invoice_date']) / (60 * 60 * 24);
+            if ($dateDiff > 0) {
                 $invoiceArray['max_due_invoice_age'] = $dateDiff;
-            }else{
+            } else {
                 $invoiceArray['max_due_invoice_age'] = 0;
             }
-        }else{
+        } else {
             $invoiceArray['max_due_invoice_age'] = 0;
         }
 
         $invoiceArray['customer_level_no'] = $customer_level_no;
         $invoiceArray['customer_unit_global_id'] = $customerUnitInfo['global_id'];
-        if($customerInfo['is_mango']==1):
+        if ($customerInfo['is_mango'] == 1):
             $invoiceArray['customer_type'] = array_flip(Configure::read('po_customer_type'))['mango'];
         else:
             $invoiceArray['customer_type'] = array_flip(Configure::read('po_customer_type'))['general'];
@@ -461,15 +467,15 @@ class InvoicesController extends AppController
         $invoiceArray['invoice_type'] = $invoice_type;
         $invoiceArray['invoice_date'] = time();
 
-        if($invoice_type==1){
+        if ($invoice_type == 1) {
             $invoiceArray['due'] = 0;
             $invoiceArray['delivery_date'] = strtotime(date('d-m-Y'));
             $invoiceArray['updated_date'] = strtotime(date('d-m-Y'));
             $invoiceArray['last_payment_date'] = time();
-        }else{
+        } else {
             $invoiceArray['due'] = 1;
             $invoiceArray['delivery_date'] = strtotime(date('d-m-Y'));
-            $invoiceArray['updated_date'] = strtotime(date('d-m-Y',strtotime(date("d-m-Y", time()) . " + 365 day")));
+            $invoiceArray['updated_date'] = strtotime(date('d-m-Y', strtotime(date("d-m-Y", time()) . " + 365 day")));
             $invoiceArray['last_payment_date'] = strtotime('01-01-2027');
         }
 
@@ -483,31 +489,31 @@ class InvoicesController extends AppController
         $invoiceArray['invoiced_products'][0]['manufacture_unit_id'] = $ItemUnitInfo['manufacture_unit_id'];
         $invoiceArray['invoiced_products'][0]['product_quantity'] = $item_quantity;
 
-        if($invoice_type==1){
+        if ($invoice_type == 1) {
             $invoiceArray['invoiced_products'][0]['due'] = 0;
             $invoiceArray['invoiced_products'][0]['delivery_date'] = strtotime(date('d-m-Y'));
             $invoiceArray['invoiced_products'][0]['updated_date'] = strtotime(date('d-m-Y'));
-        }else{
+        } else {
             $invoiceArray['invoiced_products'][0]['due'] = 1;
             $invoiceArray['invoiced_products'][0]['delivery_date'] = strtotime(date('d-m-Y'));
-            $invoiceArray['invoiced_products'][0]['updated_date'] = strtotime(date('d-m-Y',strtotime(date("d-m-Y", time()) . " + 365 day")));
+            $invoiceArray['invoiced_products'][0]['updated_date'] = strtotime(date('d-m-Y', strtotime(date("d-m-Y", time()) . " + 365 day")));
         }
 
         // offer check
-        $options = $this->OfferItems->find('all', ['conditions'=>[
-            'item_unit_id'=>$item_unit_id,
-            'program_period_start <='=>time(),
-            'program_period_end >='=>time(),
-            'invoicing !='=>array_flip(Configure::read('special_offer_invoicing'))['Cumulative'],
-            'offer_payment_mode !='=>array_flip(Configure::read('offer_payment_mode'))['Delayed']
-        ]])->where(['invoice_type IN'=>[array_flip(Configure::read('special_offer_invoice_types'))['Both'], $invoice_type]]);
+        $options = $this->OfferItems->find('all', ['conditions' => [
+            'item_unit_id' => $item_unit_id,
+            'program_period_start <=' => time(),
+            'program_period_end >=' => time(),
+            'invoicing !=' => array_flip(Configure::read('special_offer_invoicing'))['Cumulative'],
+            'offer_payment_mode !=' => array_flip(Configure::read('offer_payment_mode'))['Delayed']
+        ]])->where(['invoice_type IN' => [array_flip(Configure::read('special_offer_invoice_types'))['Both'], $invoice_type]]);
 
         $offerArray = [];
 
-        if(sizeof($options)>0){
-            foreach($options as $option){
-                if($option->offer_id>0){
-                    if(!in_array($option->offer_id, $offerArray)){
+        if (sizeof($options) > 0) {
+            foreach ($options as $option) {
+                if ($option->offer_id > 0) {
+                    if (!in_array($option->offer_id, $offerArray)) {
                         $offerArray[] = $option->offer_id;
                     }
                 }
@@ -515,19 +521,19 @@ class InvoicesController extends AppController
         }
 
         $wonOffers = [];
-        foreach($offerArray as $offer){
+        foreach ($offerArray as $offer) {
             $offer = $this->Offers->get($offer);
             $conditions = json_decode($offer['conditions'], true);
 
-            foreach($conditions as $k=>$condition){
-                if($condition['level']==5 && $condition['context']==array_flip(Configure::read('offer_contexts'))['Invoice'] && $condition['time_level']==array_flip(Configure::read('offer_time_level'))['Instant']){
+            foreach ($conditions as $k => $condition) {
+                if ($condition['level'] == 5 && $condition['context'] == array_flip(Configure::read('offer_contexts'))['Invoice'] && $condition['time_level'] == array_flip(Configure::read('offer_time_level'))['Instant']) {
                     $conditionKey = $k;
                 }
             }
 
             $conditionPostfix = json_decode($offer['condition_postfix'], true);
 
-            if(isset($conditionKey)){
+            if (isset($conditionKey)) {
                 $applicablePostfix = $conditionPostfix[$conditionKey];
                 $wonOffers = $this->Common->getWonOffer($applicablePostfix, $invoiceArray, $offer->id);
             }
@@ -535,18 +541,27 @@ class InvoicesController extends AppController
 
         $wonOffers = array_values($wonOffers);
 
-        if(isset($wonOffers[0])){
-            $wonOffers[0]['bonus_quantity'] = isset($bonusQuantityInfo->bonus_quantity)?$bonusQuantityInfo->bonus_quantity:0;
+        if (isset($wonOffers[0])) {
+            $wonOffers[0]['bonus_quantity'] = 0;
+            $wonOffers[0]['is_only_bonus'] = false;
             $arr = json_encode($wonOffers[0]);
-        }else{
-            $arr = json_encode(0);
+        } else {
+            if (isset($result[0]['Bonus'])) {
+                $only_bonus[0]['bonus_quantity'] = $result[0]['Bonus'];
+                $only_bonus[0]['is_only_bonus'] = true;
+            } else {
+                $only_bonus[0]['bonus_quantity'] = 0;
+                $only_bonus[0]['is_only_bonus'] = false;
+            }
+            $arr = json_encode($only_bonus[0]);
         }
 
         $this->response->body($arr);
         return $this->response;
     }
 
-    public function checkOffer(){
+    public function checkOffer()
+    {
         $data = $this->request->data;
         App::import('Helper', 'FunctionHelper');
         $FunctionHelper = new FunctionHelper(new View());
@@ -569,21 +584,21 @@ class InvoicesController extends AppController
         $offerArray = [];
 
         $this->loadModel('Invoices');
-        $oldest = $this->Invoices->find('all', ['conditions'=>['customer_id'=>$customer_id, 'due >'=>0, 'delivery_status'=>array_flip(Configure::read('invoice_delivery_status'))['delivered'], 'status'=>1], 'order'=>['delivery_date ASC'], 'limit'=>1])->first();
-        if($oldest){
-            $dateDiff = (time()-$oldest['invoice_date'])/(60*60*24);
-            if($dateDiff>0){
+        $oldest = $this->Invoices->find('all', ['conditions' => ['customer_id' => $customer_id, 'due >' => 0, 'delivery_status' => array_flip(Configure::read('invoice_delivery_status'))['delivered'], 'status' => 1], 'order' => ['delivery_date ASC'], 'limit' => 1])->first();
+        if ($oldest) {
+            $dateDiff = (time() - $oldest['invoice_date']) / (60 * 60 * 24);
+            if ($dateDiff > 0) {
                 $invoiceArray['max_due_invoice_age'] = $dateDiff;
-            }else{
+            } else {
                 $invoiceArray['max_due_invoice_age'] = 0;
             }
-        }else{
+        } else {
             $invoiceArray['max_due_invoice_age'] = 0;
         }
 
         $invoiceArray['customer_level_no'] = $customer_level_no;
         $invoiceArray['customer_unit_global_id'] = $customerUnitInfo['global_id'];
-        if($customerInfo['is_mango']==1):
+        if ($customerInfo['is_mango'] == 1):
             $invoiceArray['customer_type'] = array_flip(Configure::read('po_customer_type'))['mango'];
         else:
             $invoiceArray['customer_type'] = array_flip(Configure::read('po_customer_type'))['general'];
@@ -593,19 +608,19 @@ class InvoicesController extends AppController
         $invoiceArray['invoice_type'] = $invoice_type;
         $invoiceArray['invoice_date'] = time();
 
-        if($invoice_type==1){
+        if ($invoice_type == 1) {
             $invoiceArray['due'] = 0;
             $invoiceArray['delivery_date'] = strtotime(date('d-m-Y'));
             $invoiceArray['updated_date'] = strtotime(date('d-m-Y'));
             $invoiceArray['last_payment_date'] = time();
-        }else{
+        } else {
             $invoiceArray['due'] = 1;
             $invoiceArray['delivery_date'] = strtotime(date('d-m-Y'));
-            $invoiceArray['updated_date'] = strtotime(date('d-m-Y',strtotime(date("d-m-Y", time()) . " + 365 day")));
+            $invoiceArray['updated_date'] = strtotime(date('d-m-Y', strtotime(date("d-m-Y", time()) . " + 365 day")));
             $invoiceArray['last_payment_date'] = strtotime('01-01-2027');
         }
 
-        foreach($item_array as $key=>$item){
+        foreach ($item_array as $key => $item) {
             $invoiceArray['invoiced_products'][$key]['customer_level_no'] = $customer_level_no;
             $invoiceArray['invoiced_products'][$key]['customer_unit_global_id'] = $customerUnitInfo['global_id'];
             $invoiceArray['invoiced_products'][$key]['customer_type'] = $invoiceArray['customer_type'];
@@ -617,29 +632,29 @@ class InvoicesController extends AppController
             $invoiceArray['invoiced_products'][$key]['manufacture_unit_id'] = $ItemUnitInfo['manufacture_unit_id'];
             $invoiceArray['invoiced_products'][$key]['product_quantity'] = $item['item_quantity'];
 
-            if($invoice_type==1){
+            if ($invoice_type == 1) {
                 $invoiceArray['invoiced_products'][$key]['due'] = 0;
                 $invoiceArray['invoiced_products'][$key]['delivery_date'] = strtotime(date('d-m-Y'));
                 $invoiceArray['invoiced_products'][$key]['updated_date'] = strtotime(date('d-m-Y'));
-            }else{
+            } else {
                 $invoiceArray['invoiced_products'][$key]['due'] = 1;
                 $invoiceArray['invoiced_products'][$key]['delivery_date'] = strtotime(date('d-m-Y'));
-                $invoiceArray['invoiced_products'][$key]['updated_date'] = strtotime(date('d-m-Y',strtotime(date("d-m-Y", time()) . " + 365 day")));
+                $invoiceArray['invoiced_products'][$key]['updated_date'] = strtotime(date('d-m-Y', strtotime(date("d-m-Y", time()) . " + 365 day")));
             }
 
             // offer check
-            $options = $this->OfferItems->find('all', ['conditions'=>[
-                'item_unit_id'=>$item['item_unit_id'],
-                'program_period_start <='=>time(),
-                'program_period_end >='=>time(),
-                'invoicing !='=>array_flip(Configure::read('special_offer_invoicing'))['Cumulative'],
-                'offer_payment_mode !='=>array_flip(Configure::read('offer_payment_mode'))['Delayed']
-            ]])->where(['invoice_type IN'=>[array_flip(Configure::read('special_offer_invoice_types'))['Both'], $invoice_type]]);
+            $options = $this->OfferItems->find('all', ['conditions' => [
+                'item_unit_id' => $item['item_unit_id'],
+                'program_period_start <=' => time(),
+                'program_period_end >=' => time(),
+                'invoicing !=' => array_flip(Configure::read('special_offer_invoicing'))['Cumulative'],
+                'offer_payment_mode !=' => array_flip(Configure::read('offer_payment_mode'))['Delayed']
+            ]])->where(['invoice_type IN' => [array_flip(Configure::read('special_offer_invoice_types'))['Both'], $invoice_type]]);
 
-            if(sizeof($options)>0){
-                foreach($options as $option){
-                    if($option->offer_id>0){
-                        if(!in_array($option->offer_id, $offerArray)){
+            if (sizeof($options) > 0) {
+                foreach ($options as $option) {
+                    if ($option->offer_id > 0) {
+                        if (!in_array($option->offer_id, $offerArray)) {
                             $offerArray[] = $option->offer_id;
                             $offerItems[$option->offer_id][] = $item['item_unit_id'];
                         }
@@ -650,26 +665,26 @@ class InvoicesController extends AppController
 
         $wonOffers = [];
         $ApplicableWonOffers = [];
-        foreach($offerArray as $serial=>$offer){
+        foreach ($offerArray as $serial => $offer) {
             $offer = $this->Offers->get($offer);
             $conditions = json_decode($offer['conditions'], true);
 
-            foreach($conditions as $k=>$condition){
-                if($condition['level']==5 && $condition['context']==array_flip(Configure::read('offer_contexts'))['Invoice'] && $condition['time_level']==array_flip(Configure::read('offer_time_level'))['Instant']){
+            foreach ($conditions as $k => $condition) {
+                if ($condition['level'] == 5 && $condition['context'] == array_flip(Configure::read('offer_contexts'))['Invoice'] && $condition['time_level'] == array_flip(Configure::read('offer_time_level'))['Instant']) {
                     $conditionKey = $k;
                 }
             }
 
             $conditionPostfix = json_decode($offer['condition_postfix'], true);
 
-            if(isset($conditionKey)){
+            if (isset($conditionKey)) {
                 $applicablePostfix = $conditionPostfix[$conditionKey];
                 $ApplicableWonOffers[$serial] = $this->Common->getWonOffer($applicablePostfix, $invoiceArray, $offer->id);
             }
         }
 
-        foreach($ApplicableWonOffers as $applicableWonOffer){
-            foreach($applicableWonOffer as $won){
+        foreach ($ApplicableWonOffers as $applicableWonOffer) {
+            foreach ($applicableWonOffer as $won) {
                 $wonOffers[] = $won;
             }
         }
@@ -679,10 +694,11 @@ class InvoicesController extends AppController
         $itemArray = $SystemHelper->get_item_unit_array();
 
         $this->viewBuilder()->layout('ajax');
-        $this->set(compact('wonOffers','offerItems','itemArray'));
+        $this->set(compact('wonOffers', 'offerItems', 'itemArray'));
     }
 
-    public function checkInvoiceTypeEligibility(){
+    public function checkInvoiceTypeEligibility()
+    {
         $data = $this->request->data;
         $invoice_type = $data['invoice_type'];
         $customer_id = $data['customer_id'];
@@ -690,21 +706,21 @@ class InvoicesController extends AppController
         $credit_invoice_days = $data['credit_invoice_days'];
 
         $this->loadModel('Invoices');
-        $oldest = $this->Invoices->find('all', ['conditions'=>['customer_id'=>$customer_id, 'due >'=>0, 'delivery_status'=>array_flip(Configure::read('invoice_delivery_status'))['delivered'], 'status'=>1], 'order'=>['delivery_date ASC'], 'limit'=>1])->first();
+        $oldest = $this->Invoices->find('all', ['conditions' => ['customer_id' => $customer_id, 'due >' => 0, 'delivery_status' => array_flip(Configure::read('invoice_delivery_status'))['delivered'], 'status' => 1], 'order' => ['delivery_date ASC'], 'limit' => 1])->first();
 
-        if(sizeof($oldest)>0){
-            $dateDiff = (time()-$oldest['delivery_date'])/(60*60*24);
-            if($invoice_type==1 && $dateDiff > $cash_invoice_days){
+        if (sizeof($oldest) > 0) {
+            $dateDiff = (time() - $oldest['delivery_date']) / (60 * 60 * 24);
+            if ($invoice_type == 1 && $dateDiff > $cash_invoice_days) {
                 $arr = json_encode(0);
                 $this->response->body($arr);
-            }elseif($invoice_type==2 && $dateDiff > $credit_invoice_days){
+            } elseif ($invoice_type == 2 && $dateDiff > $credit_invoice_days) {
                 $arr = json_encode(0);
                 $this->response->body($arr);
-            }else{
+            } else {
                 $arr = json_encode(1);
                 $this->response->body($arr);
             }
-        }else{
+        } else {
             $arr = json_encode(1);
             $this->response->body($arr);
         }

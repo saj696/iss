@@ -78,17 +78,13 @@ class ReportSalesCollectionsController extends AppController
             $cash_collection = $FunctionHelper->cash_collection($unit_global_id, $start_time, $end_time, 0, $group_by_level);
             $credit_collection = $FunctionHelper->credit_collection($unit_global_id, $start_time, $end_time, 0, $group_by_level);
             $credit_notes = $this->Common->get_unit_credit_note_amount($unit_level, $unit_global_id, $start_time, $end_time, $group_by_level);
-            $opening_due = $this->Common->get_unit_opening_due($unit_level, $unit_global_id, $group_by_level, $end_time);
+            $opening_due = $this->Common->get_unit_opening_due($unit_level, $unit_global_id, $group_by_level, $start_time);
             $adjustments = $this->Common->get_unit_adjustment_amount($unit_level, $unit_global_id, $start_time, $end_time, $group_by_level);
             $credit_limit_array = $this->Common->administrative_unit_wise_credit_limit($unit_global_id, $group_by_level);
 
             $credit_limit = [];
             foreach($credit_limit_array as $limit){
-                if($unit_level==Configure::read('max_level_no')+1){
-                    $credit_limit[$limit['id']] = $limit['CREDIT_LIMIT'];
-                }else{
-                    $credit_limit[$limit['GLOBAL_ID']] = $limit['CREDIT_LIMIT'];
-                }
+                $credit_limit[$limit['GLOBAL_ID']] = $limit['CREDIT_LIMIT'];
             }
 
             $credit_sales_array_keys = array_keys($credit_sales);

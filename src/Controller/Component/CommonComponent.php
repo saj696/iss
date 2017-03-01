@@ -622,7 +622,7 @@ class CommonComponent extends Component
         }
 
         $betweenDateInvoices = TableRegistry::get('invoices')->find()->hydrate(false);
-        $betweenDateInvoices->where(['invoice_date >=' => $uptoDate]);
+        $betweenDateInvoices->where(['invoice_date >' => $uptoDate]);
         $betweenDateInvoices->where(['invoice_date <=' => $date]);
         $betweenDateInvoices->where(['customer_id' => $customer_id]);
         $betweenDateInvoices->where(['invoice_date', 'customer_id', 'net_total']);
@@ -633,8 +633,9 @@ class CommonComponent extends Component
         } else {
             $betweenDateInvoicesNetTotal = 0;
         }
+
         $betweenDatePayments = TableRegistry::get('invoice_payments')->find()->hydrate(false);
-        $betweenDatePayments->where(['payment_collection_date >=' => $uptoDate]);
+        $betweenDatePayments->where(['payment_collection_date >' => $uptoDate]);
         $betweenDatePayments->where(['payment_collection_date <=' => $date]);
         $betweenDatePayments->where(['customer_id' => $customer_id]);
         $betweenDatePayments->select(['invoice_wise_payment_amount' => 'SUM(invoice_wise_payment_amount)']);

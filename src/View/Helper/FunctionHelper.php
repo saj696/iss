@@ -971,7 +971,7 @@ class FunctionHelper extends Helper
         $limitStart = pow(2,(Configure::read('max_level_no')- $searchUnitInfo['level_no']-1)*5);
         $limitEnd = pow(2,(Configure::read('max_level_no')- $searchUnitInfo['level_no'])*5);
 
-        $invoices = TableRegistry::get('invoiced_products')->find('all');
+        $invoices = TableRegistry::get('invoices')->find('all');
         $invoices->where('customer_unit_global_id -'. $unit_global_id .'>= '.$limitStart);
         $invoices->where('customer_unit_global_id -'. $unit_global_id .'< '.$limitEnd);
         $invoices->where(['invoice_date >='=>$start_time]);
@@ -1044,7 +1044,7 @@ class FunctionHelper extends Helper
         $limitStart = pow(2,(Configure::read('max_level_no')- $searchUnitInfo['level_no']-1)*5);
         $limitEnd = pow(2,(Configure::read('max_level_no')- $searchUnitInfo['level_no'])*5);
 
-        $invoices = TableRegistry::get('invoiced_products')->find('all');
+        $invoices = TableRegistry::get('invoices')->find('all');
         $invoices->where('customer_unit_global_id -'. $unit_global_id .'>= '.$limitStart);
         $invoices->where('customer_unit_global_id -'. $unit_global_id .'< '.$limitEnd);
         $invoices->where(['invoice_date >='=>$start_time]);
@@ -1052,7 +1052,7 @@ class FunctionHelper extends Helper
         if(sizeof($itemUnitArray)>0){
             $invoices->where(['item_unit_id IN'=>$itemUnitArray]);
         }
-        $invoices->where(['invoice_type'=>array_flip(Configure::read('invoice_type'))['Cash']]);
+        $invoices->where(['invoice_type'=>1]);
 
         $newInvoiceArray = [];
         if($group_by_level==Configure::read('max_level_no')+1){
