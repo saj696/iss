@@ -320,20 +320,22 @@ class CommonComponent extends Component
             //here it is :: 2^(1+5*level) -1  * 2^(5*(max_level-level))
             $stmt = $conn->execute('
             SELECT unit_global_id  & ' . $expression . ' as GLOBAL_ID,SUM(credit_limit) as CREDIT_LIMIT from customers
-            WHERE  unit_global_id-' . $top_global_id . ' >= ' . $limitStart . ' AND unit_global_id-' . $top_global_id . ' < ' . $limitEnd . '
+            WHERE  unit_global_id-' . $top_global_id . ' >= ' . $limitStart . '
+             AND unit_global_id-' . $top_global_id . ' < ' . $limitEnd . '
+            AND status =1
             GROUP BY GLOBAL_ID');
             $result = $stmt->fetchAll('assoc');
         } else {
             if ($searchUnitInfo['level_no'] == 4) {
                 $stmt = $conn->execute('
-            SELECT id, SUM(credit_limit) as CREDIT_LIMIT from customers
+            SELECT id as GLOBAL_ID , SUM(credit_limit) as CREDIT_LIMIT from customers
             WHERE   unit_global_id = ' . $top_global_id . '
             GROUP BY id');
                 $result = $stmt->fetchAll('assoc');
 
             } else {
                 $stmt = $conn->execute('
-            SELECT id, SUM(credit_limit) as CREDIT_LIMIT from customers
+            SELECT id as GLOBAL_ID, SUM(credit_limit) as CREDIT_LIMIT from customers
             WHERE  unit_global_id-' . $top_global_id . ' >= ' . $limitStart . ' AND unit_global_id-' . $top_global_id . ' < ' . $limitEnd . '
             GROUP BY id');
                 $result = $stmt->fetchAll('assoc');
