@@ -217,7 +217,7 @@ use Cake\Core\Configure;
             if(customer_id>0){
                 $.ajax({
                     type: 'POST',
-                    url: '<?= $this->Url->build("/Invoices/getCustomerDetail")?>',
+                    url: '<?= $this->Url->build("/Pos/getCustomerDetail")?>',
                     data: {customer_id: customer_id},
                     success: function (data, status) {
                         var data = JSON.parse(data);

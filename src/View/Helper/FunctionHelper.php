@@ -1687,15 +1687,7 @@ class FunctionHelper extends Helper
             }
         }
 
-        $xxx = [];
-        $i = 0;
-        foreach($sumArray as $id=>$sum){
-            $xxx[$i]['global_id'] = $id;
-            $xxx[$i]['total'] = $sum;
-            $i++;
-        }
-
-        return $xxx;
+        return $sumArray;
     }
 
     public function get_child_global_ids($own_level, $own_global_id, $search_level = null){
