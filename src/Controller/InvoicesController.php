@@ -118,7 +118,7 @@ class InvoicesController extends AppController
                     $invoiceData['depot_unit_global_id'] = $depotUnitInfo['global_id'];
                     $invoiceData['depot_id'] = $user['depot_id'];
                     $invoiceData['due'] = $data['total_amount_hidden'];
-                    $invoiceData['invoice_date'] = $time;
+                    $invoiceData['invoice_date'] = strtotime($data['invoice_date']);
 
                     $invoiceData['created_by'] = $user['id'];
                     $invoiceData['created_date'] = $time;
@@ -135,7 +135,7 @@ class InvoicesController extends AppController
                         $invoicedProductsData['customer_unit_global_id'] = $customerUnitInfo['global_id'];
                         $invoicedProductsData['customer_id'] = $data['customer_id'];
                         $invoicedProductsData['customer_type'] = $invoiceData['customer_type'];
-                        $invoicedProductsData['invoice_date'] = $time;
+                        $invoicedProductsData['invoice_date'] = strtotime($data['invoice_date']);
                         $invoicedProductsData['delivery_date'] = strtotime($data['delivery_date']);
 
                         $invoicedProductsData['depot_level_no'] = $invoiceData['depot_level_no'];

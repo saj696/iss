@@ -27,54 +27,126 @@ $webroot =  $this->request->webroot;
 
         <div id="PrintArea">
             <div class="row">
-                <h4 class="text-center"><?= __('Sales & Collection Report') ?></h4>
+                <h4 class="text-center"><?= __('Daily Sales Report') ?></h4>
             </div>
 
             <div class="row">
                 <div class="col-md-12 report-table" style="overflow: auto;">
-                    <table class="table table-bordered">
-                        <thead>
-                            <tr style="border-bottom: 3px solid lightgrey">
-                                <td><?= __('Sl#') ?></td>
-                                <td><?= __('Unit Name') ?></td>
-                                <td><?= __('Credit Limit') ?></td>
-                                <td><?= __('Opening Due') ?></td>
-                                <td><?= __('Credit Sales') ?></td>
-                                <td><?= __('Credit Note') ?></td>
-                                <td><?= __('Cash Sales') ?></td>
-                                <td><?= __('Net Total Sales') ?></td>
-                                <td><?= __('Credit Collection') ?></td>
-                                <td><?= __('Cash Collection') ?></td>
-                                <td><?= __('Adjustment') ?></td>
-                                <td><?= __('Total Recovery') ?></td>
-                                <td><?= __('Closing Due') ?></td>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php
-                            $sl = 0;
-                            foreach($finalArray as $unit=>$data):
-                                ?>
-                                <tr>
-                                    <td><?=$sl+1?></td>
-                                    <td><?=$nameArray[$unit]?></td>
-                                    <td><?=$data['credit_limit']?></td>
-                                    <td><?=$data['opening_due']?></td>
-                                    <td><?=$data['credit_sales']?></td>
-                                    <td><?=$data['credit_note']?></td>
-                                    <td><?=$data['cash_sales']?></td>
-                                    <td><?=$data['total_sales']?></td>
-                                    <td><?=$data['credit_collection']?></td>
-                                    <td><?=$data['cash_collection']?></td>
-                                    <td><?=$data['adjustment']?></td>
-                                    <td><?=$data['recovery']?></td>
-                                    <td><?=$data['closing_due']?></td>
-                                </tr>
-                            <?php
-                            $sl++;
-                            endforeach;
-                            ?>
-                        </tbody>
+                    <table>
+                        <tr>
+                            <td rowspan="5">Name of Territory</td>
+                        </tr>
+                        <tr>
+                            <td colspan="21" class="text-center">THIS MONTH RECORD</td>
+                            <td colspan="12" class="text-center">CUMULATIVE RECORD (<?=$data['start_date']?> To This Date)</td>
+                            <td colspan="5" class="text-center">DUES UPTO THE DATE</td>
+                        </tr>
+                        <tr>
+                            <td colspan="10" class="text-center">SALES</td>
+                            <td colspan="11" class="text-center">COLLECTION</td>
+
+                            <td colspan="5" class="text-center">SALES</td>
+                            <td colspan="7" class="text-center">COLLECTION</td>
+
+                            <td rowspan="3">Over 90 Days</td>
+                            <td rowspan="3">Over 120 Days</td>
+                            <td rowspan="3">Over 180 Days</td>
+                            <td rowspan="3">Bad Debt</td>
+                            <td rowspan="3">Grand Total Dues</td>
+                        </tr>
+                        <tr>
+                            <td rowspan="2" class="text-center">Target</td>
+                            <td colspan="4" class="text-center">Sales This Day</td>
+                            <td colspan="5" class="text-center">Sales Achievement This Month</td>
+
+                            <td rowspan="2" class="text-center">Target</td>
+                            <td colspan="4" class="text-center">Collection This Day</td>
+                            <td colspan="6" class="text-center">Collection Achievement this Month</td>
+
+                            <td rowspan="2" class="text-center">Target</td>
+                            <td colspan="4" class="text-center">Sales This Day</td>
+                            <td rowspan="2" class="text-center">Target</td>
+                            <td colspan="6" class="text-center">Sales Achievement This Month</td>
+                        </tr>
+                        <tr>
+                            <td>Credit</td>
+                            <td>Credit Note</td>
+                            <td>Cash</td>
+                            <td>T.Sales</td>
+                            <td>Credit</td>
+                            <td>Credit Note</td>
+                            <td>Cash</td>
+                            <td>T.Sales</td>
+                            <td>%Ach.</td>
+
+                            <td>Credit</td>
+                            <td>Cash</td>
+                            <td>B.Debt</td>
+                            <td>T. Coll.</td>
+
+                            <td>Credit</td>
+                            <td>Cash</td>
+                            <td>B.Debt</td>
+                            <td>Adjustment</td>
+                            <td>T. Coll.</td>
+                            <td>%Ach.</td>
+
+
+                            <td>Credit</td>
+                            <td>Cash</td>
+                            <td>T.Sales</td>
+                            <td>%Ach.</td>
+
+                            <td>Credit</td>
+                            <td>Cash</td>
+                            <td>B.Debt</td>
+                            <td>Adjustment</td>
+                            <td>T. Coll.</td>
+                            <td>%Ach.</td>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
                     </table>
                 </div>
             </div>
