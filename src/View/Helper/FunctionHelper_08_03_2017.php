@@ -70,22 +70,10 @@ class FunctionHelper extends Helper
         $postfixCurrentIndex=0;
         $functionSerial = 0;
         $operators = ['+', '-', '*', '/', '&', '|', '>', '<', '=', '!'];
-        $indexOfCurrentOperatorInStack = -1;
-        $indexOfProbablyMarkedOperatorInStack = -1;
-        $indexOfProbablyMarkedOperatorInPostfix = -1;
-        $indexOfActuallyMarkedOperatorInStack = -1;
-        $probableRangeStart = -1;
-        $actualRangeStart = -1;
-        $state = 0;
-        $is_marked_counter = 0;
-        // $elementType: [0=>'Number', 1=>'(', 2=>')', 3=>'item_unit_quantity', 4=>'compOp', 5=>'other']
 
 
         for($i=0; $i<sizeof($ca); $i++){
-            echo 'at start  '.$state;
             if($ca[$i]=='(') {
-                $elementType = 1;
-                echo "extra  ".$elementType;
                 $indexOfStackTop++;
                 $stack[$indexOfStackTop] = -2;
             } elseif(preg_match('/[a-z\s_]/i',$ca[$i])){
@@ -106,13 +94,6 @@ class FunctionHelper extends Helper
 
                 $postfix[$postfixCurrentIndex]['type'] = Configure::read('postfix_elements_types')['function'];
                 $postfix[$postfixCurrentIndex]['name'] = $fn[$functionSerial];
-
-                if(strpos($fn[$functionSerial],'item_unit_quantity')!==false){
-                    $elementType = 3;
-                }else{
-                    $elementType = 5;
-                }
-
                 $postfix[$postfixCurrentIndex]['arg'] = $fa[$functionSerial];
                 $postfixCurrentIndex++;
                 $functionSerial++;
@@ -125,7 +106,6 @@ class FunctionHelper extends Helper
 
                 $postfix[$postfixCurrentIndex]['type'] = Configure::read('postfix_elements_types')['number'];
                 $postfix[$postfixCurrentIndex]['number'] = $cn[0];
-                $elementType = 0;
                 $postfixCurrentIndex++;
                 $i--;
             } elseif(in_array($ca[$i], $operators)){
@@ -136,37 +116,29 @@ class FunctionHelper extends Helper
                     $currentOperator = $o2n[$ca[$i]];
                 }
 
-                if(self::check_comparison_operator($currentOperator)){
-                    $elementType = 4;
-                }else{
-                    $elementType = 5;
-                }
-
                 if($indexOfStackTop== -1){ //if($stack[$indexOfStackTop]=='$')
+
                     $indexOfStackTop++;
                     $stack[$indexOfStackTop] = $currentOperator;
-                    $indexOfCurrentOperatorInStack = $indexOfStackTop;
-                }elseif($stack[$indexOfStackTop]>-1){
+                }
+                elseif($stack[$indexOfStackTop]>-1){
+
                     if($precedence[$currentOperator]<=$precedence[intval($stack[$indexOfStackTop])]){
-                        if($indexOfActuallyMarkedOperatorInStack == $indexOfStackTop && $is_marked_counter==0){
-                            $postfix[$postfixCurrentIndex]['is_marked'] = 1;
-                            $is_marked_counter = 1;
-                        }else{
-                            $postfix[$postfixCurrentIndex]['is_marked'] = 0;
-                        }
+
                         $postfix[$postfixCurrentIndex]['type'] = Configure::read('postfix_elements_types')['operator'];
                         $postfix[$postfixCurrentIndex]['operator'] = $stack[$indexOfStackTop];
+
                         $postfixCurrentIndex++;
                         $indexOfStackTop--;
                     }
 
                     $indexOfStackTop++;
                     $stack[$indexOfStackTop] = $currentOperator;
-                    $indexOfCurrentOperatorInStack = $indexOfStackTop;
+
                 }elseif($stack[$indexOfStackTop] == -2){
+
                     $indexOfStackTop++;
                     $stack[$indexOfStackTop] = $currentOperator;
-                    $indexOfCurrentOperatorInStack = $indexOfStackTop;
                 }
             } elseif($ca[$i]==')'){
                 do{
@@ -174,16 +146,8 @@ class FunctionHelper extends Helper
                     if($stop== -2){
                         break;
                     }
-
-                    if($indexOfActuallyMarkedOperatorInStack == $indexOfStackTop && $is_marked_counter==0){
-                        $postfix[$postfixCurrentIndex]['is_marked'] = 1;
-                        $is_marked_counter = 1;
-                    }else{
-                        $postfix[$postfixCurrentIndex]['is_marked'] = 0;
-                    }
                     $postfix[$postfixCurrentIndex]['type'] = Configure::read('postfix_elements_types')['operator'];
                     $postfix[$postfixCurrentIndex]['operator'] = $stop;
-                    $elementType = 2;
 
                     $postfixCurrentIndex++;
                     $indexOfStackTop--;
@@ -193,13 +157,6 @@ class FunctionHelper extends Helper
                 $indexOfStackTop--;
             } elseif($ca[$i]=='$'){
                 while($indexOfStackTop>=0){
-                    if($indexOfActuallyMarkedOperatorInStack == $indexOfStackTop && $is_marked_counter==0){
-                        $postfix[$postfixCurrentIndex]['is_marked'] = 1;
-                        $is_marked_counter = 1;
-                    }else{
-                        $postfix[$postfixCurrentIndex]['is_marked'] = 0;
-                    }
-
                     $postfix[$postfixCurrentIndex]['type'] = Configure::read('postfix_elements_types')['operator'];
                     $postfix[$postfixCurrentIndex]['operator'] = $stack[$indexOfStackTop];
 
@@ -208,82 +165,8 @@ class FunctionHelper extends Helper
                 }
                 break;
             }
-
-            // new code start
-            if($state == 0){
-                switch($elementType){
-                    case 0:
-                        $state = 1;
-                        $probableRangeStart = $cn[0];
-                        break;
-                    case 3:
-                        $state = 4;
-                        break;
-                    default:
-                        break;
-                }
-            } elseif($state == 1){
-                switch($elementType){
-                    case 4:
-                        $state = 2;
-                        $indexOfProbablyMarkedOperatorInStack = $indexOfCurrentOperatorInStack;
-                        break;
-                    default:
-                        $state = 0;
-                }
-            } elseif($state == 2){
-                switch($elementType){
-                    case 1:
-                        break;
-                    case 3:
-                        $state = 6;
-                        $actualRangeStart = $probableRangeStart;
-                        $indexOfActuallyMarkedOperatorInStack = $indexOfProbablyMarkedOperatorInStack;
-                        break;
-                    default:
-                        $state = 0;
-                }
-            } elseif($state == 4){
-                switch($elementType){
-                    case 2:
-                        $state = 4;
-                        break;
-                    case 4:
-                        $state = 5;
-                        $indexOfProbablyMarkedOperatorInStack = $indexOfCurrentOperatorInStack;
-                        break;
-                    default:
-                        break;
-                }
-            } elseif($state == 5){
-                switch($elementType){
-                    case 0:
-                        $state = 6;
-                        $actualRangeStart = $probableRangeStart;
-                        $indexOfActuallyMarkedOperatorInStack = $indexOfProbablyMarkedOperatorInStack;
-                        break;
-                    default:
-                        $state = 0;
-                }
-            } elseif($state == 6){
-
-            }
-
-            echo 'after  '.$state;
-            echo '---'.$elementType;
-            echo '<br/>';
         }
-
-        echo '==========='.$actualRangeStart;
         return $postfix;
-    }
-
-    public function check_comparison_operator($operator){
-        if($operator >=4 && $operator <=8){
-            return true;
-        }else{
-            return false;
-        }
     }
 
     public function postfix_evaluator($postfixArray){

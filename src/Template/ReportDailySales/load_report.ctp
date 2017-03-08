@@ -34,19 +34,19 @@ $webroot =  $this->request->webroot;
                 <div class="col-md-12 report-table" style="overflow: auto;">
                     <table>
                         <tr>
-                            <td rowspan="5">Name of Territory</td>
+                            <th rowspan="5">Location</th>
                         </tr>
                         <tr>
-                            <td colspan="21" class="text-center">THIS MONTH RECORD</td>
-                            <td colspan="12" class="text-center">CUMULATIVE RECORD (<?=$data['start_date']?> To This Date)</td>
-                            <td colspan="5" class="text-center">DUES UPTO THE DATE</td>
+                            <th colspan="21" class="text-center">THIS MONTH RECORD</th>
+                            <th colspan="12" class="text-center">CUMULATIVE RECORD (<?=$data['start_date']?> To This Date)</th>
+                            <th colspan="5" class="text-center">DUES UPTO THE DATE</th>
                         </tr>
                         <tr>
-                            <td colspan="10" class="text-center">SALES</td>
-                            <td colspan="11" class="text-center">COLLECTION</td>
+                            <th colspan="10" class="text-center">SALES</th>
+                            <th colspan="11" class="text-center">COLLECTION</th>
 
-                            <td colspan="5" class="text-center">SALES</td>
-                            <td colspan="7" class="text-center">COLLECTION</td>
+                            <th colspan="5" class="text-center">SALES</th>
+                            <th colspan="7" class="text-center">COLLECTION</th>
 
                             <td rowspan="3">Over 90 Days</td>
                             <td rowspan="3">Over 120 Days</td>
@@ -104,49 +104,53 @@ $webroot =  $this->request->webroot;
                             <td>T. Coll.</td>
                             <td>%Ach.</td>
                         </tr>
+
+                        <?php foreach($finalArray as $location=>$detail):?>
                         <tr>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
+                            <td><?= $nameArray[$location]?></td>
+                            <td><?= $detail['this_month_sales_target']?></td>
+                            <td><?= $detail['this_day_credit_sales']?></td>
+                            <td><?= $detail['this_day_credit_note']?></td>
+                            <td><?= $detail['this_day_cash_sales']?></td>
+                            <td><?= $detail['this_day_credit_sales']+$detail['this_day_cash_sales']-$detail['this_day_credit_note']?></td>
+                            <td><?= $detail['this_month_credit_sales']?></td>
+                            <td><?= $detail['this_month_credit_note']?></td>
+                            <td><?= $detail['this_month_cash_sales']?></td>
+                            <td><?= $detail['this_month_credit_sales']+$detail['this_month_cash_sales']-$detail['this_month_credit_note']?></td>
+                            <td><?= ($detail['this_month_credit_sales']+$detail['this_month_cash_sales']-$detail['this_month_credit_note'])>0?$detail['this_month_sales_target']/($detail['this_month_credit_sales']+$detail['this_month_cash_sales']-$detail['this_month_credit_note']):0?></td>
 
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
+                            <td><?= $detail['this_month_collection_target'];?></td>
+                            <td><?= $detail['this_day_credit_collection']?></td>
+                            <td><?= $detail['this_day_cash_collection']?></td>
+                            <td>0</td>
+                            <td><?= $detail['this_day_credit_collection']+$detail['this_day_cash_collection']?></td>
+                            <td><?= $detail['this_month_credit_collection']?></td>
+                            <td><?= $detail['this_month_cash_collection']?></td>
+                            <td>0</td>
+                            <td><?= $detail['this_month_adjustment']?></td>
+                            <td><?= $detail['this_month_credit_collection']+$detail['this_month_cash_collection']?></td>
+                            <td><?= ($detail['this_month_credit_collection']+$detail['this_month_cash_collection'])>0?$detail['this_month_collection_target']/($detail['this_month_credit_collection']+$detail['this_month_cash_collection']):0?></td>
 
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
+                            <td><?= $detail['cumulative_sales_target']?></td>
+                            <td><?= $detail['cumulative_credit_sales']?></td>
+                            <td><?= $detail['cumulative_cash_sales']?></td>
+                            <td><?= $detail['cumulative_credit_sales']+$detail['cumulative_cash_sales']?></td>
+                            <td><?= ($detail['cumulative_credit_sales']+$detail['cumulative_cash_sales'])>0?$detail['cumulative_sales_target']/($detail['cumulative_credit_sales']+$detail['cumulative_cash_sales']):0?></td>
+                            <td><?= $detail['cumulative_collection_target']?></td>
+                            <td><?= $detail['cumulative_credit_collection']?></td>
+                            <td><?= $detail['cumulative_cash_collection']?></td>
+                            <td>0</td>
+                            <td><?= $detail['cumulative_adjustment']?></td>
+                            <td><?= $detail['cumulative_credit_collection']+$detail['cumulative_cash_collection']?></td>
+                            <td><?= ($detail['cumulative_credit_collection']+$detail['cumulative_cash_collection'])>0?$detail['cumulative_collection_target']/($detail['cumulative_credit_collection']+$detail['cumulative_cash_collection']):0?></td>
 
-                            <td></td>
                             <td></td>
                             <td></td>
                             <td></td>
                             <td></td>
                             <td></td>
                         </tr>
+                        <?php endforeach;?>
                     </table>
                 </div>
             </div>

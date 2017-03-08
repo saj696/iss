@@ -35,6 +35,7 @@ $status = \Cake\Core\Configure::read('status_options');
                             <th><?= __('Invoice Date') ?></th>
                             <th><?= __('Delivery Date') ?></th>
                             <th><?= __('Total Amount') ?></th>
+                            <th><?= __('Action') ?></th>
                         </tr>
                         </thead>
                         <tbody>
@@ -45,6 +46,7 @@ $status = \Cake\Core\Configure::read('status_options');
                                 <td><?= $this->System->display_date($invoice->invoice_date) ?></td>
                                 <td><?= $this->System->display_date($invoice->delivery_date) ?></td>
                                 <td><?= $invoice->net_total ?></td>
+                                <td><?= $this->Html->link(__('Preview'), ['action' => 'printInvoice', $invoice->id], ['class' => 'btn btn-circle default yellow-stripe']);?></td>
                             </tr>
                         <?php
                         }

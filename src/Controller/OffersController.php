@@ -121,6 +121,16 @@ class OffersController extends AppController
         App::import('Helper', 'FunctionHelper');
         $FunctionHelper = new FunctionHelper(new View());
 
+
+        $scon = "(((item_unit_quantity['Phytovit 80DF','Pack-100 gm',X]>=500)&&(item_unit_quantity['Phytovit 80DF','Pack-100 gm',X]<1000))||((item_unit_quantity['Phytovit 80DF','Pack-500 gm',X]>=500)&&((item_unit_quantity['Phytovit 80DF','Pack-500 gm',X])<1000))||(((item_unit_quantity['Phytovit 80DF','Pack-1 kg',X])>=500)&&((item_unit_quantity['Phytovit 80DF','Pack-1 kg',X])<1000)))&&(invoice_payment_age[X]==0)";
+        $postfix = $FunctionHelper->postfix_converter($scon.'$');
+
+        echo '<pre>';
+        print_r($postfix);
+        echo '</pre>';
+        exit;
+
+
         if ($this->request->is('post')) {
             try {
                 $saveStatus = 0;
@@ -144,6 +154,10 @@ class OffersController extends AppController
 
                         foreach($condition['specific'] as $s=>$specific){
                             $conditionPostfix[$k]['specific'][$s]['condition'] = $FunctionHelper->postfix_converter($specific['specific_condition'].'$');
+                            echo '<pre>';
+                            print_r($conditionPostfix[$k]['specific'][$s]['condition']);
+                            echo '</pre>';
+                            exit;
                             $conditionPostfix[$k]['specific'][$s]['amount'] = $FunctionHelper->postfix_converter($specific['amount'].'$');
                             $AccountHeadInfo = $this->AccountHeads->find('all', ['conditions'=>['name'=>$specific['offer_type']]])->first();
                             $conditionPostfix[$k]['specific'][$s]['offer_type'] = $AccountHeadInfo['code'];

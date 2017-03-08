@@ -37,18 +37,19 @@ use Cake\Core\Configure;
                         <?php
                         echo $this->Form->input('customer_level_no', ['label'=>'Customer Level', 'empty'=>'Select', 'options'=>$administrativeLevels, 'class'=>'form-control level_no', 'templates'=>['label' =>'<label {{attrs}} class="col-sm-5 control-label text-right" >{{text}}</label>', 'select' => '<div id="container_{{name}}" class="col-sm-6"><select name="{{name}}"{{attrs}} class="form-control">{{content}}</select></div>']]);
                         echo $this->Form->input('customer_unit', ['type'=>'select', 'label'=>'Customer Location', 'empty'=>'Select', 'class'=>'form-control customer_unit', 'templates'=>['label' =>'<label {{attrs}} class="col-sm-5 control-label text-right" >{{text}}</label>', 'select' => '<div id="container_{{name}}" class="col-sm-6 unit_select"><select name="{{name}}"{{attrs}} class="form-control">{{content}}</select></div>']]);
-                        echo $this->Form->input('credit_limit', ['label'=>'Credit Limit', 'type'=>'text', 'readonly', 'class'=>'form-control credit_limit', 'templates'=>['label' => '<label {{attrs}} class="col-sm-5 control-label text-right" >{{text}}</label>','input' => '<div class="col-sm-6 container_{{name}}"> <input {{attrs}} class="form-control" type="{{type}}" name="{{name}}"></div>']]);
-                        echo $this->Form->input('total_due', ['label'=>'Total Due', 'type'=>'text', 'disabled', 'class'=>'form-control total_due', 'templates'=>['label' => '<label {{attrs}} class="col-sm-5 control-label text-right" >{{text}}</label>','input' => '<div class="col-sm-6 container_{{name}}"> <input {{attrs}} class="form-control" type="{{type}}" name="{{name}}"></div>']]);
-                        echo $this->Form->input('available_credit', ['label'=>'Available Credit', 'type'=>'text', 'readonly', 'class'=>'form-control available_credit', 'templates'=>['label' => '<label {{attrs}} class="col-sm-5 control-label text-right" >{{text}}</label>','input' => '<div class="col-sm-6 container_{{name}}"> <input {{attrs}} class="form-control" type="{{type}}" name="{{name}}"></div>']]);
-                        echo $this->Form->input('invoice_type', ['type'=>'select', 'options'=>[1=>'Cash', 2=>'Credit'], 'label'=>'Invoice Type', 'empty'=>'Select', 'class'=>'form-control invoice_type', 'templates'=>['label' =>'<label {{attrs}} class="col-sm-5 control-label text-right" >{{text}}</label>', 'select' => '<div id="container_{{name}}" class="col-sm-6"><select name="{{name}}"{{attrs}} class="form-control">{{content}}</select></div>']]);
+                        echo $this->Form->input('customer_id', ['label'=>'Customer', 'empty'=>'Select', 'options'=>[], 'class'=>'form-control customer_id', 'templates'=>['label' =>'<label {{attrs}} class="col-sm-5 control-label text-right" >{{text}}</label>', 'select' => '<div id="container_{{name}}" class="col-sm-6 customer_select"><select name="{{name}}"{{attrs}} class="form-control">{{content}}</select></div>']]);
+                        echo $this->Form->input('address', ['label'=>'Customer Address', 'disabled', 'type'=>'textarea', 'rows'=>2,'class'=>'form-control address', 'templates'=>['label' =>'<label {{attrs}} class="col-sm-5 control-label text-right" >{{text}}</label>', 'textarea' => '<div class="col-sm-6"><textarea class="form-control address" name="{{name}}"{{attrs}}>{{value}}</textarea></div>']]);
+                        echo $this->Form->input('field_po_no', ['label'=>'Field PO No.', 'type'=>'text', 'class'=>'form-control', 'templates'=>['label' => '<label {{attrs}} class="col-sm-5 control-label text-right" >{{text}}</label>','input' => '<div class="col-sm-6 container_{{name}}"> <input {{attrs}} class="form-control" type="{{type}}" name="{{name}}"></div>']]);
+                        echo $this->Form->input('po_date', ['label'=>'PO date', 'type'=>'text', 'class'=>'form-control datepicker', 'templates'=>['label' => '<label {{attrs}} class="col-sm-5 control-label text-right" >{{text}}</label>','input' => '<div class="col-sm-6 container_{{name}}"> <input {{attrs}} class="form-control" type="{{type}}" name="{{name}}"></div>']]);
                         ?>
                     </div>
                     <div class="col-md-6">
                         <?php
-                        echo $this->Form->input('field_po_no', ['label'=>'Field PO No.', 'type'=>'text', 'class'=>'form-control', 'templates'=>['label' => '<label {{attrs}} class="col-sm-5 control-label text-right" >{{text}}</label>','input' => '<div class="col-sm-6 container_{{name}}"> <input {{attrs}} class="form-control" type="{{type}}" name="{{name}}"></div>']]);
-                        echo $this->Form->input('po_date', ['label'=>'PO date', 'type'=>'text', 'class'=>'form-control datepicker', 'templates'=>['label' => '<label {{attrs}} class="col-sm-5 control-label text-right" >{{text}}</label>','input' => '<div class="col-sm-6 container_{{name}}"> <input {{attrs}} class="form-control" type="{{type}}" name="{{name}}"></div>']]);
-                        echo $this->Form->input('customer_id', ['label'=>'Customer', 'empty'=>'Select', 'options'=>[], 'class'=>'form-control customer_id', 'templates'=>['label' =>'<label {{attrs}} class="col-sm-5 control-label text-right" >{{text}}</label>', 'select' => '<div id="container_{{name}}" class="col-sm-6 customer_select"><select name="{{name}}"{{attrs}} class="form-control">{{content}}</select></div>']]);
-                        echo $this->Form->input('address', ['label'=>'Customer Address', 'disabled', 'type'=>'textarea', 'rows'=>1,'class'=>'form-control address', 'templates'=>['label' =>'<label {{attrs}} class="col-sm-5 control-label text-right" >{{text}}</label>', 'textarea' => '<div class="col-sm-6"><textarea class="form-control address" name="{{name}}"{{attrs}}>{{value}}</textarea></div>']]);
+                        echo $this->Form->input('invoice_type', ['type'=>'select', 'options'=>[1=>'Cash', 2=>'Credit'], 'label'=>'Invoice Type', 'empty'=>'Select', 'class'=>'form-control invoice_type', 'templates'=>['label' =>'<label {{attrs}} class="col-sm-5 control-label text-right" >{{text}}</label>', 'select' => '<div id="container_{{name}}" class="col-sm-6"><select name="{{name}}"{{attrs}} class="form-control">{{content}}</select></div>']]);
+
+                        echo $this->Form->input('credit_limit', ['label'=>'Credit Limit', 'type'=>'text', 'readonly', 'class'=>'form-control credit_limit', 'templates'=>['label' => '<label {{attrs}} class="col-sm-5 control-label text-right" >{{text}}</label>','input' => '<div class="col-sm-6 container_{{name}}"> <input {{attrs}} class="form-control" type="{{type}}" name="{{name}}"></div>']]);
+                        echo $this->Form->input('total_due', ['label'=>'Total Due', 'type'=>'text', 'disabled', 'class'=>'form-control total_due', 'templates'=>['label' => '<label {{attrs}} class="col-sm-5 control-label text-right" >{{text}}</label>','input' => '<div class="col-sm-6 container_{{name}}"> <input {{attrs}} class="form-control" type="{{type}}" name="{{name}}"></div>']]);
+                        echo $this->Form->input('available_credit', ['label'=>'Available Credit', 'type'=>'text', 'readonly', 'class'=>'form-control available_credit', 'templates'=>['label' => '<label {{attrs}} class="col-sm-5 control-label text-right" >{{text}}</label>','input' => '<div class="col-sm-6 container_{{name}}"> <input {{attrs}} class="form-control" type="{{type}}" name="{{name}}"></div>']]);
                         echo $this->Form->input('cash_invoice_days', ['label'=>'Cash Invoice Days', 'type'=>'text', 'readonly', 'class'=>'numbersOnly form-control cash_invoice_days', 'templates'=>['label' => '<label {{attrs}} class="col-sm-5 control-label text-right" >{{text}}</label>','input' => '<div class="col-sm-6 container_{{name}}"> <input {{attrs}} class="form-control" type="{{type}}" name="{{name}}"></div>']]);
                         echo $this->Form->input('credit_invoice_days', ['label'=>'Credit Invoice Days', 'readonly', 'type'=>'text', 'class'=>'numbersOnly form-control credit_invoice_days', 'templates'=>['label' => '<label {{attrs}} class="col-sm-5 control-label text-right" >{{text}}</label>','input' => '<div class="col-sm-6 container_{{name}}"> <input {{attrs}} class="form-control" type="{{type}}" name="{{name}}"></div>']]);
                         ?>
@@ -110,7 +111,7 @@ use Cake\Core\Configure;
         });
 
         $(document).on("focus",".datepicker", function() {
-            $(this).removeClass('hasDatepicker').datepicker({
+            $(this).datepicker({
                 dateFormat: 'dd-mm-yy'
             });
         });
@@ -165,6 +166,26 @@ use Cake\Core\Configure;
                 });
             });
 
+            $(".popContainer").hide();
+        });
+
+        // close offer modal and apply discount
+        $(document).on("click",".closeAndApply",function() {
+            var check_offer_value = parseFloat($('.check_offer_value').val());
+            if(check_offer_value>0){
+                var sum_item_net_total = 0;
+                $('.item_net_total').each(function(index) {
+                    sum_item_net_total += parseFloat($(this).val());
+                });
+
+                $('.item_net_total').each(function(index) {
+                    var proportion =  (parseFloat($(this).val())/sum_item_net_total*check_offer_value).toFixed(2);
+                    $(this).closest('.itemTr').find('.item_cash_discount').val(proportion);
+                    var final_net_total = parseFloat($(this).val())-proportion;
+                    $(this).val(final_net_total);
+                    calculateTotalAmount();
+                });
+            }
             $(".popContainer").hide();
         });
 

@@ -59,7 +59,7 @@
                         </tr>
                         <tr>
                             <td><label class="label label-default">Value</label></td>
-                            <td><?= $wonOffer['value'] ?></td>
+                            <td><?= $wonOffer['value'] ?><input type="hidden" class="check_offer_value" value="<?= $wonOffer['value']?>" /></td>
                         </tr>
                     </table>
                 </td>
@@ -73,6 +73,9 @@
         </tr>
     <?php endif; ?>
     <tr>
-        <td colspan="12" class="text-center"><span style="cursor: pointer;" class="label label-danger crossSpan">Close</span></td>
+        <td colspan="12" class="text-center">
+            <span style="cursor: pointer;" class="label label-danger crossSpan">Close</span>
+            <span style="cursor: pointer;" class="label label-warning closeAndApply">Close & Apply</span>
+        </td>
     </tr>
 </table>
