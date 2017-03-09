@@ -281,6 +281,49 @@ class ApprovePosController extends AppController
         $this->set('_serialize', ['event']);
     }
 
+    public function printInvoice($id){
+        $user = $this->Auth->user();
+        $invoiceArray = $this->Invoices->get($id, [
+            'contain' => ['InvoicedProducts']
+        ]);
+
+        if($invoiceArray['created_by']==$user['id']){
+            App::import('Helper', 'SystemHelper');
+            $SystemHelper = new SystemHelper(new View());
+            $itemArray = $SystemHelper->get_item_unit_array();
+            $this->loadModel('Prices');
+
+            $customerInfo = TableRegistry::get('customers')->findById($invoiceArray['customer_id'])->select(['name','code','address','credit_limit'])->hydrate(false)->first();
+            $locationInfo = TableRegistry::get('administrative_units')->findByGlobalId($invoiceArray['customer_unit_global_id'])->select(['global_id', 'unit_name'])->hydrate(false)->first();
+            $invoice_no = $SystemHelper->generate_invoice_no(2, $invoiceArray['invoice_date'], $locationInfo['global_id']);
+
+            $this->loadComponent('Common');
+            $currentDue = $this->Common->getCustomerDue($invoiceArray['customer_id'], time());
+
+            foreach($invoiceArray['invoiced_products'] as $product){
+                $item_unit_id = $product['item_unit_id'];
+                $invoice_type = $product['invoice_type'];
+
+                $itemPrices = $this->Prices->find('all', ['conditions' => ['item_unit_id' => $item_unit_id]])->first();
+
+                if ($invoice_type == 1) {
+                    $unit_price = $itemPrices['cash_sales_price'];
+                } elseif ($invoice_type == 2) {
+                    $unit_price = $itemPrices['credit_sales_price'];
+                } else {
+                    $unit_price = 0;
+                }
+                $product['unit_price'] = $unit_price;
+            }
+
+            $this->set(compact('customerInfo', 'invoiceArray', 'locationInfo', 'invoice_no', 'currentDue', 'itemArray'));
+            $this->set('_serialize', ['invoiceArray']);
+        }else{
+            $this->Flash->error('You are not authorized to preview this invoice!');
+            return $this->redirect(['action' => 'index']);
+        }
+    }
+
     /**
      * Delete method
      *

@@ -323,7 +323,7 @@ use Cake\Core\Configure;
                         customer_unit: customer_unit
                     },
                     success: function (data, status) {
-                        console.log(data);
+//                        console.log(data);
                         if(data.length>0){
                             var res = JSON.parse(data);
                             console.log(res);

@@ -40,49 +40,15 @@ class OffersController extends AppController
             'conditions' => ['Offers.status' => 1]
         ]);
 
-//        $offers = $offers->toArray();
-//        try {
-//            $saveStatus = 0;
-//            $conn = ConnectionManager::get('default');
-//            $conn->transactional(function () use ($offers, $FunctionHelper, &$saveStatus)
-//            {
-//                foreach($offers as $offer){
-//                    $conditionArray = json_decode($offer['conditions'], true);
-//
-//                    $conditionPostfix = [];
-//                    foreach($conditionArray as $k=>$condition):
-//                        $conditionPostfix[$k]['general'] = $FunctionHelper->postfix_converter($condition['general_conditions'].'$');
-//
-//                        foreach($condition['specific'] as $s=>$specific){
-//                            $conditionPostfix[$k]['specific'][$s]['condition'] = $FunctionHelper->postfix_converter($specific['specific_condition'].'$');
-//                            $conditionPostfix[$k]['specific'][$s]['amount'] = $FunctionHelper->postfix_converter($specific['amount'].'$');
-//                            $conditionPostfix[$k]['specific'][$s]['offer_type'] = $specific['offer_type'];
-//                            $conditionPostfix[$k]['specific'][$s]['offer_name'] = $specific['offer_name'];
-//                            $conditionPostfix[$k]['specific'][$s]['offer_unit_name'] = $specific['offer_unit_name'];
-//                            $conditionPostfix[$k]['specific'][$s]['amount_type'] = $specific['amount_type'];
-//                            $conditionPostfix[$k]['specific'][$s]['payment_mode'] = $specific['payment_mode'];
-//                            $conditionPostfix[$k]['specific'][$s]['amount_unit'] = $specific['amount_unit'];
-//                        }
-//                    endforeach;
-//
-//
-//                    $data['condition_postfix'] = json_encode($conditionPostfix);
-//
-//                    $pos = TableRegistry::get('offers');
-//                    $query = $pos->query();
-//                    $query->update()->set(['condition_postfix' => $data['condition_postfix']])->where(['id' => $offer['id']])->execute();
-//                }
-//            });
-//
-//            echo 'Offer Creation Successful';
-//        } catch (\Exception $e) {
-//            echo '<pre>';
-//            print_r($e);
-//            echo '</pre>';
-//            exit;
-//            echo 'Offer Creation Failed';
-//        }
-//
+//        App::import('Helper', 'FunctionHelper');
+//        $FunctionHelper = new FunctionHelper(new View());
+
+//        $str = "300<=((item_unit_quantity['Sea Gold','Pack-50 ml',X])+(item_unit_quantity['Sea Gold','Pack-100 ml',X])+(item_unit_quantity['Sea Gold','Pack-400 ml',X]))".'$';
+//        $arr = $FunctionHelper->postfix_converter($str);
+//        $arr = $FunctionHelper->item_unit_quantity(1, 2, 3, 4, 5, 6);
+//        echo '<pre>';
+//        print_r($arr);
+//        echo '</pre>';
 //        exit;
 
 
@@ -121,16 +87,6 @@ class OffersController extends AppController
         App::import('Helper', 'FunctionHelper');
         $FunctionHelper = new FunctionHelper(new View());
 
-
-        $scon = "(((item_unit_quantity['Phytovit 80DF','Pack-100 gm',X]>=500)&&(item_unit_quantity['Phytovit 80DF','Pack-100 gm',X]<1000))||((item_unit_quantity['Phytovit 80DF','Pack-500 gm',X]>=500)&&((item_unit_quantity['Phytovit 80DF','Pack-500 gm',X])<1000))||(((item_unit_quantity['Phytovit 80DF','Pack-1 kg',X])>=500)&&((item_unit_quantity['Phytovit 80DF','Pack-1 kg',X])<1000)))&&(invoice_payment_age[X]==0)";
-        $postfix = $FunctionHelper->postfix_converter($scon.'$');
-
-        echo '<pre>';
-        print_r($postfix);
-        echo '</pre>';
-        exit;
-
-
         if ($this->request->is('post')) {
             try {
                 $saveStatus = 0;
@@ -150,15 +106,12 @@ class OffersController extends AppController
 
                     $conditionPostfix = [];
                     foreach($input['condition'] as $k=>$condition):
-                        $conditionPostfix[$k]['general'] = $FunctionHelper->postfix_converter($condition['general_conditions'].'$');
+                        $conditionPostfix[$k]['general'] = $FunctionHelper->postfix_converter($condition['general_conditions'].'$')['postfix'];
 
                         foreach($condition['specific'] as $s=>$specific){
-                            $conditionPostfix[$k]['specific'][$s]['condition'] = $FunctionHelper->postfix_converter($specific['specific_condition'].'$');
-                            echo '<pre>';
-                            print_r($conditionPostfix[$k]['specific'][$s]['condition']);
-                            echo '</pre>';
-                            exit;
-                            $conditionPostfix[$k]['specific'][$s]['amount'] = $FunctionHelper->postfix_converter($specific['amount'].'$');
+                            $specConPostfixConverted = $FunctionHelper->postfix_converter($specific['specific_condition'].'$');
+                            $conditionPostfix[$k]['specific'][$s]['condition'] = $specConPostfixConverted['postfix'];
+                            $conditionPostfix[$k]['specific'][$s]['amount'] = $FunctionHelper->postfix_converter($specific['amount'].'$')['postfix'];
                             $AccountHeadInfo = $this->AccountHeads->find('all', ['conditions'=>['name'=>$specific['offer_type']]])->first();
                             $conditionPostfix[$k]['specific'][$s]['offer_type'] = $AccountHeadInfo['code'];
                             $conditionPostfix[$k]['specific'][$s]['offer_name'] = $specific['offer_name'];
@@ -166,6 +119,7 @@ class OffersController extends AppController
                             $conditionPostfix[$k]['specific'][$s]['amount_type'] = $specific['amount_type'];
                             $conditionPostfix[$k]['specific'][$s]['payment_mode'] = $specific['payment_mode'];
                             $conditionPostfix[$k]['specific'][$s]['amount_unit'] = $specific['amount_unit'];
+                            $conditionPostfix[$k]['specific'][$s]['range_start'] = $specConPostfixConverted['range_start'];
                         }
                     endforeach;
 

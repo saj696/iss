@@ -82,10 +82,10 @@ class FunctionHelper extends Helper
 
 
         for($i=0; $i<sizeof($ca); $i++){
-            echo 'at start  '.$state;
+//            echo 'at start  '.$state;
             if($ca[$i]=='(') {
                 $elementType = 1;
-                echo "extra  ".$elementType;
+//                echo "extra  ".$elementType;
                 $indexOfStackTop++;
                 $stack[$indexOfStackTop] = -2;
             } elseif(preg_match('/[a-z\s_]/i',$ca[$i])){
@@ -136,6 +136,10 @@ class FunctionHelper extends Helper
                     $currentOperator = $o2n[$ca[$i]];
                 }
 
+                if(($currentOperator == $o2n['+']) && ($postfix[$postfixCurrentIndex-1]['type']=='function') && (strpos($postfix[$postfixCurrentIndex-1]['name'],'item_unit_quantity')!==false)){
+                    $postfix[$postfixCurrentIndex-1]['plus_found_after_item_unit_quantity'] = 1;
+                }
+
                 if(self::check_comparison_operator($currentOperator)){
                     $elementType = 4;
                 }else{
@@ -156,6 +160,7 @@ class FunctionHelper extends Helper
                         }
                         $postfix[$postfixCurrentIndex]['type'] = Configure::read('postfix_elements_types')['operator'];
                         $postfix[$postfixCurrentIndex]['operator'] = $stack[$indexOfStackTop];
+
                         $postfixCurrentIndex++;
                         $indexOfStackTop--;
                     }
@@ -259,7 +264,7 @@ class FunctionHelper extends Helper
                 switch($elementType){
                     case 0:
                         $state = 6;
-                        $actualRangeStart = $probableRangeStart;
+                        $actualRangeStart = $cn[0];
                         $indexOfActuallyMarkedOperatorInStack = $indexOfProbablyMarkedOperatorInStack;
                         break;
                     default:
@@ -269,13 +274,14 @@ class FunctionHelper extends Helper
 
             }
 
-            echo 'after  '.$state;
-            echo '---'.$elementType;
-            echo '<br/>';
+//            echo 'after  '.$state;
+//            echo '---'.$elementType;
+//            echo '<br/>';
         }
 
-        echo '==========='.$actualRangeStart;
-        return $postfix;
+        $returnArray['postfix'] = $postfix;
+        $returnArray['range_start'] = $actualRangeStart;
+        return $returnArray;
     }
 
     public function check_comparison_operator($operator){
@@ -286,7 +292,8 @@ class FunctionHelper extends Helper
         }
     }
 
-    public function postfix_evaluator($postfixArray){
+    public function postfix_evaluator($postfixArray, $rangeStart = null){
+        $diff = -99999;
         $indexOfTopStack = -1;
         $eStack = [];
 
@@ -300,6 +307,13 @@ class FunctionHelper extends Helper
                     $indexOfTopStack--;
                     $operand1 = $eStack[$indexOfTopStack];
 
+                    if($postfixArray[$i]['is_marked']==1){
+                        if($operand1 == $rangeStart){
+                            $diff = $operand2 - $rangeStart;
+                        }elseif($operand2 == $rangeStart){
+                            $diff = $operand1 - $rangeStart;
+                        }
+                    }
                     $result = $this->execute($operand1, $operand2, $postfixArray[$i]['operator']);
 
                     $eStack[$indexOfTopStack] = $result;
@@ -308,7 +322,10 @@ class FunctionHelper extends Helper
         }else{
             $result = $postfixArray[0]['number'];
         }
-        return $result;
+
+        $returnArray['result'] = $result;
+        $returnArray['diff'] = $diff;
+        return $returnArray;
     }
 
     public function execute($operand1, $operand2, $operator){
@@ -925,7 +942,7 @@ class FunctionHelper extends Helper
         }
     }
 
-    public function item_unit_quantity_in_cash_invoices_over_a_period($itemName, $unitName, $invoiceMultiArray){
+    public function item_unit_quantity_in_cash_invoices_over_a_period($itemName, $invoiceMultiArray, $outer_loop_iteration_no, $item_unit_quantity_found, $diff, $unitName = null){
         $item_info = TableRegistry::get('items')->find('all', ['conditions'=>['name'=>str_replace("'", '', $itemName), 'status'=>1]])->first();
         $unit_info = TableRegistry::get('units')->find('all', ['conditions'=>['unit_display_name'=>str_replace("'", '', $unitName), 'status'=>1]])->first();
         $item_id = $item_info['id'];
@@ -953,10 +970,19 @@ class FunctionHelper extends Helper
         }
 
         $sum = self::converted_quantity($sum, $unit_type, $converted_quantity);
-        return $sum?$sum:0;
+
+        if($outer_loop_iteration_no == 0){
+            $returnArray = $sum?$sum:0;
+        }elseif(($outer_loop_iteration_no != 0) && (($item_unit_quantity_found==1) || ($item_unit_quantity_found==3))){
+            $returnArray = $diff;
+        }elseif(($outer_loop_iteration_no != 0) && ($item_unit_quantity_found==2)){
+            $returnArray = 0;
+        }
+
+        return $returnArray;
     }
 
-    public function item_unit_quantity_in_credit_invoices_over_a_period($itemName, $unitName, $invoiceMultiArray){
+    public function item_unit_quantity_in_credit_invoices_over_a_period($itemName, $invoiceMultiArray, $outer_loop_iteration_no, $item_unit_quantity_found, $diff, $unitName = null){
         $item_info = TableRegistry::get('items')->find('all', ['conditions'=>['name'=>str_replace("'", '', $itemName), 'status'=>1]])->first();
         $unit_info = TableRegistry::get('units')->find('all', ['conditions'=>['unit_display_name'=>str_replace("'", '', $unitName), 'status'=>1]])->first();
         $item_id = $item_info['id'];
@@ -984,7 +1010,16 @@ class FunctionHelper extends Helper
         }
 
         $sum = self::converted_quantity($sum, $unit_type, $converted_quantity);
-        return $sum?$sum:0;
+
+        if($outer_loop_iteration_no == 0){
+            $returnArray = $sum?$sum:0;
+        }elseif(($outer_loop_iteration_no != 0) && (($item_unit_quantity_found==1) || ($item_unit_quantity_found==3))){
+            $returnArray = $diff;
+        }elseif(($outer_loop_iteration_no != 0) && ($item_unit_quantity_found==2)){
+            $returnArray = 0;
+        }
+
+        return $returnArray;
     }
 
     public function is_mango_customer($contextArray = []){
@@ -1001,7 +1036,7 @@ class FunctionHelper extends Helper
         }
     }
 
-    public function item_unit_quantity($itemName, $unitName = null, $contextArray = []){
+    public function item_unit_quantity($itemName, $contextArray, $outer_loop_iteration_no, $item_unit_quantity_found, $diff, $unitName = null){
         $item_info = TableRegistry::get('items')->find('all', ['conditions'=>['name'=>str_replace("'", '', $itemName), 'status'=>1]])->first();
         $unit_info = TableRegistry::get('units')->find('all', ['conditions'=>['unit_display_name'=>str_replace("'", '', $unitName), 'status'=>1]])->first();
         $item_id = $item_info['id'];
@@ -1026,7 +1061,16 @@ class FunctionHelper extends Helper
         }
 
         $sum = self::converted_quantity($sum, $unit_type, $converted_quantity);
-        return $sum?$sum:0;
+
+        if($outer_loop_iteration_no == 0){
+            $returnArray = $sum?$sum:0;
+        }elseif(($outer_loop_iteration_no != 0) && (($item_unit_quantity_found==1) || ($item_unit_quantity_found==3))){
+            $returnArray = $diff;
+        }elseif(($outer_loop_iteration_no != 0) && ($item_unit_quantity_found==2)){
+            $returnArray = 0;
+        }
+
+        return $returnArray;
     }
 
     public function item_bulk_quantity($itemName, $unitName = null, $contextArray = []){
