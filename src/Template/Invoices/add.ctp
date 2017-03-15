@@ -51,7 +51,7 @@ use Cake\Core\Configure;
 
                         echo $this->Form->input('cash_invoice_days', ['label'=>'Cash Invoice Days', 'type'=>'text', 'readonly', 'class'=>'numbersOnly form-control cash_invoice_days', 'templates'=>['label' => '<label {{attrs}} class="col-sm-5 control-label text-right" >{{text}}</label>','input' => '<div class="col-sm-6 container_{{name}}"> <input {{attrs}} class="form-control" type="{{type}}" name="{{name}}"></div>']]);
                         echo $this->Form->input('credit_invoice_days', ['label'=>'Credit Invoice Days', 'readonly', 'type'=>'text', 'class'=>'numbersOnly form-control credit_invoice_days', 'templates'=>['label' => '<label {{attrs}} class="col-sm-5 control-label text-right" >{{text}}</label>','input' => '<div class="col-sm-6 container_{{name}}"> <input {{attrs}} class="form-control" type="{{type}}" name="{{name}}"></div>']]);
-                        //echo $this->Form->input('field_po_no', ['label'=>'Field PO No.', 'type'=>'text', 'class'=>'form-control', 'templates'=>['label' => '<label {{attrs}} class="col-sm-5 control-label text-right" >{{text}}</label>','input' => '<div class="col-sm-6 container_{{name}}"> <input {{attrs}} class="form-control" type="{{type}}" name="{{name}}"></div>']]);
+                        echo $this->Form->input('field_po_no', ['label'=>'Field PO No.', 'type'=>'text', 'class'=>'form-control', 'templates'=>['label' => '<label {{attrs}} class="col-sm-5 control-label text-right" >{{text}}</label>','input' => '<div class="col-sm-6 container_{{name}}"> <input {{attrs}} class="form-control" type="{{type}}" name="{{name}}"></div>']]);
                         ?>
                     </div>
                 </div>
@@ -120,7 +120,8 @@ use Cake\Core\Configure;
             $( ".itemUnitId" ).each(function(index) {
                 myArr[i] = {
                     "item_unit_id":$(this).val(),
-                    "item_quantity":$(this).closest('.itemTr').find('.item_quantity').val()
+                    "item_quantity":$(this).closest('.itemTr').find('.item_quantity').val(),
+                    "net_total":$(this).closest('.itemTr').find('.item_net_total').val()
                 }
                 i++;
             });
@@ -309,6 +310,8 @@ use Cake\Core\Configure;
             var customer_id = $('.customer_id').val();
             var itemUnitId = $(this).closest('.itemTr').find('.itemUnitId').val();
             var item_quantity = parseFloat($(this).val());
+            var unit_price = parseFloat($(this).closest('.itemTr').find('.unit_price').val());
+            var net_total = item_quantity*unit_price;
 
             if(item_quantity>0){
                 $.ajax({
@@ -320,7 +323,8 @@ use Cake\Core\Configure;
                         customer_id:customer_id,
                         item_quantity: item_quantity,
                         level_no: level_no,
-                        customer_unit: customer_unit
+                        customer_unit: customer_unit,
+                        net_total: net_total,
                     },
                     success: function (data, status) {
 //                        console.log(data);

@@ -1,5 +1,8 @@
 <?php
+use Cake\Core\Configure;
+
 $status = \Cake\Core\Configure::read('status_options');
+$webroot =  $this->request->webroot;
 ?>
 
 <div class="page-bar">
@@ -26,12 +29,11 @@ $status = \Cake\Core\Configure::read('status_options');
                 </div>
                 <div class="tools">
                     <?= $this->Html->link(__('Back'), ['action' => 'index'], ['class' => 'btn btn-sm grey-gallery']); ?>
-                    <button class="btn btn-sm grey-gallery" style="float: right; margin-left: 10px;" onclick="print_rpt()">&nbsp;Print&nbsp;</button>
+                    <span class="btn btn-sm yellow" style="float: right; margin-left: 10px;" onclick="print_rpt(<?=$webroot?>)">&nbsp;Print&nbsp;</span>
                 </div>
             </div>
 
             <div class="portlet-body">
-                <div id="PrintArea">
                 <div class="table-scrollable">
                     <form method="post" class="form-horizontal" role="form" action="<?= $this->Url->build("/InvoiceChalans/makeChalan")?>">
                         <?php foreach($invoiceIds as $invoiceId):?>
@@ -40,36 +42,50 @@ $status = \Cake\Core\Configure::read('status_options');
                         <?php foreach($eventIds as $eventId):?>
                             <input type="hidden" name="eventIds[]" value="<?= $eventId?>" />
                         <?php endforeach;?>
-                    <?php foreach($invoices as $invoice):?>
-                        <div class="col-md-12">
-                            <table class="table table-bordered" style="margin: 20px 0 0 0;">
-                                <tr>
-                                    <td colspan="3"><span class="pull-left">Customer: <b><?= $invoice['customer']['name']?></b></span><span class="pull-right">Invoice Date: <b><?= date('d-m-Y', $invoice['invoice_date'])?></b></span></td>
-                                </tr>
-                            </table>
-                            <table class="table table-bordered" style="margin: 0px;">
-                                <tbody>
-                                    <tr class="portlet box grey-silver" style="color: white">
-                                        <th>Item</th>
-                                        <th class="text-center">Quantity</th>
-                                        <th class="text-center">Net Total</th>
+                        <div id="PrintArea">
+                            <div>
+                                <table style="width: 100%; margin: 15px 30px 15px 0; text-align: center">
+                                    <tr>
+                                        <td>
+                                            <div>
+                                                <h3>East West Chemicals Limited</h3>
+                                                <h5>Corporate Office: 52/1- New Eskaton Road Hasan Holdings Ltd (9th Floor), Dhaka 1000, Bangladesh.</h5>
+                                                <h5>Phone: 02-9360658, 8359881, Fax: 02-9351395.</h5>
+                                            </div>
+                                        </td>
                                     </tr>
-                                    <?php foreach($invoice['invoiced_products'] as $detail):
-                                        ?>
-                                        <tr>
-                                            <td><?= $itemArray[$detail['item_unit_id']]?></td>
-                                            <td class="text-center"><?= $detail['product_quantity']+$detail['bonus_quantity']+$detail['special_offer_bonus_quantity']?></td>
-                                            <td class="text-center"><?= $detail['net_total']?></td>
+                                </table>
+                            </div>
+                        <?php foreach($invoices as $invoice):?>
+                            <div class="col-md-12">
+                                <table class="table table-bordered" style="margin: 20px 0 0 0;">
+                                    <tr>
+                                        <td colspan="3"><span class="pull-left">Customer: <b><?= $invoice['customer']['name']?></b></span><span class="pull-right">Invoice Date: <b><?= date('d-m-Y', $invoice['invoice_date'])?></b></span></td>
+                                    </tr>
+                                </table>
+                                <table class="table table-bordered" style="margin: 0px;">
+                                    <tbody>
+                                        <tr style="color: white; background-color: lightgrey">
+                                            <th>Item</th>
+                                            <th class="text-center">Quantity</th>
+                                            <th class="text-center">Net Total</th>
                                         </tr>
-                                    <?php endforeach;?>
-                                </tbody>
-                            </table>
-                            <table class="table table-bordered" style="margin: 0 0 20px 0;">
-                                <tr>
-                                    <td colspan="3"><span class="pull-left">Delivery date: <b><?= date('d-m-Y', $invoice['delivery_date'])?></b></span><span class="pull-right">Net Total: <b><?= $invoice['net_total']?></b></span></td>
-                                </tr>
-                            </table>
-                        </div>
+                                        <?php foreach($invoice['invoiced_products'] as $detail):
+                                            ?>
+                                            <tr>
+                                                <td><?= $itemArray[$detail['item_unit_id']]?></td>
+                                                <td class="text-center"><?= $detail['product_quantity']+$detail['bonus_quantity']+$detail['special_offer_bonus_quantity']?></td>
+                                                <td class="text-center"><?= $detail['net_total']?></td>
+                                            </tr>
+                                        <?php endforeach;?>
+                                    </tbody>
+                                </table>
+                                <table class="table table-bordered" style="margin: 0 0 20px 0;">
+                                    <tr>
+                                        <td colspan="3"><span class="pull-left">Delivery date: <b><?= date('d-m-Y', $invoice['delivery_date'])?></b></span><span class="pull-right">Net Total: <b><?= $invoice['net_total']?></b></span></td>
+                                    </tr>
+                                </table>
+                            </div>
                     <?php endforeach;?>
                     </div>
                 </div>
@@ -82,12 +98,3 @@ $status = \Cake\Core\Configure::read('status_options');
         </div>
     </div>
 </div>
-
-<script>
-    function print_rpt() {
-        URL = "<?php echo $this->request->webroot; ?>page/Print_a4_Eng.php?selLayer=PrintArea";
-        day = new Date();
-        id = day.getTime();
-        eval("page" + id + " = window.open(URL, '" + id + "', 'toolbar=yes,scrollbars=yes ,location=0,statusbar=0 ,menubar=yes,resizable=1,width=880,height=600,left = 20,top = 50');");
-    }
-</script>

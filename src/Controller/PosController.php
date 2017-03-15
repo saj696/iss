@@ -368,6 +368,7 @@ class PosController extends AppController
         $item_quantity = $data['item_quantity'];
         $customer_level_no = $data['level_no'];
         $customer_unit = $data['customer_unit'];
+        $net_total = $data['net_total'];
 
         $this->loadModel('AdministrativeUnits');
         $this->loadModel('Customers');
@@ -442,6 +443,7 @@ class PosController extends AppController
         $invoiceArray['invoiced_products'][0]['item_id'] = $ItemUnitInfo['item_id'];
         $invoiceArray['invoiced_products'][0]['manufacture_unit_id'] = $ItemUnitInfo['manufacture_unit_id'];
         $invoiceArray['invoiced_products'][0]['product_quantity'] = $item_quantity;
+        $invoiceArray['invoiced_products'][0]['net_total'] = $net_total;
 
         if($invoice_type==1){
             $invoiceArray['invoiced_products'][0]['due'] = 0;
@@ -583,6 +585,7 @@ class PosController extends AppController
             $invoiceArray['invoiced_products'][$key]['item_id'] = $ItemUnitInfo['item_id'];
             $invoiceArray['invoiced_products'][$key]['manufacture_unit_id'] = $ItemUnitInfo['manufacture_unit_id'];
             $invoiceArray['invoiced_products'][$key]['product_quantity'] = $item['item_quantity'];
+            $invoiceArray['invoiced_products'][$key]['net_total'] = $item['net_total'];
 
             if($invoice_type==1){
                 $invoiceArray['invoiced_products'][$key]['due'] = 0;

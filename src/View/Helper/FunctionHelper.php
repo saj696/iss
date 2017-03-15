@@ -82,10 +82,8 @@ class FunctionHelper extends Helper
 
 
         for($i=0; $i<sizeof($ca); $i++){
-//            echo 'at start  '.$state;
             if($ca[$i]=='(') {
                 $elementType = 1;
-//                echo "extra  ".$elementType;
                 $indexOfStackTop++;
                 $stack[$indexOfStackTop] = -2;
             } elseif(preg_match('/[a-z\s_]/i',$ca[$i])){
@@ -273,10 +271,6 @@ class FunctionHelper extends Helper
             } elseif($state == 6){
 
             }
-
-//            echo 'after  '.$state;
-//            echo '---'.$elementType;
-//            echo '<br/>';
         }
 
         $returnArray['postfix'] = $postfix;
@@ -293,9 +287,13 @@ class FunctionHelper extends Helper
     }
 
     public function postfix_evaluator($postfixArray, $rangeStart = null){
-        $diff = -99999;
+        $operand1 = 0.0;
+        $operand2 = 0.0;
+        $rangeStart = floatval($rangeStart);
+        $diff = 0.0;
         $indexOfTopStack = -1;
         $eStack = [];
+        $function_found = 0;
 
         if(sizeof($postfixArray)>1){
             for($i=0; $i<sizeof($postfixArray); $i++){
@@ -303,19 +301,21 @@ class FunctionHelper extends Helper
                     $indexOfTopStack++;
                     $eStack[$indexOfTopStack] = $postfixArray[$i]['number'];
                 }else{
-                    $operand2 = $eStack[$indexOfTopStack];
+                    $operand2 = floatval($eStack[$indexOfTopStack]);
                     $indexOfTopStack--;
-                    $operand1 = $eStack[$indexOfTopStack];
+                    $operand1 = floatval($eStack[$indexOfTopStack]);
 
                     if($postfixArray[$i]['is_marked']==1){
                         if($operand1 == $rangeStart){
-                            $diff = $operand2 - $rangeStart;
-                        }elseif($operand2 == $rangeStart){
-                            $diff = $operand1 - $rangeStart;
+                            $diff = abs(round($operand2 - $rangeStart, 2));
+                        }else{
+                            $diff = abs(round($operand1 - $rangeStart, 2));
                         }
+//                        echo ' inside eval op1=> '.var_dump($operand1).' ';
+//                        echo ' inside eval diff=> '. abs(round($operand1 - $rangeStart)).' ';
                     }
-                    $result = $this->execute($operand1, $operand2, $postfixArray[$i]['operator']);
 
+                    $result = $this->execute($operand1, $operand2, $postfixArray[$i]['operator']);
                     $eStack[$indexOfTopStack] = $result;
                 }
             }
@@ -323,8 +323,9 @@ class FunctionHelper extends Helper
             $result = $postfixArray[0]['number'];
         }
 
-        $returnArray['result'] = $result;
+        $returnArray['result'] = $result?$result:0;
         $returnArray['diff'] = $diff;
+        $returnArray['function_found'] = $function_found;
         return $returnArray;
     }
 
@@ -971,11 +972,15 @@ class FunctionHelper extends Helper
 
         $sum = self::converted_quantity($sum, $unit_type, $converted_quantity);
 
-        if($outer_loop_iteration_no == 0){
-            $returnArray = $sum?$sum:0;
-        }elseif(($outer_loop_iteration_no != 0) && (($item_unit_quantity_found==1) || ($item_unit_quantity_found==3))){
-            $returnArray = $diff;
-        }elseif(($outer_loop_iteration_no != 0) && ($item_unit_quantity_found==2)){
+        if($sum != 0){
+            if($outer_loop_iteration_no == 0){
+                $returnArray = $sum?$sum:0;
+            }elseif(($outer_loop_iteration_no != 0) && (($item_unit_quantity_found==1) || ($item_unit_quantity_found==3))){
+                $returnArray = $diff;
+            }elseif(($outer_loop_iteration_no != 0) && ($item_unit_quantity_found==2)){
+                $returnArray = 0;
+            }
+        }else{
             $returnArray = 0;
         }
 
@@ -1011,11 +1016,15 @@ class FunctionHelper extends Helper
 
         $sum = self::converted_quantity($sum, $unit_type, $converted_quantity);
 
-        if($outer_loop_iteration_no == 0){
-            $returnArray = $sum?$sum:0;
-        }elseif(($outer_loop_iteration_no != 0) && (($item_unit_quantity_found==1) || ($item_unit_quantity_found==3))){
-            $returnArray = $diff;
-        }elseif(($outer_loop_iteration_no != 0) && ($item_unit_quantity_found==2)){
+        if($sum != 0){
+            if($outer_loop_iteration_no == 0){
+                $returnArray = $sum?$sum:0;
+            }elseif(($outer_loop_iteration_no != 0) && (($item_unit_quantity_found==1) || ($item_unit_quantity_found==3))){
+                $returnArray = $diff;
+            }elseif(($outer_loop_iteration_no != 0) && ($item_unit_quantity_found==2)){
+                $returnArray = 0;
+            }
+        }else{
             $returnArray = 0;
         }
 
@@ -1062,15 +1071,54 @@ class FunctionHelper extends Helper
 
         $sum = self::converted_quantity($sum, $unit_type, $converted_quantity);
 
-        if($outer_loop_iteration_no == 0){
-            $returnArray = $sum?$sum:0;
-        }elseif(($outer_loop_iteration_no != 0) && (($item_unit_quantity_found==1) || ($item_unit_quantity_found==3))){
-            $returnArray = $diff;
-        }elseif(($outer_loop_iteration_no != 0) && ($item_unit_quantity_found==2)){
+        if($sum != 0){
+            $returnArray = $sum;
+        }else{
             $returnArray = 0;
         }
 
         return $returnArray;
+    }
+
+    public function item_unit_net_sales_value($itemName, $contextArray, $unitName = null){
+        $item_info = TableRegistry::get('items')->find('all', ['conditions'=>['name'=>str_replace("'", '', $itemName), 'status'=>1]])->first();
+        $unit_info = TableRegistry::get('units')->find('all', ['conditions'=>['unit_display_name'=>str_replace("'", '', $unitName), 'status'=>1]])->first();
+        $item_id = $item_info['id'];
+        $unit_id = $unit_info['id'];
+
+        $sum = 0;
+
+        if(sizeof($contextArray)>0){
+            if(isset($contextArray[0])){
+                foreach($contextArray as $singleArray){
+                    foreach($singleArray['invoiced_products'] as $invoiced_product){
+                        if($item_id>0 && $unit_id==null){
+                            if($invoiced_product['item_id']==$item_id){
+                                $sum += $invoiced_product['net_total']?$invoiced_product['net_total']:0;
+                            }
+                        }elseif($item_id>0 && $unit_id>0){
+                            if($invoiced_product['item_id']==$item_id && $invoiced_product['manufacture_unit_id']==$unit_id){
+                                $sum += $invoiced_product['net_total']?$invoiced_product['net_total']:0;
+                            }
+                        }
+                    }
+                }
+            }else{
+                foreach($contextArray['invoiced_products'] as $invoiced_product){
+                    if($item_id>0 && $unit_id==null){
+                        if($invoiced_product['item_id']==$item_id){
+                            $sum += $invoiced_product['net_total']?$invoiced_product['net_total']:0;
+                        }
+                    }elseif($item_id>0 && $unit_id>0){
+                        if($invoiced_product['item_id']==$item_id && $invoiced_product['manufacture_unit_id']==$unit_id){
+                            $sum += $invoiced_product['net_total']?$invoiced_product['net_total']:0;
+                        }
+                    }
+                }
+            }
+        }
+
+        return $sum?$sum:0;
     }
 
     public function item_bulk_quantity($itemName, $unitName = null, $contextArray = []){

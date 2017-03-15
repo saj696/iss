@@ -387,8 +387,10 @@ class CommonComponent extends Component
     {
         App::import('Helper', 'FunctionHelper');
         $FunctionHelper = new FunctionHelper(new View());
+
         $wonOffers = [];
         $offer_found = 0;
+        $offer_found_count = 0;
         // general condition check
         $general = $applicablePostfix['general'];
 
@@ -402,6 +404,9 @@ class CommonComponent extends Component
                 } elseif($genPost['name'] == 'item_bulk_quantity'){
                     $argArray = explode(',', $genPost['arg']);
                     $result = $FunctionHelper->$genPost['name']($argArray[0], $invoiceArray, 0, 0, 0, $argArray[1]);
+                }elseif($genPost['name'] == 'item_unit_net_sales_value'){
+                    $argArray = explode(',', $genPost['arg']);
+                    $result = $FunctionHelper->$genPost['name']($argArray[0], $invoiceArray, $argArray[1]);
                 }
 
                 if (isset($result)) {
@@ -418,33 +423,73 @@ class CommonComponent extends Component
         // If general condition is true then specific condition will be evaluated
         if ($generalEvaluation) {
             $specific = $applicablePostfix['specific'];
-            $difference = -1;
+            $difference = [];
+            $itemIdArray = [];
 
             for($i=0; 1 ; $i++){
                 $offer_found = 0;
                 foreach ($specific as $key => $specPost) {
                     $item_unit_quantity_found = 0;
+                    $first_time_occurence_of_item_unit_qty_greater_than_zero= 0;
+
+                    // item_unit_quantity_found = 0, 1, 2, 3
+                    // 0 means item unit qty yet not found
+                    // 1 means first time found with +
+                    // 2 means other than first time found
+                    // 3 means first time found and no + afterwards
+
                     foreach ($specPost['condition'] as $k => $specCon) {
+
                         if ($specCon['type'] == 'function') {
                             if ($specCon['name'] == 'item_unit_quantity') {
-                                if($item_unit_quantity_found==0){
-                                    if(isset($specCon['plus_found_after_item_unit_quantity']) && ($specCon['plus_found_after_item_unit_quantity'] == 1)){
-                                        $item_unit_quantity_found = 1;
-                                    }
-                                    else{
-                                        $item_unit_quantity_found = 3;
-                                    }
-                                }elseif($item_unit_quantity_found==1){
-                                    $item_unit_quantity_found = 2;
+
+                                if(!isset($specCon['plus_found_after_item_unit_quantity'])){
+                                    $first_time_occurence_of_item_unit_qty_greater_than_zero = 0;
                                 }
 
                                 $argArray = explode(',', $specCon['arg']);
-                                $result = $FunctionHelper->$specCon['name']($argArray[0], $invoiceArray, $i, $item_unit_quantity_found, $difference, $argArray[1]);
+                                $result = $FunctionHelper->$specCon['name']($argArray[0], $invoiceArray, $i, $item_unit_quantity_found,$first_time_occurence_of_item_unit_qty_greater_than_zero, $argArray[1]);
+                                $item_info = TableRegistry::get('items')->find('all', ['conditions'=>['name'=>str_replace("'", '', $argArray[0]), 'status'=>1]])->first();
+                                $item_id = $item_info['id'];
+                                $itemIdArray[$key] = $item_id;
+//                                echo '( i '.$i.' key '.$key.' result '.$result.' )';
+
+                                if(($i>0)&&($key==(5-$i))){
+                                    //echo '<===i= '.$i.'   spec no. = '.(5-$i);
+
+                                }
+                                if(($i>0)&&($key==(5-$i))){
+                                   // echo "return_value =  ".$result;
+                                }
+                                if($i>0){
+                                    if(($first_time_occurence_of_item_unit_qty_greater_than_zero==0)&&($result>0)){
+                                        $result= $difference[$itemIdArray[$key]];
+                                        $first_time_occurence_of_item_unit_qty_greater_than_zero=1;
+
+                                        if(($i>0)&&($key==(5-$i))){
+                                            //echo "--->result =  ".$result;
+                                        }
+                                    }
+                                    else {
+                                        $result = 0;
+                                        if(($i>0)&&($key==(5-$i))){
+                                            //echo "--->result =  ".$result.'==>';
+                                        }
+                                    }
+
+                                }
+                                if(($i==3) && ($key==4)){
+//                                    echo '< result '.$result.'--->';
+                                }
+                                // echo 'func '.$result;
                             } elseif ($specCon['name'] == 'max_due_invoice_age' || $specCon['name'] == 'is_mango_customer' || $specCon['name'] == 'is_cash_invoice' || $specCon['name'] == 'payment_date' || $specCon['name'] == 'invoice_payment_age' || $specCon['name'] == 'invoice_item_payment_age') {
                                 $result = $FunctionHelper->$specCon['name']($invoiceArray);
                             }elseif($specCon['name'] == 'item_bulk_quantity'){
                                 $argArray = explode(',', $specCon['arg']);
                                 $result = $FunctionHelper->$specCon['name']($argArray[0], $argArray[1], $invoiceArray);
+                            }elseif($specCon['name'] == 'item_unit_net_sales_value'){
+                                $argArray = explode(',', $specCon['arg']);
+                                $result = $FunctionHelper->$specCon['name']($argArray[0], $invoiceArray, $argArray[1]);
                             }
 
                             if (isset($result)) {
@@ -455,15 +500,42 @@ class CommonComponent extends Component
                             }
                         }
                     }
+                    if(($key==4)){
+//                        echo ' range start '.$specPost['range_start'].' ==========';
+//                        echo '<pre>';
+//                        print_r($specPost['condition']);
+//                        echo '</pre>';
+                    }
 
                     $eval = $FunctionHelper->postfix_evaluator($specPost['condition'], $specPost['range_start']);
                     $specConEvaluation = $eval['result'];
 
+//                    echo ' i '.$i.' ';
+
+//                    if(($i==3) && ($key==4)){
+//                        echo $difference;
+//                        echo '<pre>';
+//                        print_r($eval);
+//                        echo '</pre>';
+//                        exit;
+//                    }
+
                     // If specific condition is true then amount will be evaluated
                     if ($specConEvaluation) {
-                        $difference = $eval['diff'];
+                        if($specPost['range_start']==0){
+                            $exit_outer_loop = 1;
+                        }
+
+                        $difference[$itemIdArray[$key]] = $eval['diff'];
+
+//                        if($i==1){
+//                            echo 'difference '.$difference.' ';
+//                        }
+
                         foreach ($specPost['amount'] as $k => $specAmount) {
                             if ($specAmount['type'] == 'function') {
+                                $exit_outer_loop = 1;
+                                //echo 'function found';
 
                                 if ($specAmount['name'] == 'item_unit_quantity') {
                                     $argArray = explode(',', $specAmount['arg']);
@@ -473,6 +545,9 @@ class CommonComponent extends Component
                                 } elseif ($specAmount['name'] == 'item_bulk_quantity'){
                                     $argArray = explode(',', $specAmount['arg']);
                                     $result = $FunctionHelper->$specAmount['name']($argArray[0], $argArray[1], $invoiceArray);
+                                }elseif($specAmount['name'] == 'item_unit_net_sales_value'){
+                                    $argArray = explode(',', $specAmount['arg']);
+                                    $result = $FunctionHelper->$specAmount['name']($argArray[0], $invoiceArray, $argArray[1]);
                                 }
 
                                 if (isset($result)) {
@@ -484,7 +559,12 @@ class CommonComponent extends Component
                             }
                         }
 
+//                        echo $i.'=='.$difference.' - ';
                         $specAmountEvaluation = $FunctionHelper->postfix_evaluator($specPost['amount'])['result'];
+                        $specAmountEvaluationFunctionFound = $FunctionHelper->postfix_evaluator($specPost['amount'])['function_found'];
+
+//                        echo 'i==='.$i.' offer amount '.$specAmountEvaluation.'   ';
+
                         $wonOffers[$i][$key]['value'] = $specAmountEvaluation;
                         $wonOffers[$i][$key]['offer_id'] = $offer_id;
                         $wonOffers[$i][$key]['offer_type'] = $specific[$key]['offer_type'];
@@ -493,8 +573,9 @@ class CommonComponent extends Component
                         $wonOffers[$i][$key]['amount_type'] = $specific[$key]['amount_type'];
                         $wonOffers[$i][$key]['payment_mode'] = $specific[$key]['payment_mode'];
                         $wonOffers[$i][$key]['amount_unit'] = $specific[$key]['amount_unit'];
+
                         $offer_found = 1;
-                        break;
+                        $offer_found_count++;
                     }
 
                     if((sizeof($specific)-1 == $key) && ($offer_found == 0)){
@@ -508,6 +589,11 @@ class CommonComponent extends Component
                 }
             }
         }
+
+//        echo '<pre>';
+//        print_r($wonOffers);
+//        echo '</pre>';
+//        exit;
 
         $newArr = [];
 
@@ -551,7 +637,6 @@ class CommonComponent extends Component
             }
             $is++;
         }
-
         return $final;
     }
 
@@ -562,6 +647,7 @@ class CommonComponent extends Component
         $wonOffers = [];
         $passedLevelOneInvoices = [];
         $passedLevelTwoInvoices = [];
+        $offer_found = 0;
 
         foreach ($applicablePostfixArray as $key => $applicablePostfix) {
             if ($key == 0) {
@@ -571,7 +657,7 @@ class CommonComponent extends Component
 
                     foreach ($general as $k => $genPost) {
                         if ($genPost['type'] == 'function') {
-                            if ($genPost['name'] == 'item_unit_quantity') {
+                            if ($genPost['name'] == 'item_unit_quantity' || $genPost['name'] == 'item_unit_quantity_in_credit_invoices_over_a_period' || $genPost['name'] == 'item_unit_quantity_in_cash_invoices_over_a_period') {
                                 $argArray = explode(',', $genPost['arg']);
                                 $result = $FunctionHelper->$genPost['name']($argArray[0], $invoice, 0, 0, 0, $argArray[1]);
                             } elseif ($genPost['name'] == 'max_due_invoice_age' || $genPost['name'] == 'is_mango_customer' || $genPost['name'] == 'is_cash_invoice' || $genPost['name'] == 'payment_date' || $genPost['name'] == 'invoice_payment_age') {
@@ -579,6 +665,9 @@ class CommonComponent extends Component
                             } elseif($genPost['name'] == 'item_bulk_quantity'){
                                 $argArray = explode(',', $genPost['arg']);
                                 $result = $FunctionHelper->$genPost['name']($argArray[0], $argArray[1], $invoice);
+                            }elseif($genPost['name'] == 'item_unit_net_sales_value'){
+                                $argArray = explode(',', $genPost['arg']);
+                                $result = $FunctionHelper->$genPost['name']($argArray[0], $invoice, $argArray[1]);
                             }
 
                             if (isset($result)) {
@@ -590,7 +679,7 @@ class CommonComponent extends Component
                         }
                     }
 
-                    $generalEvaluation = $FunctionHelper->postfix_evaluator($general);
+                    $generalEvaluation = $FunctionHelper->postfix_evaluator($general)['result'];
                     if ($generalEvaluation) {
                         $passedLevelOneInvoices[] = $invoice;
                     }
@@ -610,6 +699,9 @@ class CommonComponent extends Component
                             } elseif ($genPost['name'] == 'item_bulk_quantity'){
                                 $argArray = explode(',', $genPost['arg']);
                                 $result = $FunctionHelper->$genPost['name']($argArray[0], $argArray[1], $invoice);
+                            }elseif($genPost['name'] == 'item_unit_net_sales_value'){
+                                $argArray = explode(',', $genPost['arg']);
+                                $result = $FunctionHelper->$genPost['name']($argArray[0], $invoice, $argArray[1]);
                             }
 
                             if (isset($result)) {
@@ -621,7 +713,7 @@ class CommonComponent extends Component
                         }
                     }
 
-                    $generalEvaluation = $FunctionHelper->postfix_evaluator($general);
+                    $generalEvaluation = $FunctionHelper->postfix_evaluator($general)['result'];
                     if ($generalEvaluation) {
                         $passedLevelTwoInvoices[] = $invoice;
                     }
@@ -630,65 +722,158 @@ class CommonComponent extends Component
                 // Specifics check
                 if (sizeof($passedLevelTwoInvoices) > 0) {
                     $specific = $applicablePostfix['specific'];
-                    foreach ($specific as $sl => $specPost) {
-                        foreach ($specPost['condition'] as $k => $specCon) {
-                            if ($specCon['type'] == 'function') {
 
-                                if ($specCon['name'] == 'item_unit_quantity' || $specCon['name'] == 'item_bulk_quantity' || $specCon['name'] == 'item_unit_quantity_in_credit_invoices_over_a_period' || $specCon['name'] == 'item_unit_quantity_in_cash_invoices_over_a_period') {
-                                    $argArray = explode(',', $specCon['arg']);
-                                    $result = $FunctionHelper->$specCon['name']($argArray[0], $argArray[1], $passedLevelTwoInvoices);
-                                } elseif ($specCon['name'] == 'max_due_invoice_age' || $specCon['name'] == 'is_mango_customer' || $specCon['name'] == 'is_cash_invoice' || $specCon['name'] == 'payment_date' || $specCon['name'] == 'invoice_payment_age' || $specCon['name'] == 'invoice_item_payment_age') {
-                                    $result = $FunctionHelper->$specCon['name']($passedLevelTwoInvoices);
-                                }
+                    $difference = -1;
+                    for($i=0; 1 ; $i++){
+                        foreach ($specific as $sl => $specPost) {
+                            $item_unit_quantity_found = 0;
+                            foreach ($specPost['condition'] as $k => $specCon) {
+                                if ($specCon['type'] == 'function') {
+                                    if ($specCon['name'] == 'item_unit_quantity' || $specCon['name'] == 'item_unit_quantity_in_credit_invoices_over_a_period' || $specCon['name'] == 'item_unit_quantity_in_cash_invoices_over_a_period') {
+                                        if($item_unit_quantity_found==0){
+                                            if(isset($specCon['plus_found_after_item_unit_quantity']) && ($specCon['plus_found_after_item_unit_quantity'] == 1)){
+                                                $item_unit_quantity_found = 1;
+                                            } else{
+                                                $item_unit_quantity_found = 3;
+                                            }
+                                        }elseif($item_unit_quantity_found==1){
+                                            $item_unit_quantity_found = 2;
+                                        }
 
-                                if (isset($result)) {
-                                    $specPost['condition'][$k]['type'] = 'number';
-                                    $specPost['condition'][$k]['number'] = $result;
-                                    unset($specPost['condition'][$k]['name']);
-                                    unset($specPost['condition'][$k]['arg']);
-                                }
-                            }
-                        }
-
-                        $specConEvaluation = $FunctionHelper->postfix_evaluator($specPost['condition']);
-
-                        // If specific condition is true then amount will be evaluated
-                        if ($specConEvaluation) {
-                            foreach ($specPost['amount'] as $k => $specAmount) {
-                                if ($specAmount['type'] == 'function') {
-
-                                    if ($specAmount['name'] == 'item_unit_quantity' || $specAmount['name'] == 'item_bulk_quantity' || $specAmount['name'] == 'item_unit_quantity_in_credit_invoices_over_a_period' || $specAmount['name'] == 'item_unit_quantity_in_cash_invoices_over_a_period') {
-                                        $argArray = explode(',', $specAmount['arg']);
-                                        $result = $FunctionHelper->$specAmount['name']($argArray[0], $argArray[1], $passedLevelTwoInvoices);
-                                    } elseif ($specAmount['name'] == 'max_due_invoice_age' || $specAmount['name'] == 'is_mango_customer' || $specAmount['name'] == 'is_cash_invoice' || $specAmount['name'] == 'payment_date' || $specAmount['name'] == 'invoice_payment_age' || $specAmount['name'] == 'invoice_item_payment_age') {
-                                        $result = $FunctionHelper->$specAmount['name']($passedLevelTwoInvoices);
+                                        $argArray = explode(',', $specCon['arg']);
+                                        $result = $FunctionHelper->$specCon['name']($argArray[0], $passedLevelTwoInvoices, $i, $item_unit_quantity_found, $difference, $argArray[1]);
+                                    } elseif ($specCon['name'] == 'max_due_invoice_age' || $specCon['name'] == 'is_mango_customer' || $specCon['name'] == 'is_cash_invoice' || $specCon['name'] == 'payment_date' || $specCon['name'] == 'invoice_payment_age' || $specCon['name'] == 'invoice_item_payment_age') {
+                                        $result = $FunctionHelper->$specCon['name']($passedLevelTwoInvoices);
+                                    } elseif($specCon['name'] == 'item_bulk_quantity'){
+                                        $argArray = explode(',', $specCon['arg']);
+                                        $result = $FunctionHelper->$specCon['name']($argArray[0], $argArray[1], $passedLevelTwoInvoices);
+                                    }elseif($specCon['name'] == 'item_unit_net_sales_value'){
+                                        $argArray = explode(',', $specCon['arg']);
+                                        $result = $FunctionHelper->$specCon['name']($argArray[0], $passedLevelTwoInvoices, $argArray[1]);
                                     }
 
                                     if (isset($result)) {
-                                        $specPost['amount'][$k]['type'] = 'number';
-                                        $specPost['amount'][$k]['number'] = $result;
-                                        unset($specPost['amount'][$k]['name']);
-                                        unset($specPost['amount'][$k]['arg']);
+                                        $specPost['condition'][$k]['type'] = 'number';
+                                        $specPost['condition'][$k]['number'] = $result;
+                                        unset($specPost['condition'][$k]['name']);
+                                        unset($specPost['condition'][$k]['arg']);
                                     }
                                 }
                             }
 
-                            $specAmountEvaluation = $FunctionHelper->postfix_evaluator($specPost['amount']);
-                            $wonOffers[$sl]['value'] = $specAmountEvaluation;
-                            $wonOffers[$sl]['offer_id'] = $offer_id;
-                            $wonOffers[$sl]['offer_type'] = $specific[$key]['offer_type'];
-                            $wonOffers[$sl]['offer_name'] = $specific[$key]['offer_name'];
-                            $wonOffers[$sl]['offer_unit_name'] = $specific[$key]['offer_unit_name'];
-                            $wonOffers[$sl]['amount_type'] = $specific[$key]['amount_type'];
-                            $wonOffers[$sl]['payment_mode'] = $specific[$key]['payment_mode'];
-                            $wonOffers[$sl]['amount_unit'] = $specific[$key]['amount_unit'];
+                            $eval = $FunctionHelper->postfix_evaluator($specPost['condition'], $specPost['range_start']);
+                            $specConEvaluation = $eval['result'];
+
+                            // If specific condition is true then amount will be evaluated
+                            if ($specConEvaluation) {
+                                if($specPost['range_start']==0){
+                                    $exit_outer_loop = 1;
+                                }
+
+                                $difference = $eval['diff'];
+                                foreach ($specPost['amount'] as $k => $specAmount) {
+                                    if ($specAmount['type'] == 'function') {
+                                        $exit_outer_loop = 1;
+
+                                        if ($specAmount['name'] == 'item_unit_quantity' || $specAmount['name'] == 'item_bulk_quantity' || $specAmount['name'] == 'item_unit_quantity_in_credit_invoices_over_a_period' || $specAmount['name'] == 'item_unit_quantity_in_cash_invoices_over_a_period') {
+                                            $argArray = explode(',', $specAmount['arg']);
+                                            $result = $FunctionHelper->$specAmount['name']($argArray[0], $passedLevelTwoInvoices, 0, 0, 0, $argArray[1]);
+                                        } elseif ($specAmount['name'] == 'max_due_invoice_age' || $specAmount['name'] == 'is_mango_customer' || $specAmount['name'] == 'is_cash_invoice' || $specAmount['name'] == 'payment_date' || $specAmount['name'] == 'invoice_payment_age' || $specAmount['name'] == 'invoice_item_payment_age') {
+                                            $result = $FunctionHelper->$specAmount['name']($passedLevelTwoInvoices);
+                                        }elseif($specAmount['name'] == 'item_unit_net_sales_value'){
+                                            $argArray = explode(',', $specAmount['arg']);
+                                            $result = $FunctionHelper->$specCon['name']($argArray[0], $passedLevelTwoInvoices, $argArray[1]);
+                                        }
+
+                                        if (isset($result)) {
+                                            $specPost['amount'][$k]['type'] = 'number';
+                                            $specPost['amount'][$k]['number'] = $result;
+                                            unset($specPost['amount'][$k]['name']);
+                                            unset($specPost['amount'][$k]['arg']);
+                                        }
+                                    }
+                                }
+
+                                $specAmountEvaluation = $FunctionHelper->postfix_evaluator($specPost['amount'])['result'];
+                                $specAmountEvaluationFunctionFound = $FunctionHelper->postfix_evaluator($specPost['amount'])['function_found'];
+                                $wonOffers[$i][$sl]['value'] = $specAmountEvaluation;
+                                $wonOffers[$i][$sl]['offer_id'] = $offer_id;
+                                $wonOffers[$i][$sl]['offer_type'] = $specific[$key]['offer_type'];
+                                $wonOffers[$i][$sl]['offer_name'] = $specific[$key]['offer_name'];
+                                $wonOffers[$i][$sl]['offer_unit_name'] = $specific[$key]['offer_unit_name'];
+                                $wonOffers[$i][$sl]['amount_type'] = $specific[$key]['amount_type'];
+                                $wonOffers[$i][$sl]['payment_mode'] = $specific[$key]['payment_mode'];
+                                $wonOffers[$i][$sl]['amount_unit'] = $specific[$key]['amount_unit'];
+                                $offer_found = 1;
+
+                                if($specAmountEvaluationFunctionFound==1){
+                                    $exit_outer_loop = 1;
+                                }
+                                break;
+                            }
+                            if((sizeof($specific)-1 == $sl) && ($offer_found == 0)){
+                                $exit_outer_loop = 1;
+                                break;
+                            }
+                        }
+
+                        if(isset($exit_outer_loop) && $exit_outer_loop==1){
+                            break;
                         }
                     }
                 }
             }
         }
 
-        return $wonOffers;
+        $newArr = [];
+
+        if(sizeof($wonOffers)>0){
+            foreach($wonOffers as $iteration=>$specificWon){
+                foreach($specificWon as $key=>$won){
+                    $newArr[] = $won;
+                }
+            }
+
+            $testArray = [];
+            foreach($newArr as $sl=>$new){
+                $testArray[$sl] =  $new['offer_type'];
+            }
+
+            $testArray = array_unique($testArray);
+
+            $sumArray = [];
+            foreach($testArray as $test){
+                $sumArray[$test] = 0;
+                foreach($newArr as $k=>$new){
+                    if($test==$new['offer_type']){
+                        $sumArray[$test] += $new['value'];
+                    }
+                }
+            }
+
+            $final = [];
+            $is = 0;
+            foreach($sumArray as $offer_type=>$sum){
+                foreach($newArr as $new){
+                    if($new['offer_type']==$offer_type){
+                        $final[$is]['value'] = $sum;
+                        $final[$is]['offer_id'] = $new['offer_id'];
+                        $final[$is]['offer_type'] = $new['offer_type'];
+                        $final[$is]['offer_name'] = $new['offer_name'];
+                        $final[$is]['offer_unit_name'] = $new['offer_unit_name'];
+                        $final[$is]['amount_type'] = $new['amount_type'];
+                        $final[$is]['payment_mode'] = $new['payment_mode'];
+                        $final[$is]['amount_unit'] = $new['amount_unit'];
+                    }
+                }
+                $is++;
+            }
+
+            return $final;
+        }else{
+            return [];
+        }
+
     }
 
     public function getCustomerDue($customer_id, $date)

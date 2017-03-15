@@ -117,6 +117,7 @@ class ApprovePosController extends AppController
                     $invoiceData['delivery_date'] = strtotime($data['delivery_date']);
                     $invoiceData['invoice_type'] = $data['invoice_type'];
                     $invoiceData['net_total'] = $data['total_amount_hidden'];
+                    $invoiceData['field_po_no'] = $data['field_po_no'];
 
                     if($invoiceCycleInfo['invoice_approved_at']==array_flip(Configure::read('invoice_approved_at'))['Not Needed']){
                         $invoiceData['approval_status'] = array_flip(Configure::read('invoice_approval_status'))['not_required'];
@@ -283,26 +284,30 @@ class ApprovePosController extends AppController
 
     public function printInvoice($id){
         $user = $this->Auth->user();
-        $invoiceArray = $this->Invoices->get($id, [
-            'contain' => ['InvoicedProducts']
+
+        $this->loadModel('PoEvents');
+        $event = $this->PoEvents->get($id, [
+            'contain' => ['Pos'=>['PoProducts', 'Customers']]
         ]);
 
-        if($invoiceArray['created_by']==$user['id']){
+        if($event['recipient_id'] == $user['id']){
             App::import('Helper', 'SystemHelper');
             $SystemHelper = new SystemHelper(new View());
             $itemArray = $SystemHelper->get_item_unit_array();
             $this->loadModel('Prices');
 
-            $customerInfo = TableRegistry::get('customers')->findById($invoiceArray['customer_id'])->select(['name','code','address','credit_limit'])->hydrate(false)->first();
-            $locationInfo = TableRegistry::get('administrative_units')->findByGlobalId($invoiceArray['customer_unit_global_id'])->select(['global_id', 'unit_name'])->hydrate(false)->first();
-            $invoice_no = $SystemHelper->generate_invoice_no(2, $invoiceArray['invoice_date'], $locationInfo['global_id']);
+            $customerInfo = TableRegistry::get('customers')->findById($event['po']['customer_id'])->select(['name','code','address','credit_limit'])->hydrate(false)->first();
+            $locationInfo = TableRegistry::get('administrative_units')->findByGlobalId($event['po']['customer_unit_global_id'])->select(['global_id', 'unit_name'])->hydrate(false)->first();
+            $invoice_no = $SystemHelper->generate_invoice_no(2, $event['po']['po_date'], $locationInfo['global_id']);
 
             $this->loadComponent('Common');
-            $currentDue = $this->Common->getCustomerDue($invoiceArray['customer_id'], time());
+            $currentDue = $this->Common->getCustomerDue($event['po']['customer_id'], time());
+            $poArray = $event['po'];
 
-            foreach($invoiceArray['invoiced_products'] as $product){
+            $invoice_type = $poArray['invoice_type'];
+
+            foreach($poArray['po_products'] as $product){
                 $item_unit_id = $product['item_unit_id'];
-                $invoice_type = $product['invoice_type'];
 
                 $itemPrices = $this->Prices->find('all', ['conditions' => ['item_unit_id' => $item_unit_id]])->first();
 
@@ -316,8 +321,12 @@ class ApprovePosController extends AppController
                 $product['unit_price'] = $unit_price;
             }
 
-            $this->set(compact('customerInfo', 'invoiceArray', 'locationInfo', 'invoice_no', 'currentDue', 'itemArray'));
-            $this->set('_serialize', ['invoiceArray']);
+            $userDepotId = $user['depot_id'];
+            $this->loadModel('Depots');
+            $depotInfo = $this->Depots->get($userDepotId);
+
+            $this->set(compact('customerInfo', 'poArray', 'depotInfo', 'locationInfo', 'invoice_no', 'currentDue', 'itemArray'));
+            $this->set('_serialize', ['poArray']);
         }else{
             $this->Flash->error('You are not authorized to preview this invoice!');
             return $this->redirect(['action' => 'index']);
@@ -333,7 +342,6 @@ class ApprovePosController extends AppController
      */
     public function delete($id = null)
     {
-
         $po = $this->Pos->get($id);
 
         $user = $this->Auth->user();
@@ -451,6 +459,7 @@ class ApprovePosController extends AppController
         $item_quantity = $data['item_quantity'];
         $customer_level_no = $data['level_no'];
         $customer_unit = $data['customer_unit'];
+        $net_total = $data['net_total'];
 
         $this->loadModel('AdministrativeUnits');
         $this->loadModel('Customers');
@@ -528,6 +537,7 @@ class ApprovePosController extends AppController
         $invoiceArray['invoiced_products'][0]['item_id'] = $ItemUnitInfo['item_id'];
         $invoiceArray['invoiced_products'][0]['manufacture_unit_id'] = $ItemUnitInfo['manufacture_unit_id'];
         $invoiceArray['invoiced_products'][0]['product_quantity'] = $item_quantity;
+        $invoiceArray['invoiced_products'][0]['net_total'] = $net_total;
 
         if($invoice_type==1){
             $invoiceArray['invoiced_products'][0]['due'] = 0;
@@ -668,6 +678,7 @@ class ApprovePosController extends AppController
             $invoiceArray['invoiced_products'][$key]['item_id'] = $ItemUnitInfo['item_id'];
             $invoiceArray['invoiced_products'][$key]['manufacture_unit_id'] = $ItemUnitInfo['manufacture_unit_id'];
             $invoiceArray['invoiced_products'][$key]['product_quantity'] = $item['item_quantity'];
+            $invoiceArray['invoiced_products'][$key]['net_total'] = $item['net_total'];
 
             if($invoice_type==1){
                 $invoiceArray['invoiced_products'][$key]['due'] = 0;

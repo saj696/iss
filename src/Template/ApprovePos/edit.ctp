@@ -46,7 +46,7 @@ use Cake\Core\Configure;
                     </div>
                     <div class="col-md-6">
                         <?php
-                        echo $this->Form->input('po_no', ['label'=>'Field PO No.', 'type'=>'text', 'class'=>'form-control', 'templates'=>['label' => '<label {{attrs}} class="col-sm-5 control-label text-right" >{{text}}</label>','input' => '<div class="col-sm-6 container_{{name}}"> <input {{attrs}} class="form-control" type="{{type}}" name="{{name}}"></div>']]);
+                        echo $this->Form->input('field_po_no', ['label'=>'Field PO No.', 'type'=>'text', 'class'=>'form-control', 'templates'=>['label' => '<label {{attrs}} class="col-sm-5 control-label text-right" >{{text}}</label>','input' => '<div class="col-sm-6 container_{{name}}"> <input {{attrs}} class="form-control" type="{{type}}" name="{{name}}"></div>']]);
                         echo $this->Form->input('po_date', ['value'=>date('d-m-Y', $event['po']['po_date']), 'label'=>'PO date', 'type'=>'text', 'class'=>'form-control datepicker', 'templates'=>['label' => '<label {{attrs}} class="col-sm-5 control-label text-right" >{{text}}</label>','input' => '<div class="col-sm-6 container_{{name}}"> <input {{attrs}} class="form-control" type="{{type}}" name="{{name}}"></div>']]);
                         echo $this->Form->input('customer_id', ['options'=>$customers, 'label'=>'Customer', 'empty'=>'Select', 'class'=>'form-control customer_id', 'templates'=>['label' =>'<label {{attrs}} class="col-sm-5 control-label text-right" >{{text}}</label>', 'select' => '<div id="container_{{name}}" class="col-sm-6 customer_select"><select name="{{name}}"{{attrs}} class="form-control">{{content}}</select></div>']]);
                         //echo $this->Form->input('address', ['label'=>'Customer Address', 'disabled', 'type'=>'textarea', 'rows'=>1,'class'=>'form-control address', 'templates'=>['label' =>'<label {{attrs}} class="col-sm-5 control-label text-right" >{{text}}</label>', 'textarea' => '<div class="col-sm-6"><textarea class="form-control address" name="{{name}}"{{attrs}}>{{value}}</textarea></div>']]);
@@ -144,7 +144,8 @@ use Cake\Core\Configure;
             $( ".itemUnitId" ).each(function(index) {
                 myArr[i] = {
                     "item_unit_id":$(this).val(),
-                    "item_quantity":$(this).closest('.itemTr').find('.item_quantity').val()
+                    "item_quantity":$(this).closest('.itemTr').find('.item_quantity').val(),
+                    "net_total":$(this).closest('.itemTr').find('.item_net_total').val()
                 }
                 i++;
             });
@@ -313,6 +314,8 @@ use Cake\Core\Configure;
             var customer_id = $('.customer_id').val();
             var itemUnitId = $(this).closest('.itemTr').find('.itemUnitId').val();
             var item_quantity = parseFloat($(this).val());
+            var unit_price = parseFloat($(this).closest('.itemTr').find('.unit_price').val());
+            var net_total = item_quantity*unit_price;
 
             if(item_quantity>0){
                 $.ajax({
@@ -324,7 +327,8 @@ use Cake\Core\Configure;
                         customer_id:customer_id,
                         item_quantity: item_quantity,
                         level_no: level_no,
-                        customer_unit: customer_unit
+                        customer_unit: customer_unit,
+                        net_total: net_total
                     },
                     success: function (data, status) {
                         if(data.length>0){

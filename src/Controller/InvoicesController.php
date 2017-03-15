@@ -119,6 +119,7 @@ class InvoicesController extends AppController
                     $invoiceData['depot_unit_global_id'] = $depotUnitInfo['global_id'];
                     $invoiceData['depot_id'] = $user['depot_id'];
                     $invoiceData['due'] = $data['total_amount_hidden'];
+                    $invoiceData['field_po_no'] = $data['field_po_no'];
                     $invoiceData['invoice_date'] = strtotime($data['invoice_date']);
 
                     $invoiceData['created_by'] = $user['id'];
@@ -268,9 +269,9 @@ class InvoicesController extends AppController
             $this->loadComponent('Common');
             $currentDue = $this->Common->getCustomerDue($invoiceArray['customer_id'], time());
 
+            $invoice_type = $invoiceArray['invoice_type'];
             foreach($invoiceArray['invoiced_products'] as $product){
                 $item_unit_id = $product['item_unit_id'];
-                $invoice_type = $product['invoice_type'];
 
                 $itemPrices = $this->Prices->find('all', ['conditions' => ['item_unit_id' => $item_unit_id]])->first();
 
@@ -284,7 +285,11 @@ class InvoicesController extends AppController
                 $product['unit_price'] = $unit_price;
             }
 
-            $this->set(compact('customerInfo', 'invoiceArray', 'locationInfo', 'invoice_no', 'currentDue', 'itemArray'));
+            $userDepotId = $user['depot_id'];
+            $this->loadModel('Depots');
+            $depotInfo = $this->Depots->get($userDepotId);
+
+            $this->set(compact('customerInfo', 'depotInfo', 'invoiceArray', 'locationInfo', 'invoice_no', 'currentDue', 'itemArray'));
             $this->set('_serialize', ['invoiceArray']);
         }else{
             $this->Flash->error('You are not authorized to preview this invoice!');
@@ -453,6 +458,7 @@ class InvoicesController extends AppController
         $item_quantity = $data['item_quantity'];
         $customer_level_no = $data['level_no'];
         $customer_unit = $data['customer_unit'];
+        $net_total = $data['net_total'];
 
         $this->loadModel('AdministrativeUnits');
         $this->loadModel('Customers');
@@ -531,6 +537,7 @@ class InvoicesController extends AppController
         $invoiceArray['invoiced_products'][0]['item_id'] = $ItemUnitInfo['item_id'];
         $invoiceArray['invoiced_products'][0]['manufacture_unit_id'] = $ItemUnitInfo['manufacture_unit_id'];
         $invoiceArray['invoiced_products'][0]['product_quantity'] = $item_quantity;
+        $invoiceArray['invoiced_products'][0]['net_total'] = $net_total;
 
         if ($invoice_type == 1) {
             $invoiceArray['invoiced_products'][0]['due'] = 0;
@@ -674,6 +681,7 @@ class InvoicesController extends AppController
             $invoiceArray['invoiced_products'][$key]['item_id'] = $ItemUnitInfo['item_id'];
             $invoiceArray['invoiced_products'][$key]['manufacture_unit_id'] = $ItemUnitInfo['manufacture_unit_id'];
             $invoiceArray['invoiced_products'][$key]['product_quantity'] = $item['item_quantity'];
+            $invoiceArray['invoiced_products'][$key]['net_total'] = $item['net_total'];
 
             if ($invoice_type == 1) {
                 $invoiceArray['invoiced_products'][$key]['due'] = 0;
@@ -690,24 +698,32 @@ class InvoicesController extends AppController
                 'item_unit_id' => $item['item_unit_id'],
                 'program_period_start <=' => time(),
                 'program_period_end >=' => time(),
-                'invoicing !=' => array_flip(Configure::read('special_offer_invoicing'))['Cumulative'],
                 'offer_payment_mode !=' => array_flip(Configure::read('offer_payment_mode'))['Delayed']
-            ]])->where(['invoice_type IN' => [array_flip(Configure::read('special_offer_invoice_types'))['Both'], $invoice_type]]);
+            ]])->where(['invoice_type IN' => [array_flip(Configure::read('special_offer_invoice_types'))['Both'], 1]]);;
 
             if (sizeof($options) > 0) {
                 foreach ($options as $option) {
                     if ($option->offer_id > 0) {
-                        if (!in_array($option->offer_id, $offerArray)) {
-                            $offerArray[] = $option->offer_id;
-                            $offerItems[$option->offer_id][] = $item['item_unit_id'];
-                        }
+                        $offerArray[] = $option->offer_id;
+                        $offerItems[$option->offer_id][$key] = $item['item_unit_id'];
                     }
                 }
             }
         }
 
+        $myOfferItemUnitArray = [];
+        $this->loadModel('ItemUnits');
+        foreach($offerItems as $offer_id=>$itemUnits){
+            foreach($itemUnits as $itemUnit){
+                $itemUnitInfo = $this->ItemUnits->get($itemUnit);
+                $myOfferItemUnitArray[$offer_id][$itemUnitInfo['item_id']][] = $itemUnit;
+            }
+        }
+
         $wonOffers = [];
         $ApplicableWonOffers = [];
+        $offerArray = array_unique($offerArray);
+
         foreach ($offerArray as $serial => $offer) {
             $offer = $this->Offers->get($offer);
             $conditions = json_decode($offer['conditions'], true);

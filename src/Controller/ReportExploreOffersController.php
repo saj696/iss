@@ -319,15 +319,19 @@ class ReportExploreOffersController extends AppController
         $offer = $this->Offers->get($offer_id, ['contain'=>['OfferItems']]);
         $invoicing = $offer['invoicing'];
         $conditions = json_decode($offer['conditions'], true);
+
         $condition_postfix = json_decode($offer['condition_postfix'], true);
         $wonOffers = [];
+        $allWonOffers = [];
 
         foreach($customers as $customer){
             $max_calculated_date = $this->getCalMaxDate($offer_id, $customer['id']);
 
             if($start_date>$max_calculated_date){
                 if($invoicing==array_flip(Configure::read('special_offer_invoicing'))['Single']){
+
                     $applicablePostfix = $condition_postfix[0];
+
                     if($conditions[0]['time_level']==array_flip(Configure::read('offer_time_level'))['Instant'] && $conditions[0]['context']==array_flip(Configure::read('offer_contexts'))['Invoice']){
                         $customerInvoices = TableRegistry::get('invoices')->find()->hydrate(false);
                         $customerInvoices->contain(['InvoicedProducts']);

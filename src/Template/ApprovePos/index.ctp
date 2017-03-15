@@ -49,6 +49,7 @@ $status = \Cake\Core\Configure::read('status_options');
                                     if($event->is_action_taken==0):
                                         echo $this->Html->link(__('Edit & Approve'), ['action' => 'edit', $event->id], ['class' => 'btn btn-circle default yellow-stripe']);
                                     else:
+                                        echo $this->Html->link(__('Preview'), ['action' => 'printInvoice', $event->id], ['class' => 'btn btn-circle default green-stripe']);
                                         echo $this->Html->link(__('Edit & Approve'), ['action' => 'edit', $event->id], ['disabled', 'class' => 'btn btn-circle default yellow-stripe']);
                                     endif;
                                     ?>

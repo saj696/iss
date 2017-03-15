@@ -122,7 +122,8 @@ use Cake\Core\Configure;
             $( ".itemUnitId" ).each(function(index) {
                 myArr[i] = {
                     "item_unit_id":$(this).val(),
-                    "item_quantity":$(this).closest('.itemTr').find('.item_quantity').val()
+                    "item_quantity":$(this).closest('.itemTr').find('.item_quantity').val(),
+                    "net_total":$(this).closest('.itemTr').find('.item_net_total').val()
                 }
                 i++;
             });
@@ -311,6 +312,8 @@ use Cake\Core\Configure;
             var customer_id = $('.customer_id').val();
             var itemUnitId = $(this).closest('.itemTr').find('.itemUnitId').val();
             var item_quantity = parseFloat($(this).val());
+            var unit_price = parseFloat($(this).closest('.itemTr').find('.unit_price').val());
+            var net_total = item_quantity*unit_price;
 
             if(item_quantity>0){
                 $.ajax({
@@ -322,7 +325,8 @@ use Cake\Core\Configure;
                         customer_id:customer_id,
                         item_quantity: item_quantity,
                         level_no: level_no,
-                        customer_unit: customer_unit
+                        customer_unit: customer_unit,
+                        net_total: net_total,
                     },
                     success: function (data, status) {
                         console.log(data);
