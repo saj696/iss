@@ -311,8 +311,6 @@ class FunctionHelper extends Helper
                         }else{
                             $diff = abs(round($operand1 - $rangeStart, 2));
                         }
-//                        echo ' inside eval op1=> '.var_dump($operand1).' ';
-//                        echo ' inside eval diff=> '. abs(round($operand1 - $rangeStart)).' ';
                     }
 
                     $result = $this->execute($operand1, $operand2, $postfixArray[$i]['operator']);

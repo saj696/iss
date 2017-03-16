@@ -590,22 +590,9 @@ class InvoicesController extends AppController
         }
 
         $wonOffers = array_values($wonOffers);
+        @$wonOffers[0]['bonus_quantity'] = $result[0]['Bonus']?$result[0]['Bonus']:0;
 
-        if (isset($wonOffers[0])) {
-            $wonOffers[0]['bonus_quantity'] = 0;
-            $wonOffers[0]['is_only_bonus'] = false;
-            $arr = json_encode($wonOffers[0]);
-        } else {
-            if (isset($result[0]['Bonus'])) {
-                $only_bonus[0]['bonus_quantity'] = $result[0]['Bonus'];
-                $only_bonus[0]['is_only_bonus'] = true;
-            } else {
-                $only_bonus[0]['bonus_quantity'] = 0;
-                $only_bonus[0]['is_only_bonus'] = false;
-            }
-            $arr = json_encode($only_bonus[0]);
-        }
-
+        $arr = json_encode($wonOffers[0]);
         $this->response->body($arr);
         return $this->response;
     }

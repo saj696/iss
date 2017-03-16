@@ -332,31 +332,27 @@ use Cake\Core\Configure;
                         console.log(data);
                         if(data.length>0){
                             var res = JSON.parse(data);
-                            console.log(res);
-                            if(res.is_only_bonus==true){
-                                return obj.closest('.itemTr').find('.item_bonus').val(res.bonus_quantity);
-                            }else {
-                                if(res.value>0){
-                                    if(res.offer_type=='product bonus'){
-                                        obj.closest('.itemTr').find('.special_offer_item_bonus').val(res.value);
-                                        obj.closest('.itemTr').find('.item_cash_discount').val(0);
-                                    }else{
-                                        obj.closest('.itemTr').find('.item_cash_discount').val(res.value);
-                                        obj.closest('.itemTr').find('.special_offer_item_bonus').val(0);
-                                    }
-
-                                    obj.closest('.itemTr').find('.item_bonus').val(res.bonus_quantity);
-                                    obj.closest('.itemTr').find('.offer_id').val(res.offer_id);
-
-                                    // other calculations
-                                    calculateNetTotal(item_quantity, obj);
-                                    calculateTotalAmount();
-                                }else{
+                            //console.log(res);
+                            if(res.value>0){
+                                if(res.offer_type=='product bonus'){
+                                    obj.closest('.itemTr').find('.special_offer_item_bonus').val(res.value);
                                     obj.closest('.itemTr').find('.item_cash_discount').val(0);
-                                    obj.closest('.itemTr').find('.item_bonus').val(0);
-                                    calculateNetTotal(item_quantity, obj);
-                                    calculateTotalAmount();
+                                }else{
+                                    obj.closest('.itemTr').find('.item_cash_discount').val(res.value);
+                                    obj.closest('.itemTr').find('.special_offer_item_bonus').val(0);
                                 }
+
+                                obj.closest('.itemTr').find('.item_bonus').val(res.bonus_quantity);
+                                obj.closest('.itemTr').find('.offer_id').val(res.offer_id);
+
+                                // other calculations
+                                calculateNetTotal(item_quantity, obj);
+                                calculateTotalAmount();
+                            }else{
+                                obj.closest('.itemTr').find('.item_cash_discount').val(0);
+                                obj.closest('.itemTr').find('.item_bonus').val(0);
+                                calculateNetTotal(item_quantity, obj);
+                                calculateTotalAmount();
                             }
                         }else{
                             obj.closest('.itemTr').find('.item_cash_discount').val(0);

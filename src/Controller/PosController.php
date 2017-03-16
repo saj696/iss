@@ -460,7 +460,6 @@ class PosController extends AppController
             'item_unit_id'=>$item_unit_id,
             'program_period_start <='=>time(),
             'program_period_end >='=>time(),
-            'invoicing !='=>array_flip(Configure::read('special_offer_invoicing'))['Cumulative'],
             'offer_payment_mode !='=>array_flip(Configure::read('offer_payment_mode'))['Delayed']
         ]])->where(['invoice_type IN'=>[array_flip(Configure::read('special_offer_invoice_types'))['Both'], $invoice_type]]);
 
@@ -496,22 +495,9 @@ class PosController extends AppController
         }
 
         $wonOffers = array_values($wonOffers);
+        @$wonOffers[0]['bonus_quantity'] = $result[0]['Bonus']?$result[0]['Bonus']:0;
 
-        if (isset($wonOffers[0])) {
-            $wonOffers[0]['bonus_quantity'] = 0;
-            $wonOffers[0]['is_only_bonus'] = false;
-            $arr = json_encode($wonOffers[0]);
-        } else {
-            if (isset($result[0]['Bonus'])) {
-                $only_bonus[0]['bonus_quantity'] = $result[0]['Bonus'];
-                $only_bonus[0]['is_only_bonus'] = true;
-            } else {
-                $only_bonus[0]['bonus_quantity'] = 0;
-                $only_bonus[0]['is_only_bonus'] = false;
-            }
-            $arr = json_encode($only_bonus[0]);
-        }
-
+        $arr = json_encode($wonOffers[0]);
         $this->response->body($arr);
         return $this->response;
     }
@@ -602,17 +588,14 @@ class PosController extends AppController
                 'item_unit_id'=>$item['item_unit_id'],
                 'program_period_start <='=>time(),
                 'program_period_end >='=>time(),
-                'invoicing !='=>array_flip(Configure::read('special_offer_invoicing'))['Cumulative'],
                 'offer_payment_mode !='=>array_flip(Configure::read('offer_payment_mode'))['Delayed']
             ]])->where(['invoice_type IN'=>[array_flip(Configure::read('special_offer_invoice_types'))['Both'], $invoice_type]]);
 
             if(sizeof($options)>0){
                 foreach($options as $option){
                     if($option->offer_id>0){
-                        if(!in_array($option->offer_id, $offerArray)){
-                            $offerArray[] = $option->offer_id;
-                            $offerItems[$option->offer_id][] = $item['item_unit_id'];
-                        }
+                        $offerArray[] = $option->offer_id;
+                        $offerItems[$option->offer_id][] = $item['item_unit_id'];
                     }
                 }
             }
@@ -620,6 +603,8 @@ class PosController extends AppController
 
         $wonOffers = [];
         $ApplicableWonOffers = [];
+        $offerArray = array_unique($offerArray);
+
         foreach($offerArray as $serial=>$offer){
             $offer = $this->Offers->get($offer);
             $conditions = json_decode($offer['conditions'], true);

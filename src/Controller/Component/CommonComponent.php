@@ -429,6 +429,7 @@ class CommonComponent extends Component
             for($i=0; 1 ; $i++){
                 $offer_found = 0;
                 foreach ($specific as $key => $specPost) {
+                    $itemUnitIdArray = [];
                     $item_unit_quantity_found = 0;
                     $first_time_occurence_of_item_unit_qty_greater_than_zero= 0;
 
@@ -439,7 +440,6 @@ class CommonComponent extends Component
                     // 3 means first time found and no + afterwards
 
                     foreach ($specPost['condition'] as $k => $specCon) {
-
                         if ($specCon['type'] == 'function') {
                             if ($specCon['name'] == 'item_unit_quantity') {
 
@@ -449,39 +449,20 @@ class CommonComponent extends Component
 
                                 $argArray = explode(',', $specCon['arg']);
                                 $result = $FunctionHelper->$specCon['name']($argArray[0], $invoiceArray, $i, $item_unit_quantity_found,$first_time_occurence_of_item_unit_qty_greater_than_zero, $argArray[1]);
-                                $item_info = TableRegistry::get('items')->find('all', ['conditions'=>['name'=>str_replace("'", '', $argArray[0]), 'status'=>1]])->first();
-                                $item_id = $item_info['id'];
-                                $itemIdArray[$key] = $item_id;
-//                                echo '( i '.$i.' key '.$key.' result '.$result.' )';
+                                $item_unit_info = TableRegistry::get('item_units')->find('all', ['conditions'=>['item_name'=>str_replace("'", '', $argArray[0]), 'unit_display_name'=>str_replace("'", '', $argArray[1]), 'status'=>1]])->first();
+                                $item_unit_id = $item_unit_info['id'];
+                                $itemUnitIdArray[] = $item_unit_id;
 
-                                if(($i>0)&&($key==(5-$i))){
-                                    //echo '<===i= '.$i.'   spec no. = '.(5-$i);
-
-                                }
-                                if(($i>0)&&($key==(5-$i))){
-                                   // echo "return_value =  ".$result;
-                                }
                                 if($i>0){
                                     if(($first_time_occurence_of_item_unit_qty_greater_than_zero==0)&&($result>0)){
-                                        $result= $difference[$itemIdArray[$key]];
+                                        $result= $difference[$item_unit_id];
                                         $first_time_occurence_of_item_unit_qty_greater_than_zero=1;
-
-                                        if(($i>0)&&($key==(5-$i))){
-                                            //echo "--->result =  ".$result;
-                                        }
                                     }
                                     else {
                                         $result = 0;
-                                        if(($i>0)&&($key==(5-$i))){
-                                            //echo "--->result =  ".$result.'==>';
-                                        }
                                     }
+                                }
 
-                                }
-                                if(($i==3) && ($key==4)){
-//                                    echo '< result '.$result.'--->';
-                                }
-                                // echo 'func '.$result;
                             } elseif ($specCon['name'] == 'max_due_invoice_age' || $specCon['name'] == 'is_mango_customer' || $specCon['name'] == 'is_cash_invoice' || $specCon['name'] == 'payment_date' || $specCon['name'] == 'invoice_payment_age' || $specCon['name'] == 'invoice_item_payment_age') {
                                 $result = $FunctionHelper->$specCon['name']($invoiceArray);
                             }elseif($specCon['name'] == 'item_bulk_quantity'){
@@ -500,25 +481,9 @@ class CommonComponent extends Component
                             }
                         }
                     }
-                    if(($key==4)){
-//                        echo ' range start '.$specPost['range_start'].' ==========';
-//                        echo '<pre>';
-//                        print_r($specPost['condition']);
-//                        echo '</pre>';
-                    }
 
                     $eval = $FunctionHelper->postfix_evaluator($specPost['condition'], $specPost['range_start']);
                     $specConEvaluation = $eval['result'];
-
-//                    echo ' i '.$i.' ';
-
-//                    if(($i==3) && ($key==4)){
-//                        echo $difference;
-//                        echo '<pre>';
-//                        print_r($eval);
-//                        echo '</pre>';
-//                        exit;
-//                    }
 
                     // If specific condition is true then amount will be evaluated
                     if ($specConEvaluation) {
@@ -526,16 +491,14 @@ class CommonComponent extends Component
                             $exit_outer_loop = 1;
                         }
 
-                        $difference[$itemIdArray[$key]] = $eval['diff'];
-
-//                        if($i==1){
-//                            echo 'difference '.$difference.' ';
-//                        }
+                        $itemUnitIdArray = array_unique($itemUnitIdArray);
+                        foreach($itemUnitIdArray as $itemUnit){
+                            $difference[$itemUnit] = $eval['diff'];
+                        }
 
                         foreach ($specPost['amount'] as $k => $specAmount) {
                             if ($specAmount['type'] == 'function') {
                                 $exit_outer_loop = 1;
-                                //echo 'function found';
 
                                 if ($specAmount['name'] == 'item_unit_quantity') {
                                     $argArray = explode(',', $specAmount['arg']);
@@ -559,11 +522,8 @@ class CommonComponent extends Component
                             }
                         }
 
-//                        echo $i.'=='.$difference.' - ';
                         $specAmountEvaluation = $FunctionHelper->postfix_evaluator($specPost['amount'])['result'];
                         $specAmountEvaluationFunctionFound = $FunctionHelper->postfix_evaluator($specPost['amount'])['function_found'];
-
-//                        echo 'i==='.$i.' offer amount '.$specAmountEvaluation.'   ';
 
                         $wonOffers[$i][$key]['value'] = $specAmountEvaluation;
                         $wonOffers[$i][$key]['offer_id'] = $offer_id;
@@ -589,11 +549,6 @@ class CommonComponent extends Component
                 }
             }
         }
-
-//        echo '<pre>';
-//        print_r($wonOffers);
-//        echo '</pre>';
-//        exit;
 
         $newArr = [];
 
