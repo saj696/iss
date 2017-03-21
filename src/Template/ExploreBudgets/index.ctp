@@ -1,6 +1,5 @@
 <?php
 use Cake\Core\Configure;
-
 $status = Configure::read('status_options');
 ?>
 
@@ -11,7 +10,7 @@ $status = Configure::read('status_options');
             <a href="<?= $this->Url->build(('/Dashboard'), true); ?>"><?= __('Dashboard') ?></a>
             <i class="fa fa-angle-right"></i>
         </li>
-        <li><?= $this->Html->link(__('Sales Budgets'), ['action' => 'index']) ?></li>
+        <li><?= $this->Html->link(__('Explore Budgets'), ['action' => 'index']) ?></li>
     </ul>
 </div>
 
@@ -20,7 +19,7 @@ $status = Configure::read('status_options');
         <div class="portlet box grey-cascade">
             <div class="portlet-title">
                 <div class="caption">
-                    <i class="fa fa-plus-square-o fa-lg"></i><?= __('Explore Budget') ?>
+                    <i class="fa fa-plus-square-o fa-lg"></i><?= __('Explore Budgets') ?>
                 </div>
             </div>
 
@@ -29,15 +28,15 @@ $status = Configure::read('status_options');
                 <div class="row">
                     <div class="col-md-7 col-md-offset-2">
                         <?php
-                        echo $this->Form->input('start_date', ['type'=>'text', 'class'=>'datepicker form-control']);
-                        echo $this->Form->input('end_date', ['type'=>'text', 'class'=>'datepicker form-control']);
-                        echo $this->Form->input('explore_level', ['options'=>$exploreLevels, 'class'=>'form-control explore_level', 'empty'=>'Select', 'required'=>'required']);
-                        echo $this->Form->input('parent_unit', ['options'=>[], 'class'=>'parent_unit form-control', 'empty'=>'Select']);
-                        echo $this->Form->input('unit_id', ['empty'=>'Select', 'required'=>'required', 'class'=>'form-control unit']);
+                        echo $this->Form->input('start_date', ['type'=>'text', 'class'=>'datepicker form-control', 'required'=>'required']);
+                        echo $this->Form->input('end_date', ['type'=>'text', 'class'=>'datepicker form-control', 'required'=>'required']);
+                        echo $this->Form->input('explore_level', ['label'=>'Explore Level', 'options'=>$exploreLevels, 'class'=>'form-control explore_level', 'empty'=>'Select', 'required'=>'required']);
+                        echo $this->Form->input('explore_unit', ['options'=>[], 'class'=>'explore_unit form-control', 'empty'=>'Select', 'required'=>'required']);
+                        echo $this->Form->input('display_unit', ['options'=>[], 'empty'=>'Select', 'required'=>'required', 'class'=>'form-control display_unit']);
                         ?>
                     </div>
                     <div class="col-md-12 text-center">
-                        <?= $this->Form->button(__('Search'), ['class' => 'btn yellow', 'style' => 'margin:20px']) ?>
+                        <?= $this->Form->button(__('Search'), ['class' => 'btn yellow', 'style' => 'margin:10px 0 20px 0']) ?>
                     </div>
                 </div>
                 <?= $this->Form->end() ?>
@@ -61,12 +60,12 @@ $status = Configure::read('status_options');
         $(document).on('change', '.explore_level', function () {
             var obj = $(this);
             var explore_level = obj.val();
-            obj.closest('.input').next().find('.parent_unit').html('<option value="">Select</option>');
-            $('.unit').html('<option value="">Select</option>');
+            $('.explore_unit').html('<option value="">Select</option>');
+            $('.display_unit').html('<option value="">Select</option>');
 
             $.ajax({
                 type: 'POST',
-                url: '<?= $this->Url->build("/ExploreBudgets/ajax/parent_units")?>',
+                url: '<?= $this->Url->build("/ReportSalesCollections/ajax/explore_units")?>',
                 data: {explore_level: explore_level},
                 success: function (data, status) {
                     obj.closest('.input').next().find('.col-sm-9').html('');
@@ -75,17 +74,33 @@ $status = Configure::read('status_options');
             });
         });
 
-        $(document).on('change', '.parent_unit', function () {
+        $(document).on('change', '.explore_unit', function () {
             var obj = $(this);
-            var parent_unit = obj.val();
+            var explore_unit = obj.val();
             var explore_level = $('.explore_level').val();
-            obj.closest('.input').next().find('.unit').html('<option value="">Select</option>');
-            $('.unit').html('<option value="">Select</option>');
+            $('.display_unit').html('<option value="">Select</option>');
 
             $.ajax({
                 type: 'POST',
-                url: '<?= $this->Url->build("/ExploreBudgets/ajax/units")?>',
-                data: {parent_unit:parent_unit, explore_level: explore_level},
+                url: '<?= $this->Url->build("/ReportSalesCollections/ajax/display_units")?>',
+                data: {explore_unit: explore_unit, explore_level: explore_level},
+                success: function (data, status) {
+                    obj.closest('.input').next().find('.display_unit').html('');
+                    obj.closest('.input').next().find('.display_unit').html(data);
+                }
+            });
+        });
+
+        $(document).on('change', '.unit', function () {
+            var obj = $(this);
+            var unit = obj.val();
+            obj.closest('.input').next().find('.customer').html('<option value="">Select</option>');
+            $('.customer').html('<option value="">Select</option>');
+
+            $.ajax({
+                type: 'POST',
+                url: '<?= $this->Url->build("/ReportSalesCollections/ajax/customers")?>',
+                data: {unit:unit},
                 success: function (data, status) {
                     obj.closest('.input').next().find('.col-sm-9').html('');
                     obj.closest('.input').next().find('.col-sm-9').html(data);

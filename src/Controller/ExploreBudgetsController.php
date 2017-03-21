@@ -31,17 +31,19 @@ class ExploreBudgetsController extends AppController
      */
     public function index()
     {
+        $user = $this->Auth->user();
+        $user_level = $user['level_no'];
+
         $this->loadModel('SalesBudgets');
         $this->loadModel('AdministrativeLevels');
         $this->loadModel('AdministrativeUnits');
         $this->loadModel('SalesBudgetConfigurations');
 
-        $administrativeLevelsData = $this->AdministrativeLevels->find('all', ['conditions' => ['status' => 1]]);
+        $administrativeLevelsData = $this->AdministrativeLevels->find('all', ['conditions' => ['status' => 1, 'level_no >='=>$user_level]]);
         $exploreLevels = [];
         foreach ($administrativeLevelsData as $administrativeLevelsDatum):
             $exploreLevels[$administrativeLevelsDatum['level_no']] = $administrativeLevelsDatum['level_name'];
         endforeach;
-        $exploreLevels[Configure::read('max_level_no') + 1] = 'Customer';
 
         $configData = $this->SalesBudgetConfigurations->find('all', ['conditions' => ['status' => 1]])->first();
         $configLevel = $configData['level_no'];
@@ -49,82 +51,47 @@ class ExploreBudgetsController extends AppController
             unset($exploreLevels[$i + 1]);
         }
 
-        $this->set(compact('exploreLevels'));
+        $this->set(compact('exploreLevels', 'reportTypes'));
         $this->set('_serialize', ['exploreLevels']);
     }
 
     public function loadReport($param)
     {
-        $this->loadModel('SalesBudgets');
-        $this->loadModel('AdministrativeLevels');
-        $this->loadModel('AdministrativeUnits');
-        $this->loadModel('SalesBudgetConfigurations');
+        $this->loadComponent('common');
 
         if ($this->request->is(['post', 'get'])) {
             $data = $this->request->data;
             $start_date = strtotime($data['start_date']);
             $end_date = strtotime($data['end_date']);
-            $explore_level = $data['explore_level'];
-            $unit_id = $data['unit_id'];
+            $space_level = $data['explore_level'];
+            $space_global_id = $data['explore_unit'];
+            $group_by_level = $data['display_unit'];
 
-            if ($explore_level == Configure::read('max_level_no') + 1) {
+            $mainArr = $this->Common->get_unit_sales_budget($space_level, $space_global_id, $group_by_level, $start_date, $end_date);
 
-            } else {
-                $unitAdminUnitInfo = $this->AdministrativeUnits->get($unit_id);
-                $childs = $this->AdministrativeUnits->find('all', ['conditions' => ['parent' => $unitAdminUnitInfo['id']]]);
-
-                if ($childs->toArray() && sizeof($childs->toArray()) > 0) {
-                    $mainArr = [];
-                    foreach ($childs as $child) {
-                        $unitGlobalId = $child->global_id;
-                        $limitStart = pow(2, (Configure::read('max_level_no') - $child->level_no - 1) * 5);
-                        $limitEnd = pow(2, (Configure::read('max_level_no') - $child->level_no) * 5);
-
-                        $budgets = TableRegistry::get('sales_budgets')->find()->hydrate(false);
-                        $budgets->where('administrative_unit_global_id -' . $unitGlobalId . '>= ' . $limitStart);
-                        $budgets->where('administrative_unit_global_id -' . $unitGlobalId . '<= ' . $limitEnd);
-                        if ($start_date) {
-                            $budgets->where(['budget_period_start >=' => $start_date]);
-                        }
-                        if ($end_date) {
-                            $budgets->where(['budget_period_end <=' => $end_date]);
-                        }
-                        $budgets->where(['status' => 1]);
-                        $budgets->select(['total' => 'SUM(sales_amount)', 'sales_measure_unit']);
-                        $arr['total'] = $budgets->first()['total'] ? $budgets->first()['total'] : 0;
-                        $arr['unit_name'] = $child->unit_name;
-                        $arr['measure_unit'] = $budgets->first()['sales_measure_unit'] ? $budgets->first()['sales_measure_unit'] : '';
-                        $mainArr[] = $arr;
-                    }
-
-                } else {
-                    $unitGlobalId = $unitAdminUnitInfo['global_id'];
-                    $budgets = TableRegistry::get('sales_budgets')->find()->hydrate(false);
-                    $budgets->where(['administrative_unit_global_id' => $unitGlobalId]);
-                    if ($start_date) {
-                        $budgets->where(['budget_period_start >=' => $start_date]);
-                    }
-                    if ($end_date) {
-                        $budgets->where(['budget_period_end <=' => $end_date]);
-                    }
-                    $budgets->where(['status' => 1]);
-                    $budgets->select(['total' => 'SUM(sales_amount)', 'sales_measure_unit']);
-                    $arr['total'] = $budgets->first()['total'] ? $budgets->first()['total'] : 0;
-                    $arr['unit_name'] = $unitAdminUnitInfo['unit_name'];
-                    $arr['measure_unit'] = $budgets->first()['sales_measure_unit'] ? $budgets->first()['sales_measure_unit'] : '';
-                    $mainArr[] = $arr;
+            if($group_by_level == Configure::read('max_level_no')+1){
+                $customers = TableRegistry::get('customers')->find();
+                $nameArray = [];
+                foreach($customers->toArray() as $customer){
+                    $nameArray[$customer['id']] = $customer['name'];
+                }
+            }else{
+                $adminUnits = TableRegistry::get('administrative_units')->find();
+                $nameArray = [];
+                foreach($adminUnits->toArray() as $adminUnit){
+                    $nameArray[$adminUnit['global_id']] = $adminUnit['unit_name'];
                 }
             }
 
             if ($param == 'report') {
                 $this->viewBuilder()->layout('report');
-                $this->set(compact('mainArr', 'data'));
-                $this->set('_serialize', ['mainArr', 'explore_level', 'unit_id']);
+                $this->set(compact('mainArr', 'data', 'nameArray'));
+                $this->set('_serialize', ['mainArr', 'explore_level', 'unit_id', 'nameArray']);
             } elseif ($param == 'pdf') {
                 $view = new View();
                 $btnHide = 1;
                 $view->layout=false;
-                $view->set(compact('mainArr', 'data', 'btnHide'));
+                $view->set(compact('mainArr', 'data', 'btnHide', 'nameArray'));
                 $view->viewPath = 'ExploreBudgets';
                 $html = $view->render('load_report');
                 $this->loadComponent('Common');
@@ -135,39 +102,47 @@ class ExploreBudgetsController extends AppController
 
     public function ajax($param)
     {
-        if ($param == 'parent_units') {
-            $data = $this->request->data;
+        $data = $this->request->data;
+        if ($param == 'explore_units') {
             $explore_level = $data['explore_level'];
-            $units = TableRegistry::get('administrative_units')->find('all', ['conditions' => ['level_no' => $explore_level - 1], 'fields' => ['id', 'unit_name']])->hydrate(false)->toArray();
+            $user = $this->Auth->user();
+            $userAdministrativeUnit = $user['administrative_unit_id'];
+            $this->loadModel('AdministrativeUnits');
+
+            $userAdministrativeUnitInfo = $this->AdministrativeUnits->get($userAdministrativeUnit);
+            $limitStart = pow(2,(Configure::read('max_level_no')- $user['level_no']-1)*5);
+            $limitEnd = pow(2,(Configure::read('max_level_no')- $user['level_no'])*5);
+            $units = TableRegistry::get('administrative_units')->find('all');
+            $units->select(['global_id', 'unit_name']);
+            $units->where(['level_no'=>$explore_level]);
+            $units->where('global_id -'. $userAdministrativeUnitInfo['global_id'] .'>= '.$limitStart);
+            $units->where('global_id -'. $userAdministrativeUnitInfo['global_id'] .'< '.$limitEnd);
+            $units->toArray();
 
             $dropArray = [];
-            foreach ($units as $unit):
-                $dropArray[$unit['id']] = $unit['unit_name'];
+            foreach($units as $unit):
+                $dropArray[$unit['global_id']] = $unit['unit_name'];
             endforeach;
-
-            $this->viewBuilder()->layout('ajax');
-            $this->set(compact('dropArray', 'param'));
-        } elseif ($param == 'units') {
-            $data = $this->request->data;
+        } elseif ($param == 'display_units') {
             $explore_level = $data['explore_level'];
-            $paren_unit = $data['parent_unit'];
 
-            if ($explore_level == Configure::read('max_level_no') + 1) {
-                $units = TableRegistry::get('customers')->find('all', ['conditions' => ['administrative_unit_id' => $paren_unit], 'fields' => ['id', 'name']])->hydrate(false)->toArray();
-                $dropArray = [];
-                foreach ($units as $unit):
-                    $dropArray[$unit['id']] = $unit['name'];
-                endforeach;
-            } else {
-                $units = TableRegistry::get('administrative_units')->find('all', ['conditions' => ['parent' => $paren_unit], 'fields' => ['id', 'unit_name']])->hydrate(false)->toArray();
-                $dropArray = [];
-                foreach ($units as $unit):
-                    $dropArray[$unit['id']] = $unit['unit_name'];
-                endforeach;
-            }
+            $administrativeLevelsData = TableRegistry::get('administrative_levels')->find('all', ['conditions' => ['status' => 1, 'level_no >='=>$explore_level]]);
+            $dropArray = [];
+            foreach ($administrativeLevelsData as $administrativeLevelsDatum):
+                $dropArray[$administrativeLevelsDatum['level_no']] = $administrativeLevelsDatum['level_name'];
+            endforeach;
+            $dropArray[Configure::read('max_level_no') + 1] = 'Customer';
+        } elseif ($param == 'customers'){
+            $unit = $data['unit'];
+            $customers = TableRegistry::get('customers')->find('all', ['conditions' => ['administrative_unit_id' => $unit], 'fields' => ['id', 'name']])->hydrate(false)->toArray();
 
-            $this->viewBuilder()->layout('ajax');
-            $this->set(compact('dropArray', 'param'));
+            $dropArray = [];
+            foreach ($customers as $customer):
+                $dropArray[$customer['id']] = $customer['name'];
+            endforeach;
         }
+
+        $this->viewBuilder()->layout('ajax');
+        $this->set(compact('dropArray', 'param'));
     }
 }

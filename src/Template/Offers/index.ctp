@@ -33,6 +33,7 @@ $status = \Cake\Core\Configure::read('status_options');
                             <th><?= __('Program Name')?></th>
                             <th><?= __('Start Date')?></th>
                             <th><?= __('End Date')?></th>
+                            <th><?= __('Status')?></th>
                             <th><?= __('Actions') ?></th>
                         </tr>
                         </thead>
@@ -43,11 +44,10 @@ $status = \Cake\Core\Configure::read('status_options');
                                 <td><?= $offer->program_name?></td>
                                 <td><?= date('d-m-Y', $offer->program_period_start)?></td>
                                 <td><?= date('d-m-Y', $offer->program_period_end)?></td>
+                                <td><?= ($offer->status==1)?'Active':'In-active' ?></td>
                                 <td class="actions">
                                     <?php
-                                    echo $this->Html->link(__('View'), ['action' => 'view', $offer->id], ['class' => 'btn btn-sm btn-info']);
                                     echo $this->Html->link(__('Edit'), ['action' => 'edit', $offer->id], ['class' => 'btn btn-sm btn-warning']);
-                                    echo $this->Form->postLink(__('Delete'), ['action' => 'delete', $offer->id], ['class' => 'btn btn-sm btn-danger', 'confirm' => __('Are you sure you want to delete # {0}?', $offer->id)]);
                                     ?>
                                 </td>
                             </tr>

@@ -460,7 +460,8 @@ class PosController extends AppController
             'item_unit_id'=>$item_unit_id,
             'program_period_start <='=>time(),
             'program_period_end >='=>time(),
-            'offer_payment_mode !='=>array_flip(Configure::read('offer_payment_mode'))['Delayed']
+            'offer_payment_mode !='=>array_flip(Configure::read('offer_payment_mode'))['Delayed'],
+            'status'=>1
         ]])->where(['invoice_type IN'=>[array_flip(Configure::read('special_offer_invoice_types'))['Both'], $invoice_type]]);
 
         $offerArray = [];
@@ -588,7 +589,8 @@ class PosController extends AppController
                 'item_unit_id'=>$item['item_unit_id'],
                 'program_period_start <='=>time(),
                 'program_period_end >='=>time(),
-                'offer_payment_mode !='=>array_flip(Configure::read('offer_payment_mode'))['Delayed']
+                'offer_payment_mode !='=>array_flip(Configure::read('offer_payment_mode'))['Delayed'],
+                'status'=>1
             ]])->where(['invoice_type IN'=>[array_flip(Configure::read('special_offer_invoice_types'))['Both'], $invoice_type]]);
 
             if(sizeof($options)>0){

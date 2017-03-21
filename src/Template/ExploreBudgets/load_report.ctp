@@ -44,14 +44,19 @@ $webroot =  $this->request->webroot;
                         <tbody>
                         <?php
                         if(sizeof($mainArr)>0):?>
-                            <?php foreach($mainArr as $key=>$detail):?>
+                            <?php
+                            $i = 0;
+                            foreach($mainArr as $key=>$detail):?>
                                 <tr>
-                                    <td><?= $key+1;?></td>
-                                    <td><?= $detail['unit_name'];?></td>
-                                    <td><?= isset($detail['total'])?$detail['total']:0;?></td>
-                                    <td><?= $detail['measure_unit']>0?Configure::read('pack_size_units')[$detail['measure_unit']]:''?></td>
+                                    <td><?= $i+1;?></td>
+                                    <td><?= $nameArray[$key];?></td>
+                                    <td><?= isset($detail['budget'])?$detail['budget']:0;?></td>
+                                    <td><?= $detail['sales_measure_unit']>0?Configure::read('pack_size_units')[$detail['sales_measure_unit']]:''?></td>
                                 </tr>
-                            <?php endforeach;?>
+                            <?php
+                                $i++;
+                            endforeach;
+                            ?>
                         <?php else:?>
                             <tr><td class="text-center alert-danger" colspan="12"><?= __('No Data Found')?></td></tr>
                         <?php endif;?>

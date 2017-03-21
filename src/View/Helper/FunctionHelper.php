@@ -971,13 +971,7 @@ class FunctionHelper extends Helper
         $sum = self::converted_quantity($sum, $unit_type, $converted_quantity);
 
         if($sum != 0){
-            if($outer_loop_iteration_no == 0){
-                $returnArray = $sum?$sum:0;
-            }elseif(($outer_loop_iteration_no != 0) && (($item_unit_quantity_found==1) || ($item_unit_quantity_found==3))){
-                $returnArray = $diff;
-            }elseif(($outer_loop_iteration_no != 0) && ($item_unit_quantity_found==2)){
-                $returnArray = 0;
-            }
+            $returnArray = $sum;
         }else{
             $returnArray = 0;
         }
@@ -1015,13 +1009,7 @@ class FunctionHelper extends Helper
         $sum = self::converted_quantity($sum, $unit_type, $converted_quantity);
 
         if($sum != 0){
-            if($outer_loop_iteration_no == 0){
-                $returnArray = $sum?$sum:0;
-            }elseif(($outer_loop_iteration_no != 0) && (($item_unit_quantity_found==1) || ($item_unit_quantity_found==3))){
-                $returnArray = $diff;
-            }elseif(($outer_loop_iteration_no != 0) && ($item_unit_quantity_found==2)){
-                $returnArray = 0;
-            }
+            $returnArray = $sum;
         }else{
             $returnArray = 0;
         }

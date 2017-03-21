@@ -7,21 +7,20 @@
  */
 ?>
 <?php
-if($param=='parent_units'){
-?>
-<select name="unit_id" required="required" class="form-control parent_unit">
-    <option value="">Select</option>
-    <?php
-    foreach($dropArray as $key=>$drop):
+if($param=='explore_units'){
     ?>
-        <option value="<?= $key?>"><?= $drop?></option>
-    <?php endforeach;?>
-</select>
-
+    <select name="explore_unit" required="required" class="form-control explore_unit">
+        <option value="">Select</option>
+        <?php
+        foreach($dropArray as $key=>$drop):
+        ?>
+            <option value="<?= $key?>"><?= $drop?></option>
+        <?php endforeach;?>
+    </select>
 <?php
-}elseif($param=='units') {
+}elseif($param=='display_units') {
     ?>
-    <select name="unit_id" required="required" class="form-control unit">
+    <select name="display_unit" required="required" class="form-control display_unit">
         <option value="">Select</option>
         <?php
         foreach($dropArray as $key=>$drop):
@@ -30,5 +29,16 @@ if($param=='parent_units'){
         <?php endforeach;?>
     </select>
     <?php
+}elseif($param=='customers') {
+    ?>
+    <select name="customer_id" required="required" class="form-control customer">
+        <option value="">Select</option>
+        <?php
+        foreach($dropArray as $key=>$drop):
+            ?>
+            <option value="<?= $key?>"><?= $drop?></option>
+        <?php endforeach;?>
+    </select>
+<?php
 }
 ?>

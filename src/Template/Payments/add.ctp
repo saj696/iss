@@ -39,7 +39,11 @@ use Cake\Core\Configure;
                         echo $this->Form->input('parent_level',['options' => $parantsLevels, 'label'=>'Customers Parents Level','class'=> 'form-control level', 'empty'=>__('Select'), 'templates'=>['select' => '<div id="container_{{name}}" class="col-sm-9 levelContainer"><select name="{{name}}"{{attrs}} class="form-control">{{content}}</select></div>']]);
                         echo $this->Form->input('parent_unit', ['options' => [],'label'=>'Customer Parent Unit', 'empty' => __('Select'),'class'=> 'form-control unit','templates' => ['select' => '<div id="container_{{name}}" class="col-sm-9 unitContainer"><select name="{{name}}"{{attrs}} class="form-control">{{content}}</select></div>']]);
                         echo $this->Form->input('customer_id', ['options' => [],'label'=>'Customer', 'empty' => __('Select'),'class'=> 'form-control customer', 'templates' => ['select' => '<div id="container_{{name}}" class="col-sm-9 customerContainer"><select name="{{name}}"{{attrs}} class="form-control">{{content}}</select></div>']]);
-                        echo $this->Form->input('due_invoice', ['options' => [],'label'=>'Due Invoice', 'empty' => __('Select'),'class'=> 'form-control dueInvoice', 'templates' => ['select' => '<div id="container_{{name}}" class="col-sm-9 dueInvoiceContainer"><select name="{{name}}"{{attrs}} class="form-control">{{content}}</select></div>']]);
+                    
+					   echo $this->Form->input('code', ['label'=>'Customer Code','type'=>'text','id'=>'customer_code','readonly'=>true]);
+                       echo $this->Form->input('address', ['label'=>'Customer Address','type'=>'text','id'=>'customer_address','readonly'=>true]);					
+					?>
+						<?php echo $this->Form->input('due_invoice', ['options' => [],'label'=>'Due Invoice', 'empty' => __('Select'),'class'=> 'form-control dueInvoice', 'templates' => ['select' => '<div id="container_{{name}}" class="col-sm-9 dueInvoiceContainer"><select name="{{name}}"{{attrs}} class="form-control">{{content}}</select></div>']]);
                         ?>
 
                     </div>
@@ -70,12 +74,14 @@ use Cake\Core\Configure;
                         ?>
                         <div class="paymentsGroups">
                             <?php
-                            echo $this->Form->input('reference_number');
-                            echo $this->Form->input('bank_branch');
+                            echo $this->Form->input('amount',['type'=>'text','class'=>'form-control amount', 'required' => 'required']);
+							echo $this->Form->input('collection_date', ['type' => 'text' ,'class' => 'form-control datepicker','required'=>'required' ]);
+							echo $this->Form->input('collection_receive_date', ['type' => 'text' ,'class' => 'form-control datepicker','required'=>'required' ]);
+							echo $this->Form->input('reference_number');
+							echo $this->Form->input('bank_name');
+                            echo $this->Form->input('branch_name');
                             echo $this->Form->input('description');
                             echo $this->Form->input('collection_serial_no');
-                            echo $this->Form->input('collection_date', ['type' => 'text' ,'class' => 'form-control datepicker','required'=>'required' ]);
-                            echo $this->Form->input('amount',['type'=>'text','class'=>'form-control amount', 'required' => 'required'])
                             ?>
                             <?= $this->Form->button(__('Submit'),['class'=>'btn blue pull-right submitCheck','style'=>'margin-top:20px']) ?>
                         </div>
@@ -98,6 +104,8 @@ use Cake\Core\Configure;
         $(document).on('change', '.level', function () {
             var obj = $(this);
             var level = obj.val();
+			$('.customer_address').empty();
+			$('.customer_code').empty();
             $.ajax({
                 type: 'POST',
                 url: '<?= $this->Url->build("/Payments/ajax/units")?>',
@@ -138,6 +146,8 @@ use Cake\Core\Configure;
         $(document).on('change', '.unit', function () {
             var obj = $(this);
             var unit = obj.val();
+			$('.customer_address').empty();
+			$('.customer_code').empty();
             $.ajax({
                 type: 'POST',
                 url: '<?= $this->Url->build("/Payments/ajax/customers")?>',
@@ -172,6 +182,21 @@ use Cake\Core\Configure;
         $(document).on('change', '.customer', function () {
             var obj = $(this);
             var customer = obj.val();
+		
+			$('.customer_address').empty();
+			$('.customer_code').empty();
+			 $.ajax({
+                type: 'POST',
+                url: '<?= $this->Url->build("/Payments/ajax/customer_code_address")?>',
+                data: {customer: customer},
+                dataType: 'json',
+                success: function (data, status) {
+			   
+			   $('#customer_address').val((data[0]['address']));
+			   $('#customer_code').val(data[0]['code']);
+			
+                }
+            });
             $.ajax({
                 type: 'POST',
                 url: '<?= $this->Url->build("/Payments/ajax/dueInvoice")?>',

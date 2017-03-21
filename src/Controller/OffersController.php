@@ -33,24 +33,9 @@ class OffersController extends AppController
      */
     public function index()
     {
-        App::import('Helper', 'FunctionHelper');
-        $FunctionHelper = new FunctionHelper(new View());
-
         $offers = $this->Offers->find('all', [
-            'conditions' => ['Offers.status' => 1]
+            'conditions' => ['Offers.status !=' => 99]
         ]);
-
-//        App::import('Helper', 'FunctionHelper');
-//        $FunctionHelper = new FunctionHelper(new View());
-
-//        $str = "300<=((item_unit_quantity['Sea Gold','Pack-50 ml',X])+(item_unit_quantity['Sea Gold','Pack-100 ml',X])+(item_unit_quantity['Sea Gold','Pack-400 ml',X]))".'$';
-//        $arr = $FunctionHelper->postfix_converter($str);
-//        $arr = $FunctionHelper->item_unit_quantity(1, 2, 3, 4, 5, 6);
-//        echo '<pre>';
-//        print_r($arr);
-//        echo '</pre>';
-//        exit;
-
 
         $this->set('offers', $this->paginate($offers));
         $this->set('_serialize', ['offers']);
@@ -207,15 +192,26 @@ class OffersController extends AppController
     {
         $user = $this->Auth->user();
         $time = time();
+        $this->loadModel('OfferItems');
         $offer = $this->Offers->get($id, [
             'contain' => []
         ]);
+
         if ($this->request->is(['patch', 'post', 'put'])) {
             $data = $this->request->data;
+
+            $data['program_period_start'] = strtotime($data['program_period_start']);
+            $data['program_period_end'] = strtotime($data['program_period_end']);
             $data['updated_by'] = $user['id'];
             $data['updated_date'] = $time;
+
             $offer = $this->Offers->patchEntity($offer, $data);
             if ($this->Offers->save($offer)) {
+
+                $offerItems = TableRegistry::get('offer_items');
+                $query = $offerItems->query();
+                $query->update()->set(['status' => $data['status']])->where(['offer_id' => $id])->execute();
+
                 $this->Flash->success('The offer has been saved.');
                 return $this->redirect(['action' => 'index']);
             } else {

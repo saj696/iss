@@ -141,12 +141,6 @@ class ReportExploreOffersController extends AppController
         endforeach;
         $exploreLevels[Configure::read('max_level_no') + 1] = 'Customer';
 
-        $configData = $this->SalesBudgetConfigurations->find('all', ['conditions' => ['status' => 1]])->first();
-        $configLevel = $configData['level_no'];
-        for ($i = $configLevel; $i <= 7; $i++) {
-            unset($exploreLevels[$i + 1]);
-        }
-
         $offers = $this->Offers->find('list', ['conditions'=>['status'=>1]]);
 
         $this->set(compact('exploreLevels', 'offers'));
@@ -312,8 +306,13 @@ class ReportExploreOffersController extends AppController
         $end_date = strtotime($data['end_date']);
         $offer_id = $data['offer_id'];
         $unit_id = $data['unit_id'];
+        $explore_level = $data['explore_level'];
 
-        $customers = TableRegistry::get('customers')->find('all', ['conditions' => ['administrative_unit_id' => $unit_id], 'fields' => ['id', 'name']])->hydrate(false)->toArray();
+        if ($explore_level == Configure::read('max_level_no') + 1) {
+            $customers = TableRegistry::get('customers')->find('all', ['conditions' => ['id' => $unit_id], 'fields' => ['id', 'name']])->hydrate(false)->toArray();
+        }else{
+            $customers = TableRegistry::get('customers')->find('all', ['conditions' => ['administrative_unit_id' => $unit_id], 'fields' => ['id', 'name']])->hydrate(false)->toArray();
+        }
 
         $this->loadModel('Offers');
         $offer = $this->Offers->get($offer_id, ['contain'=>['OfferItems']]);
