@@ -125,13 +125,13 @@ $webroot =  $this->request->webroot;
                             <td><?=$product['unit_price']?></td>
                             <td><?=($product['product_quantity']+$product['bonus_quantity'])*$product['unit_price']?></td>
                             <td><?=$product['bonus_quantity']*$product['unit_price']?></td>
-                            <td>000</td>
-                            <td><?=($product['product_quantity']+$product['bonus_quantity'])*$product['unit_price']-$product['bonus_quantity']*$product['unit_price']?></td>
+                            <td><?= $product['instant_discount']?></td>
+                            <td><?=($product['product_quantity']+$product['bonus_quantity'])*$product['unit_price']-$product['bonus_quantity']*$product['unit_price']-$product['instant_discount']?></td>
                         </tr>
                     <?php
                         $sum_total_price += ($product['product_quantity']+$product['bonus_quantity'])*$product['unit_price'];
-                        $sum_less_discount += $product['bonus_quantity']*$product['unit_price'];
-                        $sum_net_value += ($product['product_quantity']+$product['bonus_quantity'])*$product['unit_price']-$product['bonus_quantity']*$product['unit_price'];
+                        $sum_less_discount += $product['bonus_quantity']*$product['unit_price']+$product['instant_discount'];
+                        $sum_net_value += ($product['product_quantity']+$product['bonus_quantity'])*$product['unit_price']-$product['bonus_quantity']*$product['unit_price']-$product['instant_discount'];
                     endforeach;
                     ?>
 
@@ -146,7 +146,7 @@ $webroot =  $this->request->webroot;
             </div>
             <div>
                 <table class="table" style="border: 0;">
-                    <td>Total Payable Amount Taka: <?=$this->System->convert_number_to_words($sum_net_value)?></td>
+                    <td>Total Payable Amount Taka: <?=$this->System->convert_number_to_words($sum_net_value).' Only'?></td>
                     <td style="text-align: right">Net Payable Amount: <?=$sum_net_value?></td>
                 </table>
             </div>

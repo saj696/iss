@@ -1382,49 +1382,117 @@ class CommonComponent extends Component
         return $arr;
     }
 
-    public function get_unit_sales_budget($space_level, $space_global_id, $group_by_level, $start_date, $end_date){
+    public function get_unit_sales_budget($space_level, $space_global_id, $group_by_level, $start_date, $end_date, $product_scope, $item_id=null){
         $limitStart = pow(2, (Configure::read('max_level_no') - $space_level - 1) * 5);
         $limitEnd = pow(2, (Configure::read('max_level_no') - $space_level) * 5);
         $conn = ConnectionManager::get('default');
 
-        if($space_level < Configure::read('max_level_no') && $group_by_level <= Configure::read('max_level_no')){
-            $expression = (pow(2, (1 + 5 * $group_by_level)) - 1) * pow(2, (5 * (Configure::read('max_level_no') - $group_by_level)));
+        if($product_scope == 1 && $item_id>0){
+            if($space_level < Configure::read('max_level_no') && $group_by_level <= Configure::read('max_level_no')){
+                $expression = (pow(2, (1 + 5 * $group_by_level)) - 1) * pow(2, (5 * (Configure::read('max_level_no') - $group_by_level)));
 
-            $query = $conn->execute('
-            SELECT administrative_unit_global_id  & ' . $expression . ' as global_id, SUM(sales_amount) as total_budget, sales_measure_unit from sales_budgets
+                $query = $conn->execute('
+            SELECT administrative_unit_global_id  & ' . $expression . ' as global_id, SUM(budget_amount) as total_budget from sales_budgets
+            WHERE budget_period_start >= ' . $start_date . ' AND budget_period_end >= ' . $end_date . ' AND item_id = ' . $item_id . '
+            AND administrative_unit_global_id-' . $space_global_id . ' >= ' . $limitStart . ' AND administrative_unit_global_id-' . $space_global_id . ' < ' . $limitEnd . '
+            GROUP BY global_id');
+
+            }elseif($space_level < Configure::read('max_level_no') && $group_by_level <= Configure::read('max_level_no')+1){
+                $query = $conn->execute('
+            SELECT administrative_unit_id as global_id, SUM(budget_amount) as total_budget from sales_budgets
+            WHERE budget_period_start >= ' . $start_date . ' AND budget_period_end >= ' . $end_date . ' AND item_id = ' . $item_id .'
+            AND administrative_unit_global_id-' . $space_global_id . ' >= ' . $limitStart . ' AND administrative_unit_global_id-' . $space_global_id . ' < ' . $limitEnd . '
+            GROUP BY administrative_unit_id');
+
+            }elseif($space_level == Configure::read('max_level_no') && $group_by_level == $space_level){
+                $expression = (pow(2, (1 + 5 * $group_by_level)) - 1) * pow(2, (5 * (Configure::read('max_level_no') - $group_by_level)));
+
+                $query = $conn->execute('
+            SELECT administrative_unit_global_id  & ' . $expression . ' as global_id, SUM(budget_amount) as total_budget, sales_measure_unit from sales_budgets
+            WHERE budget_period_start >= ' . $start_date . ' AND budget_period_end >= ' . $end_date . '  AND item_id = ' . $item_id . '
+            AND administrative_unit_global_id = ' . $space_global_id . '
+            GROUP BY global_id');
+
+            }elseif($space_level == Configure::read('max_level_no') && $group_by_level > $space_level){
+                $query = $conn->execute('
+            SELECT administrative_unit_id as global_id, SUM(budget_amount) as total_budget from sales_budgets
+            WHERE budget_period_start >= ' . $start_date . ' AND budget_period_end >= ' . $end_date . '  AND item_id = ' . $item_id . '
+            AND administrative_unit_global_id = ' . $space_global_id . '
+            GROUP BY administrative_unit_id');
+            }
+        }elseif($product_scope == 3 && $item_id>0){
+            if($space_level < Configure::read('max_level_no') && $group_by_level <= Configure::read('max_level_no')){
+                $expression = (pow(2, (1 + 5 * $group_by_level)) - 1) * pow(2, (5 * (Configure::read('max_level_no') - $group_by_level)));
+
+                $query = $conn->execute('
+            SELECT administrative_unit_global_id  & ' . $expression . ' as global_id, SUM(budget_amount) as total_budget from sales_budgets
+            WHERE budget_period_start >= ' . $start_date . ' AND budget_period_end >= ' . $end_date . '  AND item_unit_id = ' . $item_id . '
+            AND administrative_unit_global_id-' . $space_global_id . ' >= ' . $limitStart . ' AND administrative_unit_global_id-' . $space_global_id . ' < ' . $limitEnd . '
+            GROUP BY global_id');
+
+            }elseif($space_level < Configure::read('max_level_no') && $group_by_level <= Configure::read('max_level_no')+1){
+                $query = $conn->execute('
+            SELECT administrative_unit_id as global_id, SUM(budget_amount) as total_budget from sales_budgets
+            WHERE budget_period_start >= ' . $start_date . ' AND budget_period_end >= ' . $end_date . '  AND item_unit_id = ' . $item_id . '
+            AND administrative_unit_global_id-' . $space_global_id . ' >= ' . $limitStart . ' AND administrative_unit_global_id-' . $space_global_id . ' < ' . $limitEnd . '
+            GROUP BY administrative_unit_id');
+
+            }elseif($space_level == Configure::read('max_level_no') && $group_by_level == $space_level){
+                $expression = (pow(2, (1 + 5 * $group_by_level)) - 1) * pow(2, (5 * (Configure::read('max_level_no') - $group_by_level)));
+
+                $query = $conn->execute('
+            SELECT administrative_unit_global_id  & ' . $expression . ' as global_id, SUM(budget_amount) as total_budget, sales_measure_unit from sales_budgets
+            WHERE budget_period_start >= ' . $start_date . ' AND budget_period_end >= ' . $end_date . '  AND item_unit_id = ' . $item_id . '
+            AND administrative_unit_global_id = ' . $space_global_id . '
+            GROUP BY global_id');
+
+            }elseif($space_level == Configure::read('max_level_no') && $group_by_level > $space_level){
+                $query = $conn->execute('
+            SELECT administrative_unit_id as global_id, SUM(budget_amount) as total_budget from sales_budgets
+            WHERE budget_period_start >= ' . $start_date . ' AND budget_period_end >= ' . $end_date . '  AND item_unit_id = ' . $item_id . '
+            AND administrative_unit_global_id = ' . $space_global_id . '
+            GROUP BY administrative_unit_id');
+            }
+        }else{
+            if($space_level < Configure::read('max_level_no') && $group_by_level <= Configure::read('max_level_no')){
+                $expression = (pow(2, (1 + 5 * $group_by_level)) - 1) * pow(2, (5 * (Configure::read('max_level_no') - $group_by_level)));
+
+                $query = $conn->execute('
+            SELECT administrative_unit_global_id  & ' . $expression . ' as global_id, SUM(budget_amount) as total_budget from sales_budgets
             WHERE budget_period_start >= ' . $start_date . ' AND budget_period_end >= ' . $end_date . '
             AND administrative_unit_global_id-' . $space_global_id . ' >= ' . $limitStart . ' AND administrative_unit_global_id-' . $space_global_id . ' < ' . $limitEnd . '
             GROUP BY global_id');
 
-        }elseif($space_level < Configure::read('max_level_no') && $group_by_level <= Configure::read('max_level_no')+1){
-//            $query = $conn->execute('
-//            SELECT customer_id as global_id, SUM(due) as total_due from invoices
-//            WHERE invoice_date <= ' . $date . '
-//            AND customer_unit_global_id-' . $space_global_id . ' >= ' . $limitStart . ' AND customer_unit_global_id-' . $space_global_id . ' < ' . $limitEnd . '
-//            GROUP BY customer_id');
+            }elseif($space_level < Configure::read('max_level_no') && $group_by_level <= Configure::read('max_level_no')+1){
+                $query = $conn->execute('
+            SELECT administrative_unit_id as global_id, SUM(budget_amount) as total_budget from sales_budgets
+            WHERE budget_period_start >= ' . $start_date . ' AND budget_period_end >= ' . $end_date . '
+            AND administrative_unit_global_id-' . $space_global_id . ' >= ' . $limitStart . ' AND administrative_unit_global_id-' . $space_global_id . ' < ' . $limitEnd . '
+            GROUP BY administrative_unit_id');
 
-        }elseif($space_level == Configure::read('max_level_no') && $group_by_level == $space_level){
-            $expression = (pow(2, (1 + 5 * $group_by_level)) - 1) * pow(2, (5 * (Configure::read('max_level_no') - $group_by_level)));
+            }elseif($space_level == Configure::read('max_level_no') && $group_by_level == $space_level){
+                $expression = (pow(2, (1 + 5 * $group_by_level)) - 1) * pow(2, (5 * (Configure::read('max_level_no') - $group_by_level)));
 
-            $query = $conn->execute('
-            SELECT administrative_unit_global_id  & ' . $expression . ' as global_id, SUM(sales_amount) as total_budget, sales_measure_unit from sales_budgets
+                $query = $conn->execute('
+            SELECT administrative_unit_global_id  & ' . $expression . ' as global_id, SUM(budget_amount) as total_budget, sales_measure_unit from sales_budgets
             WHERE budget_period_start >= ' . $start_date . ' AND budget_period_end >= ' . $end_date . '
             AND administrative_unit_global_id = ' . $space_global_id . '
             GROUP BY global_id');
 
-        }elseif($space_level == Configure::read('max_level_no') && $group_by_level > $space_level){
-//            $query = $conn->execute('
-//            SELECT customer_id as global_id, SUM(due) as total_due from invoices
-//            WHERE invoice_date <= ' . $date . '
-//            AND customer_unit_global_id = ' . $space_global_id . '
-//            GROUP BY customer_id');
+            }elseif($space_level == Configure::read('max_level_no') && $group_by_level > $space_level){
+                $query = $conn->execute('
+            SELECT administrative_unit_id as global_id, SUM(budget_amount) as total_budget from sales_budgets
+            WHERE budget_period_start >= ' . $start_date . ' AND budget_period_end >= ' . $end_date . '
+            AND administrative_unit_global_id = ' . $space_global_id . '
+            GROUP BY administrative_unit_id');
+            }
         }
+
 
         $results = $query->fetchAll('assoc');
         $arr = [];
         foreach($results as $result){
             $arr[$result['global_id']]['budget'] = $result['total_budget'];
-            $arr[$result['global_id']]['sales_measure_unit'] = $result['sales_measure_unit'];
         }
         return $arr;
     }

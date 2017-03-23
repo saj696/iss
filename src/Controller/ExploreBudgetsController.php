@@ -2,6 +2,8 @@
 namespace App\Controller;
 
 use App\Controller\AppController;
+use App\View\Helper\SystemHelper;
+use Cake\Core\App;
 use Cake\Core\Configure;
 use Cake\Datasource\ConnectionManager;
 use Cake\Http\Client\Request;
@@ -38,6 +40,23 @@ class ExploreBudgetsController extends AppController
         $this->loadModel('AdministrativeLevels');
         $this->loadModel('AdministrativeUnits');
         $this->loadModel('SalesBudgetConfigurations');
+        $this->loadModel('ItemUnits');
+        $this->loadModel('SalesBudgetConfigurations');
+
+        $salesBudgetConfigurations = $this->SalesBudgetConfigurations->find('all', ['conditions' => ['status' => 1]])->first();
+
+        $this->loadModel('Items');
+        App::import('Helper', 'SystemHelper');
+        $SystemHelper = new SystemHelper(new View());
+
+        $items = [];
+        if($salesBudgetConfigurations['product_scope']==1){
+            $items = $SystemHelper->get_item_array();
+        }elseif($salesBudgetConfigurations['product_scope']==2){
+            $items = [];
+        }elseif($salesBudgetConfigurations['product_scope']==3){
+            $items = $SystemHelper->get_item_unit_array();
+        }
 
         $administrativeLevelsData = $this->AdministrativeLevels->find('all', ['conditions' => ['status' => 1, 'level_no >='=>$user_level]]);
         $exploreLevels = [];
@@ -51,7 +70,7 @@ class ExploreBudgetsController extends AppController
             unset($exploreLevels[$i + 1]);
         }
 
-        $this->set(compact('exploreLevels', 'reportTypes'));
+        $this->set(compact('exploreLevels', 'reportTypes', 'items', 'salesBudgetConfigurations'));
         $this->set('_serialize', ['exploreLevels']);
     }
 
@@ -66,8 +85,13 @@ class ExploreBudgetsController extends AppController
             $space_level = $data['explore_level'];
             $space_global_id = $data['explore_unit'];
             $group_by_level = $data['display_unit'];
+            $item_id = $data['item_id'];
 
-            $mainArr = $this->Common->get_unit_sales_budget($space_level, $space_global_id, $group_by_level, $start_date, $end_date);
+            $this->loadModel('SalesBudgetConfigurations');
+            $salesBudgetConfigurations = $this->SalesBudgetConfigurations->find('all', ['conditions' => ['status' => 1]])->first();
+            $product_scope = $salesBudgetConfigurations['product_scope'];
+
+            $mainArr = $this->Common->get_unit_sales_budget($space_level, $space_global_id, $group_by_level, $start_date, $end_date, $product_scope, $item_id);
 
             if($group_by_level == Configure::read('max_level_no')+1){
                 $customers = TableRegistry::get('customers')->find();

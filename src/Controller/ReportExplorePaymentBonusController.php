@@ -140,8 +140,9 @@ class ReportExplorePaymentBonusController extends AppController
         $invoicePayments->where(['invoice_payments.customer_id IN'=>$customerArray]);
         $invoicePayments->where(['payment_collection_date >='=>$start_date]);
         $invoicePayments->where(['payment_collection_date <='=>$end_date]);
-        $invoicePayments->where(['invoices.invoice_type'=>array_flip(Configure::read('invoice_type'))['Credit']]);
+        $invoicePayments->where(['Invoices.invoice_type'=>array_flip(Configure::read('invoice_type'))['Credit']]);
 
+        $returnArray = [];
         if($invoicePayments->toArray()){
             $paymentsArray = $invoicePayments->toArray();
 
@@ -160,7 +161,6 @@ class ReportExplorePaymentBonusController extends AppController
                 }
             }
 
-            $returnArray = [];
             foreach($finalArray as $customer_id=>$singleArray){
                 $returnArray[$customer_id] = 0;
                 foreach($singleArray as $key=>$specific){

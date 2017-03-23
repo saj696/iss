@@ -35,9 +35,9 @@ use Cake\Core\Configure;
                     <div class="col-md-6 col-md-offset-3">
                         <?php
                         echo $this->Form->input('level_no', ['options'=>$levelArr, 'empty'=>'Select']);
-                        echo $this->Form->input('product_scope', ['options'=>[1=>'Specific', 2=>'All'], 'empty'=>'Select']);
+                        echo $this->Form->input('product_scope', ['options'=>[1=>'Specific Item', 2=>'All', 3=>'Specific Item Unit'], 'empty'=>'Select']);
                         echo $this->Form->input('sales_measure', ['options'=>[1=>'Quantity', 2=>'Value'], 'empty'=>'Select', 'class'=>'sales_measure form-control']);
-                        echo $this->Form->input('sales_measure_unit', ['options'=>Configure::read('pack_size_units'), 'empty'=>'Select', 'class'=>'form-control sales_measure_unit', 'templates'=>['inputContainer' => '<div class="hidden sales_measure_unit_div form-group input {{required}}">{{content}}</div>']]);
+                        //echo $this->Form->input('sales_measure_unit', ['options'=>Configure::read('pack_size_units'), 'empty'=>'Select', 'class'=>'form-control sales_measure_unit', 'templates'=>['inputContainer' => '<div class="hidden sales_measure_unit_div form-group input {{required}}">{{content}}</div>']]);
                         ?>
                         <?= $this->Form->button(__('Submit'), ['class' => 'btn blue pull-right', 'style' => 'margin-top:20px']) ?>
                     </div>
@@ -50,14 +50,14 @@ use Cake\Core\Configure;
 
 <script>
     $(document).ready(function(){
-        $(document).on('change', '.sales_measure', function(){
-            if(($(this).val()==1)){
-                $('.sales_measure_unit_div').removeClass('hidden');
-                $('.sales_measure_unit').val('');
-            }else{
-                $('.sales_measure_unit_div').addClass('hidden');
-            }
-        });
+//        $(document).on('change', '.sales_measure', function(){
+//            if(($(this).val()==1)){
+//                $('.sales_measure_unit_div').removeClass('hidden');
+//                $('.sales_measure_unit').val('');
+//            }else{
+//                $('.sales_measure_unit_div').addClass('hidden');
+//            }
+//        });
     })
 </script>
 

@@ -24,6 +24,7 @@ $status = \Cake\Core\Configure::read('status_options');
                     <?= $this->Html->link(__('New Sales Budget Configuration'), ['action' => 'add'], ['class' => 'btn btn-sm btn-primary']); ?>
                 </div>
             </div>
+
             <div class="portlet-body">
                 <div class="table-scrollable">
                     <table class="table table-bordered table-hover">
@@ -33,7 +34,6 @@ $status = \Cake\Core\Configure::read('status_options');
                             <th><?= __('Level') ?></th>
                             <th><?= __('Sales Measure') ?></th>
                             <th><?= __('Product Scope') ?></th>
-                            <th><?= __('Sales Measure Unit') ?></th>
                             <th><?= __('Actions') ?></th>
                         </tr>
                         </thead>
@@ -43,8 +43,17 @@ $status = \Cake\Core\Configure::read('status_options');
                                 <td><?= $this->Number->format($key + 1) ?></td>
                                 <td><?= $levelArr[$salesBudgetConfiguration->level_no] ?></td>
                                 <td><?= $salesBudgetConfiguration->sales_measure==1?'Quantity':'Value' ?></td>
-                                <td><?= $salesBudgetConfiguration->product_scope==1?'Specific':'All' ?></td>
-                                <td><?= Cake\Core\Configure::read('pack_size_units')[$salesBudgetConfiguration->sales_measure_unit] ?></td>
+                                <td>
+                                    <?php
+                                    if($salesBudgetConfiguration->product_scope==1){
+                                        echo 'Specific';
+                                    }elseif($salesBudgetConfiguration->product_scope==2){
+                                        echo 'All';
+                                    }elseif($salesBudgetConfiguration->product_scope==3){
+                                        echo 'Specific Unit';
+                                    }
+                                    ?>
+                                </td>
                                 <td class="actions">
                                     <?php
                                     echo $this->Html->link(__('View'), ['action' => 'view', $salesBudgetConfiguration->id], ['class' => 'btn btn-sm btn-info']);

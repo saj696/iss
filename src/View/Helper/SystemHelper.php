@@ -366,4 +366,19 @@ class SystemHelper extends Helper
             }
         }
     }
+
+    public function get_item_array($warehouse_id = null)
+    {
+        $user = $this->request->session()->read('Auth.User');
+        $item_unit_table = TableRegistry::get('items');
+        $result = $item_unit_table->find('all')->where([
+            'Items.status' => 1
+        ])->hydrate(false);
+
+        $dropArray = [];
+        foreach ($result as $key => $value):
+            $dropArray[$value['id']] = SystemHelper::getItemAlias($value['id'], $warehouse_id);
+        endforeach;
+        return $dropArray;
+    }
 }

@@ -144,9 +144,39 @@ $webroot =  $this->request->webroot;
                             <td><?= $detail['cumulative_credit_collection']+$detail['cumulative_cash_collection']?></td>
                             <td><?= ($detail['cumulative_credit_collection']+$detail['cumulative_cash_collection'])>0?$detail['cumulative_collection_target']/($detail['cumulative_credit_collection']+$detail['cumulative_cash_collection']):0?></td>
 
-                            <td></td>
-                            <td></td>
-                            <td></td>
+                            <td>
+                                <?php
+                                $count = 0;
+                                if(isset($detail['day_wise_dues'][4])){
+                                    foreach($detail['day_wise_dues'][4] as $dueInfo){
+                                        $count += $dueInfo['DUE'];
+                                    }
+                                }
+                                echo $count;
+                                ?>
+                            </td>
+                            <td>
+                                <?php
+                                $count = 0;
+                                if(isset($detail['day_wise_dues'][5])){
+                                    foreach($detail['day_wise_dues'][5] as $dueInfo){
+                                        $count += $dueInfo['DUE'];
+                                    }
+                                }
+                                echo $count;
+                                ?>
+                            </td>
+                            <td>
+                                <?php
+                                $count = 0;
+                                if(isset($detail['day_wise_dues'][8])){
+                                    foreach($detail['day_wise_dues'][8] as $dueInfo){
+                                        $count += $dueInfo['DUE'];
+                                    }
+                                }
+                                echo $count;
+                                ?>
+                            </td>
                             <td></td>
                             <td></td>
                         </tr>

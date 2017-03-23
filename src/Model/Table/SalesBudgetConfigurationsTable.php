@@ -55,11 +55,6 @@ class SalesBudgetConfigurationsTable extends Table
             ->add('product_scope', 'valid', ['rule' => 'numeric'])
             ->requirePresence('product_scope', 'create')
             ->notEmpty('product_scope');
-            
-        $validator
-            ->add('sales_measure_unit', 'valid', ['rule' => 'numeric'])
-            ->requirePresence('sales_measure_unit', 'create')
-            ->notEmpty('sales_measure_unit');
 
         return $validator;
     }

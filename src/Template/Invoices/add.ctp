@@ -240,13 +240,24 @@ use Cake\Core\Configure;
                     url: '<?= $this->Url->build("/Invoices/getCustomerDetail")?>',
                     data: {customer_id: customer_id},
                     success: function (data, status) {
-                        var data = JSON.parse(data);
-                        $('.total_due').val(data.total_due);
-                        $('.credit_limit').val(data.credit_limit);
-                        $('.available_credit').val(data.available_credit);
-                        $('.cash_invoice_days').val(data.cash_invoice_days);
-                        $('.credit_invoice_days').val(data.credit_invoice_days);
-                        $('.address').html(data.address);
+                        if(data == 0){
+                            toastr.warning('Customer is black listed!');
+                            $('.total_due').val(0);
+                            $('.credit_limit').val(0);
+                            $('.available_credit').val(0);
+                            $('.cash_invoice_days').val(0);
+                            $('.credit_invoice_days').val(0);
+                            $('.address').html('');
+                            obj.val('');
+                        }else{
+                            var data = JSON.parse(data);
+                            $('.total_due').val(data.total_due);
+                            $('.credit_limit').val(data.credit_limit);
+                            $('.available_credit').val(data.available_credit);
+                            $('.cash_invoice_days').val(data.cash_invoice_days);
+                            $('.credit_invoice_days').val(data.credit_invoice_days);
+                            $('.address').html(data.address);
+                        }
                     }
                 });
             }else{
@@ -337,8 +348,6 @@ use Cake\Core\Configure;
                                     obj.closest('.itemTr').find('.item_cash_discount').val(res.value);
                                     obj.closest('.itemTr').find('.special_offer_item_bonus').val(0);
                                 }
-
-                                obj.closest('.itemTr').find('.item_bonus').val(res.bonus_quantity);
                                 obj.closest('.itemTr').find('.offer_id').val(res.offer_id);
 
                                 // other calculations
@@ -350,6 +359,7 @@ use Cake\Core\Configure;
                                 calculateNetTotal(item_quantity, obj);
                                 calculateTotalAmount();
                             }
+                            obj.closest('.itemTr').find('.item_bonus').val(res.bonus_quantity);
                         }else{
                             obj.closest('.itemTr').find('.item_cash_discount').val(0);
                             obj.closest('.itemTr').find('.item_bonus').val(0);

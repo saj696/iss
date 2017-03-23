@@ -38,20 +38,17 @@ $webroot =  $this->request->webroot;
                             <td><?= __('Sl#') ?></td>
                             <td><?= __('Location') ?></td>
                             <td><?= __('Total Budget') ?></td>
-                            <td><?= __('Measure Unit')?></td>
                         </tr>
                         </thead>
                         <tbody>
                         <?php
-                        if(sizeof($mainArr)>0):?>
-                            <?php
+                        if(sizeof($mainArr)>0):
                             $i = 0;
                             foreach($mainArr as $key=>$detail):?>
                                 <tr>
                                     <td><?= $i+1;?></td>
                                     <td><?= $nameArray[$key];?></td>
                                     <td><?= isset($detail['budget'])?$detail['budget']:0;?></td>
-                                    <td><?= $detail['sales_measure_unit']>0?Configure::read('pack_size_units')[$detail['sales_measure_unit']]:''?></td>
                                 </tr>
                             <?php
                                 $i++;

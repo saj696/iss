@@ -48,11 +48,11 @@ class ReportSalesCollectionsController extends AppController
             $exploreLevels[$administrativeLevelsDatum['level_no']] = $administrativeLevelsDatum['level_name'];
         endforeach;
 
-        $configData = $this->SalesBudgetConfigurations->find('all', ['conditions' => ['status' => 1]])->first();
-        $configLevel = $configData['level_no'];
-        for ($i = $configLevel; $i <= 7; $i++) {
-            unset($exploreLevels[$i + 1]);
-        }
+//        $configData = $this->SalesBudgetConfigurations->find('all', ['conditions' => ['status' => 1]])->first();
+//        $configLevel = $configData['level_no'];
+//        for ($i = $configLevel; $i <= 7; $i++) {
+//            unset($exploreLevels[$i + 1]);
+//        }
 
         $this->set(compact('exploreLevels', 'reportTypes'));
         $this->set('_serialize', ['exploreLevels']);

@@ -144,11 +144,12 @@ class ReportOlderPaymentBonusController extends AppController
             $invoicePayments->contain(['Invoices', 'Payments']);
             $invoicePayments->where(['payment_collection_date <='=>$payment_date]);
             $invoicePayments->where(['payment_collection_date >'=>$upto_date]);
-            $invoicePayments->where(['invoices.invoice_date <='=>$upto_date]);
+            $invoicePayments->where(['Invoices.invoice_date <='=>$upto_date]);
             $invoicePayments->where(['invoice_payments.customer_id'=>$customer]);
             $invoicePayments->group('invoice_payments.customer_id');
             $invoicePayments->select(['total_payment'=>$invoicePayments->func()->sum('invoice_wise_payment_amount')]);
             $invoicePayments->first();
+
             if($invoicePayments->toArray()){
                 $payment_total = $invoicePayments->toArray()[0]['total_payment'];
                 if($dues_upto_date == $payment_total){
@@ -163,8 +164,6 @@ class ReportOlderPaymentBonusController extends AppController
                 $returnArray[$customer]['bonus'] = $bonus;
                 $returnArray[$customer]['total_payment'] = 0;
             }
-
-
         }
 
         $this->viewBuilder()->layout('ajax');

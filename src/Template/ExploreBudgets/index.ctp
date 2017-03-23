@@ -30,6 +30,9 @@ $status = Configure::read('status_options');
                         <?php
                         echo $this->Form->input('start_date', ['type'=>'text', 'class'=>'datepicker form-control', 'required'=>'required']);
                         echo $this->Form->input('end_date', ['type'=>'text', 'class'=>'datepicker form-control', 'required'=>'required']);
+                        if($salesBudgetConfigurations['product_scope'] != 2){
+                            echo $this->Form->input('item_id', ['label'=>'Product', 'empty'=>'Select', 'options'=>$items, 'class'=>'datepicker form-control']);
+                        }
                         echo $this->Form->input('explore_level', ['label'=>'Explore Level', 'options'=>$exploreLevels, 'class'=>'form-control explore_level', 'empty'=>'Select', 'required'=>'required']);
                         echo $this->Form->input('explore_unit', ['options'=>[], 'class'=>'explore_unit form-control', 'empty'=>'Select', 'required'=>'required']);
                         echo $this->Form->input('display_unit', ['options'=>[], 'empty'=>'Select', 'required'=>'required', 'class'=>'form-control display_unit']);

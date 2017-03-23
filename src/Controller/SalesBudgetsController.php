@@ -65,6 +65,7 @@ class SalesBudgetsController extends AppController
         $user = $this->Auth->user();
         $time = time();
         $this->loadModel('AdministrativeUnits');
+        $this->loadModel('ItemUnits');
         $this->loadModel('SalesBudgetConfigurations');
         $salesBudgetConfigurations = $this->SalesBudgetConfigurations->find('all', ['conditions' => ['status' => 1]])->first();
         $parents = $this->AdministrativeUnits->find('list', ['conditions'=>['level_no'=>$salesBudgetConfigurations['level_no']-1]])->toArray();
@@ -72,21 +73,25 @@ class SalesBudgetsController extends AppController
         $this->loadModel('Items');
         App::import('Helper', 'SystemHelper');
         $SystemHelper = new SystemHelper(new View());
-        $items = $SystemHelper->get_item_unit_array();
-        if($salesBudgetConfigurations['product_scope']==2){
+        $items = [];
+        if($salesBudgetConfigurations['product_scope']==1){
+            $items = $SystemHelper->get_item_array();
+        }elseif($salesBudgetConfigurations['product_scope']==2){
             $items = [];
+        }elseif($salesBudgetConfigurations['product_scope']==3){
+            $items = $SystemHelper->get_item_unit_array();
         }
+
         $salesBudget = $this->SalesBudgets->newEntity();
+
         if ($this->request->is('post')) {
             try {
                 $saveStatus = 0;
                 $conn = ConnectionManager::get('default');
-                $conn->transactional(function () use ($salesBudgetConfigurations, $user, $time, &$saveStatus)
-                {
+                $conn->transactional(function () use ($salesBudgetConfigurations, $salesBudget, $user, $time, &$saveStatus) {
                     $data = $this->request->data;
-                    if(sizeof($data['details'])>0) {
-                        foreach($data['details'] as $detail)
-                        {
+                    if (sizeof($data['details']) > 0) {
+                        foreach ($data['details'] as $detail) {
                             $salesBudget = $this->SalesBudgets->newEntity();
                             $insert['sales_budget_configuration_id'] = $salesBudgetConfigurations['id'];
                             $insert['budget_period_start'] = strtotime($data['budget_period_start']);
@@ -94,7 +99,7 @@ class SalesBudgetsController extends AppController
                             $insert['level_no'] = $salesBudgetConfigurations['level_no'];
                             $insert['administrative_unit_id'] = $detail['administrative_unit_id'];
 
-                            if($salesBudgetConfigurations['level_no']==Configure::read('max_level_no')+1):
+                            if ($salesBudgetConfigurations['level_no'] == Configure::read('max_level_no') + 1):
                                 $administrativeUnitInfo = $this->AdministrativeUnits->get($detail['parent_id']);
                                 $insert['administrative_unit_global_id'] = $administrativeUnitInfo['global_id'];
                             else:
@@ -103,20 +108,35 @@ class SalesBudgetsController extends AppController
                             endif;
 
                             $insert['product_scope'] = $salesBudgetConfigurations['product_scope'];
-                            $insert['item_id'] = $detail['item_id'];
-                            $insert['sales_measure_unit'] = $salesBudgetConfigurations['sales_measure_unit'];
-                            $insert['sales_amount'] = $detail['sales_amount'];
+
+                            if ($salesBudgetConfigurations['product_scope'] == 1) {
+                                $insert['item_id'] = $detail['item_id'];
+                            } elseif ($salesBudgetConfigurations['product_scope'] == 3) {
+                                $insert['item_unit_id'] = $detail['item_id'];
+                                $itemUnitInfo = $this->ItemUnits->get($detail['item_id']);
+                                $insert['item_id'] = $itemUnitInfo['item_id'];
+                                $insert['manufacture_unit_id'] = $itemUnitInfo['manufacture_unit_id'];
+                            }
+
+                            $insert['budget_amount'] = $detail['budget_amount'];
                             $insert['created_by'] = $user['id'];
                             $insert['created_date'] = $time;
 
-                            $salesBudget = $this->SalesBudgets->patchEntity($salesBudget, $insert);
-                            $this->SalesBudgets->save($salesBudget);
+                            if($salesBudgetConfigurations){
+                                $salesBudget = $this->SalesBudgets->patchEntity($salesBudget, $insert);
+                                $this->SalesBudgets->save($salesBudget);
+                            }else{
+                                $this->Flash->error('Sales Budget Configuration not done; Please try again!');
+                                return $this->redirect(['action' => 'add']);
+                            }
+
                         }
-                    }else{
+                    } else {
                         $this->Flash->error('Sales Budget not done; no entry. Please try again!');
                         return $this->redirect(['action' => 'add']);
                     }
                 });
+
                 $this->Flash->success('Sales Budget made. Thank you!');
                 return $this->redirect(['action' => 'add']);
             } catch (\Exception $e) {

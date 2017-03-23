@@ -41,12 +41,6 @@ class ReportDailySalesController extends AppController
             $exploreLevels[$administrativeLevelsDatum['level_no']] = $administrativeLevelsDatum['level_name'];
         endforeach;
 
-        $configData = $this->SalesBudgetConfigurations->find('all', ['conditions' => ['status' => 1]])->first();
-        $configLevel = $configData['level_no'];
-        for ($i = $configLevel; $i <= 7; $i++) {
-            unset($exploreLevels[$i + 1]);
-        }
-
         $this->set(compact('exploreLevels', 'reportTypes'));
         $this->set('_serialize', ['exploreLevels']);
     }
@@ -93,6 +87,7 @@ class ReportDailySalesController extends AppController
             $cumulative_credit_collection = $FunctionHelper->credit_collection($unit_global_id, $cumulative_start_time, $this_day, 0, $group_by_level);
             $cumulative_cash_collection = $FunctionHelper->cash_collection($unit_global_id, $cumulative_start_time, $this_day, 0, $group_by_level);
             $cumulative_adjustment = $this->Common->get_unit_adjustment_amount($unit_level, $unit_global_id, $start_date_of_this_month, $end_date_of_this_month, $group_by_level);
+            $day_wise_dues = $FunctionHelper->day_wise_dues($unit_level, $unit_global_id, $group_by_level);
 
             $this_day_credit_sales_array_keys = array_keys($this_day_credit_sales);
             $this_day_cash_sales_array_keys = array_keys($this_day_cash_sales);
@@ -115,6 +110,7 @@ class ReportDailySalesController extends AppController
             $cumulative_credit_collection_array_keys = array_keys($cumulative_credit_collection);
             $cumulative_cash_collection_array_keys = array_keys($cumulative_cash_collection);
             $cumulative_adjustment_array_keys = array_keys($cumulative_adjustment);
+            $day_wise_dues_array_keys = array_keys($day_wise_dues);
 
             $merged_keys = array_unique(array_merge(
                 $this_day_credit_sales_array_keys,
@@ -137,7 +133,8 @@ class ReportDailySalesController extends AppController
                 $cumulative_collection_target_array_keys,
                 $cumulative_credit_collection_array_keys,
                 $cumulative_cash_collection_array_keys,
-                $cumulative_adjustment_array_keys
+                $cumulative_adjustment_array_keys,
+                $day_wise_dues_array_keys
             ));
 
             $finalArray = [];
@@ -164,6 +161,7 @@ class ReportDailySalesController extends AppController
                 $finalArray[$key]['cumulative_credit_collection'] = isset($cumulative_credit_collection[$key])?$cumulative_credit_collection[$key]:0;
                 $finalArray[$key]['cumulative_cash_collection'] = isset($cumulative_cash_collection[$key])?$cumulative_cash_collection[$key]:0;
                 $finalArray[$key]['cumulative_adjustment'] = isset($cumulative_adjustment[$key])?$cumulative_adjustment[$key]:0;
+                $finalArray[$key]['day_wise_dues'] = isset($day_wise_dues[$key])?$day_wise_dues[$key]:0;
             }
 
             if($group_by_level == Configure::read('max_level_no')+1){

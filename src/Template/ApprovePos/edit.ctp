@@ -341,8 +341,6 @@ use Cake\Core\Configure;
                                     obj.closest('.itemTr').find('.item_cash_discount').val(res.value);
                                     obj.closest('.itemTr').find('.special_offer_item_bonus').val(0);
                                 }
-
-                                obj.closest('.itemTr').find('.item_bonus').val(res.bonus_quantity);
                                 obj.closest('.itemTr').find('.offer_id').val(res.offer_id);
 
                                 // redo
@@ -354,6 +352,7 @@ use Cake\Core\Configure;
                                 calculateNetTotal(item_quantity, obj);
                                 calculateTotalAmount();
                             }
+                            obj.closest('.itemTr').find('.item_bonus').val(res.bonus_quantity);
                         }else{
                             obj.closest('.itemTr').find('.item_cash_discount').val(0);
                             obj.closest('.itemTr').find('.item_bonus').val(0);

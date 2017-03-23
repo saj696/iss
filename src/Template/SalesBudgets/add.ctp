@@ -54,8 +54,8 @@ use Cake\Core\Configure;
                                     <tr class="item_tr single_list">
                                         <td style="width: 25%"><?php echo $this->Form->input('details.0.parent_id', ['options' => $parents, 'required'=>'required', 'style'=>'max-width: 100%', 'class'=>'parent form-control', 'empty' => __('Select'), 'templates'=>['label' => '']]);?></td>
                                         <td style="width: 25%"><?php echo $this->Form->input('details.0.administrative_unit_id', ['options' => [], 'empty'=>'Select', 'style'=>'width: 100%', 'required'=>'required', 'class'=>'form-control administrative_unit_id', 'templates'=>['label' => '']]);?></td>
-                                        <td style="width: 25%"><?php echo $this->Form->input('details.0.item_id', ['options' => $items, 'empty'=>'All', 'style'=>'width: 100%', 'class'=>'form-control', 'templates'=>['label' => '']]);?></td>
-                                        <td style="width: 20%"><?php echo $this->Form->input('details.0.sales_amount', ['type' => 'text', 'style'=>'width: 100%', 'class'=>'form-control numbersOnly','required', 'templates'=>['label' => '']]);?></td>
+                                        <td style="width: 25%"><?php echo $this->Form->input('details.0.item_id', ['options' => $items, 'empty'=>'Select', 'style'=>'width: 100%', 'class'=>'form-control', 'templates'=>['label' => '']]);?></td>
+                                        <td style="width: 20%"><?php echo $this->Form->input('details.0.budget_amount', ['type' => 'text', 'style'=>'width: 100%', 'class'=>'form-control numbersOnly','required', 'templates'=>['label' => '']]);?></td>
                                         <td width="50px;"><span class="btn btn-sm btn-circle btn-danger remove pull-right">X</span></td>
                                     </tr>
                                 </table>

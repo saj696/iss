@@ -43,12 +43,6 @@ class ReportCustomerLedgersController extends AppController
         endforeach;
         $exploreLevels[Configure::read('max_level_no') + 1] = 'Customer';
 
-        $configData = $this->SalesBudgetConfigurations->find('all', ['conditions' => ['status' => 1]])->first();
-        $configLevel = $configData['level_no'];
-        for ($i = $configLevel; $i <= 7; $i++) {
-            unset($exploreLevels[$i + 1]);
-        }
-
         $this->set(compact('exploreLevels'));
         $this->set('_serialize', ['exploreLevels']);
     }

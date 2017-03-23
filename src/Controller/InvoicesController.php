@@ -416,7 +416,12 @@ class InvoicesController extends AppController
         $arr['credit_invoice_days'] = $customer->credit_invoice_days ? $customer->credit_invoice_days : 0;
         $arr['address'] = $customer->address ? $customer->address : '';
 
-        $arr = json_encode($arr);
+        if($customer->is_blacklisted == 1){
+            $arr = false;
+        }else{
+            $arr = json_encode($arr);
+        }
+
         $this->response->body($arr);
         return $this->response;
     }
