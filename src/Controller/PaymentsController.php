@@ -96,7 +96,8 @@ class PaymentsController extends AppController
                 $data['customer_id'],
                 $customerInfo['unit_global_id'],
                 $invoicePaymentArray,
-                $data['payment_account']
+                $data['payment_account'],
+                $data['collection_date']
                 , false
                 , $amount);
             $this->Flash->success('Payment Successful');
@@ -113,13 +114,13 @@ class PaymentsController extends AppController
 //    Account Head table
         $this->loadModel('AccountHeads');
         $paymentAccounts = [];
-        $paymentDatas = $this->AccountHeads->find('all') 
-		                ->select(['name','code'])
-						->where(['account_selector'=>2])
-                        ->orWhere(['id IN'=>[9,12,13,6]]) //using hard coded account heads cause account_selector is not serving the purpose  
-						->hydrate(false)
-						->toArray();				
-		
+        $paymentDatas = $this->AccountHeads->find('all')
+            ->select(['name', 'code'])
+            ->where(['account_selector' => 2])
+            ->orWhere(['id IN' => [9, 12, 13, 6]])//using hard coded account heads cause account_selector is not serving the purpose
+            ->hydrate(false)
+            ->toArray();
+
         foreach ($paymentDatas as $paymentData):
             $paymentAccounts[$paymentData['code']] = $paymentData['name'];
         endforeach;
@@ -195,21 +196,21 @@ class PaymentsController extends AppController
             $this->loadModel('AdministrativeUnits');
 
             $userAdministrativeUnitInfo = $this->AdministrativeUnits->get($userAdministrativeUnit);
-            $limitStart = pow(2,(Configure::read('max_level_no')- $user['level_no']-1)*5);
-            $limitEnd = pow(2,(Configure::read('max_level_no')- $user['level_no'])*5);
+            $limitStart = pow(2, (Configure::read('max_level_no') - $user['level_no'] - 1) * 5);
+            $limitEnd = pow(2, (Configure::read('max_level_no') - $user['level_no']) * 5);
 
             $data = $this->request->data;
             $level = $data['level'];
 
             $units = TableRegistry::get('administrative_units')->find('all');
             $units->select(['id', 'unit_name']);
-            $units->where(['level_no'=>$level]);
-            $units->where('global_id -'. $userAdministrativeUnitInfo['global_id'] .'>= '.$limitStart);
-            $units->where('global_id -'. $userAdministrativeUnitInfo['global_id'] .'< '.$limitEnd);
+            $units->where(['level_no' => $level]);
+            $units->where('global_id -' . $userAdministrativeUnitInfo['global_id'] . '>= ' . $limitStart);
+            $units->where('global_id -' . $userAdministrativeUnitInfo['global_id'] . '< ' . $limitEnd);
             $units->toArray();
 
             $dropArray = [];
-            foreach($units as $unit):
+            foreach ($units as $unit):
                 $dropArray[$unit['id']] = $unit['unit_name'];
             endforeach;
             $this->response->body(json_encode($dropArray));
@@ -224,43 +225,38 @@ class PaymentsController extends AppController
             endforeach;
             $this->response->body(json_encode($dropArray));
             return $this->response;
-       elseif ($param == "customer_code_address"):
+        elseif ($param == "customer_code_address"):
             $data = $this->request->data;
             $id = $data['customer'];
-            $customers = TableRegistry::get('customers')->find('all', ['conditions' => ['id' => $id], 'fields' => ['id', 'code','address']])->hydrate(false)->toArray();
-           
+            $customers = TableRegistry::get('customers')->find('all', ['conditions' => ['id' => $id], 'fields' => ['id', 'code', 'address']])->hydrate(false)->toArray();
+
             $this->response->body(json_encode($customers));
             return $this->response;
-			
-			
+
+
         elseif ($param == "dueInvoice"):
             $data = $this->request->data;
             $customer = $data['customer'];
             $paymentBasis = TableRegistry::get('payment_basis')->find('all', ['conditions' => ['status' => 1], 'fields' => ['basis']])->first();
             if (($paymentBasis['basis']) == 1):
 //                table payment basis and condition check customer id and due greater than zero
-                $invoices = TableRegistry::get('invoices')->find('all', ['conditions' => ['customer_id' => $customer, 'due >' => 0], 
-				'fields' => ['id','invoice_type','net_total', 'due', 'invoice_date'], 'limit' => 25, 'order' => ['invoices.id ASC']])->hydrate(false)->toArray();
-                
-				
-				$invoiceArray = [];
-				
+                $invoices = TableRegistry::get('invoices')->find('all', ['conditions' => ['customer_id' => $customer, 'due >' => 0],
+                    'fields' => ['id', 'invoice_type', 'net_total', 'due', 'invoice_date'], 'order' => ['invoices.id ASC']])->hydrate(false)->toArray();
+
+
+                $invoiceArray = [];
+
                 foreach ($invoices as $invoice):
-				    
-					if($invoice['invoice_type']==1)
-					{
-						$invoice_type = 'Cash';
-					}
-					elseif($invoice['invoice_type']==2)
-					{
-						$invoice_type = 'Credit';
-					}
-					elseif($invoice['invoice_type']==3)
-					{
-						$invoice_type = 'Cash & Credit';
-					}  
-					
-                    $invoiceArray[$invoice['id']] = $invoice_type.': Invoice Date :' . ' ' . date('d-m-y', $invoice['invoice_date']) . ', Net Total :' . ' ' . $invoice['net_total'] . ', Due :' . ' ' . $invoice['due'];
+
+                    if ($invoice['invoice_type'] == 1) {
+                        $invoice_type = 'Cash';
+                    } elseif ($invoice['invoice_type'] == 2) {
+                        $invoice_type = 'Credit';
+                    } elseif ($invoice['invoice_type'] == 3) {
+                        $invoice_type = 'Cash & Credit';
+                    }
+
+                    $invoiceArray[$invoice['id']] = $invoice_type . ': Invoice Date :' . ' ' . date('d-m-y', $invoice['invoice_date']) . ', Net Total :' . ' ' . $invoice['net_total'] . ', Due :' . ' ' . $invoice['due'];
                 endforeach;
                 $this->response->body(json_encode($invoiceArray));
                 return $this->response;

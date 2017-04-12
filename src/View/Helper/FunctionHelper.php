@@ -311,8 +311,10 @@ class FunctionHelper extends Helper
                     if ($postfixArray[$i]['is_marked'] == 1) {
                         if ($operand1 == $rangeStart) {
                             $diff = abs(round($operand2 - $rangeStart, 2));
+//                            echo "op1: ".$operand1."op2: ".$operand2."diff in exec: ".$diff;
                         } else {
                             $diff = abs(round($operand1 - $rangeStart, 2));
+//                            echo "op1: ".$operand1."op2: ".$operand2."  diff in exec: ".$diff;
                         }
                     }
 

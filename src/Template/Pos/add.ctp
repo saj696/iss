@@ -176,6 +176,11 @@ use Cake\Core\Configure;
             if(check_offer_value>0){
                 var sum_item_net_total = 0;
                 $('.item_net_total').each(function(index) {
+                    var item_cash_discount = parseFloat($(this).closest('.itemTr').find('.item_cash_discount').val());
+                    var this_net_total = parseFloat($(this).val());
+                    var gross = item_cash_discount+this_net_total;
+                    $(this).val(gross);
+                    $(this).closest('.itemTr').find('.item_cash_discount').val(0);
                     sum_item_net_total += parseFloat($(this).val());
                 });
 

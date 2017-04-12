@@ -384,7 +384,7 @@ class CommonComponent extends Component
     }
 
     public function pay_selected_invoices($customer_type, $customer_id, $parent_global_id,
-                                          array $invoice_payments, $payment_account,
+                                          array $invoice_payments, $payment_account, $collection_date,
                                           $is_adjustment = false, $total_amount = null)
     {
         $conn = ConnectionManager::get('default');
@@ -417,7 +417,7 @@ class CommonComponent extends Component
             try {
                 $conn->transactional(function ($conn) use (
                     $time, $user, $invoice_table, $InvProductsPaymentTable, $InvProductsTable, $invoice_payments_table,
-                    $customer_type, $customer_id, $parent_global_id, $invoice_payments, $payment_account, $is_adjustment, $total_amount
+                    $customer_type, $customer_id, $parent_global_id, $invoice_payments, $payment_account, $collection_date, $is_adjustment, $total_amount
                 ) {
                     $invoice_n_amount_array = [];
                     foreach ($invoice_payments['invoices'] as $invoice_arr):
@@ -432,10 +432,11 @@ class CommonComponent extends Component
                     $payment_data['parent_global_id'] = $parent_global_id;
                     $payment_data['payment_account'] = $payment_account;
                     $payment_data['amount'] = $total_amount;
-                    $payment_data['collection_date'] = $time;
+                    $payment_data['collection_date'] = $collection_date;
                     $payment_data['created_date'] = $time;
                     $payment_data['created_by'] = $user['id'];
                     $payment_data['is_adjustment'] = $is_adjustment;
+
                     $payment_entity = $payment_table->patchEntity($payment_entity, $payment_data);
 
                     if ($payment_table->save($payment_entity)):
@@ -471,7 +472,7 @@ class CommonComponent extends Component
                                 $invoice_payments_entity->invoice_date = $get_invoice['invoice_date'];
                                 $invoice_payments_entity->invoice_delivery_date = $get_invoice['delivery_date'];
                                 $invoice_payments_entity->payment_id = $payment_entity->id;
-                                $invoice_payments_entity->payment_collection_date = $time;
+                                $invoice_payments_entity->payment_collection_date = $collection_date;
                                 $invoice_payments_entity->invoice_wise_payment_amount = $invoice_payments['amount'];///
                                 $invoice_payments_entity->created_by = $user['id'];
                                 $invoice_payments_entity->is_adjustment = $is_adjustment;
@@ -488,8 +489,8 @@ class CommonComponent extends Component
                             ->find()
                             ->contain(['InvoicedProducts'])
                             ->hydrate(false)
-                            ->where(['Invoices.id IN' => $invoice_id_array])
-                            ->andWhere(['Invoices.status' => 1])
+                            ->where(['invoices.id IN' => $invoice_id_array])
+                            ->andWhere(['invoices.status' => 1])
                             ->toArray();
 
                         foreach ($Inv_Inv_Products as $invoices):
@@ -521,7 +522,7 @@ class CommonComponent extends Component
                                                 $invoiced_product_payment->invoice_date = $invoiced_products['invoice_date'];
                                                 $invoiced_product_payment->invoice_delivery_date = $invoiced_products['delivery_date'];
                                                 $invoiced_product_payment->invoice_payment_id = $payment_entity->id;//global payment
-                                                $invoiced_product_payment->payment_collection_date = $time;
+                                                $invoiced_product_payment->payment_collection_date = $collection_date;
                                                 $invoiced_product_payment->item_wise_payment_amount = $invoiced_products['due'];
                                                 $invoiced_product_payment->created_by = $user['id'];
                                                 $invoiced_product_payment->is_adjustment = $is_adjustment;
@@ -551,7 +552,7 @@ class CommonComponent extends Component
                                                 $invoiced_product_payment->invoice_date = $invoiced_products['invoice_date'];
                                                 $invoiced_product_payment->invoice_delivery_date = $invoiced_products['delivery_date'];
                                                 $invoiced_product_payment->invoice_payment_id = $payment_entity->id;//global payment
-                                                $invoiced_product_payment->payment_collection_date = $time;
+                                                $invoiced_product_payment->payment_collection_date = $collection_date;
                                                 $invoiced_product_payment->item_wise_payment_amount = $amount_to_pay;
                                                 $invoiced_product_payment->created_by = $user['id'];
                                                 $invoiced_product_payment->is_adjustment = $is_adjustment;
@@ -699,19 +700,15 @@ class CommonComponent extends Component
                     foreach ($specPost['condition'] as $k => $specCon) {
                         if ($specCon['type'] == 'function') {
                             if ($specCon['name'] == 'item_unit_quantity') {
-
-                                if(!isset($specCon['plus_found_after_item_unit_quantity'])){
-                                    $first_time_occurence_of_item_unit_qty_greater_than_zero = 0;
-                                }
-
                                 $argArray = explode(',', $specCon['arg']);
                                 $result = $FunctionHelper->$specCon['name']($argArray[0], $invoiceArray, $i, $item_unit_quantity_found,$first_time_occurence_of_item_unit_qty_greater_than_zero, $argArray[1]);
                                 $item_unit_info = TableRegistry::get('item_units')->find('all', ['conditions'=>['item_name'=>str_replace("'", '', $argArray[0]), 'unit_display_name'=>str_replace("'", '', $argArray[1]), 'status'=>1]])->first();
+
                                 $item_unit_id = $item_unit_info['id'];
                                 $itemUnitIdArray[] = $item_unit_id;
 
                                 if($i>0){
-                                    if(($first_time_occurence_of_item_unit_qty_greater_than_zero==0)&&($result>0)){
+                                    if(($first_time_occurence_of_item_unit_qty_greater_than_zero==0)&&($result>0)&&(isset($difference[$item_unit_id]))){
                                         $result= $difference[$item_unit_id];
                                         $first_time_occurence_of_item_unit_qty_greater_than_zero=1;
                                     }
@@ -719,6 +716,10 @@ class CommonComponent extends Component
                                         $result = 0;
                                     }
                                 }
+                                if(!isset($specCon['plus_found_after_item_unit_quantity'])){
+                                    $first_time_occurence_of_item_unit_qty_greater_than_zero = 0;
+                                }
+
 
                             } elseif ($specCon['name'] == 'max_due_invoice_age' || $specCon['name'] == 'is_mango_customer' || $specCon['name'] == 'is_cash_invoice' || $specCon['name'] == 'payment_date' || $specCon['name'] == 'invoice_payment_age' || $specCon['name'] == 'invoice_item_payment_age') {
                                 $result = $FunctionHelper->$specCon['name']($invoiceArray);
@@ -849,6 +850,7 @@ class CommonComponent extends Component
             }
             $is++;
         }
+
         return $final;
     }
 
@@ -952,10 +954,6 @@ class CommonComponent extends Component
                                 if ($specCon['type'] == 'function') {
                                     if ($specCon['name'] == 'item_unit_quantity' || $specCon['name'] == 'item_unit_quantity_in_credit_invoices_over_a_period' || $specCon['name'] == 'item_unit_quantity_in_cash_invoices_over_a_period') {
 
-                                        if(!isset($specCon['plus_found_after_item_unit_quantity'])){
-                                            $first_time_occurence_of_item_unit_qty_greater_than_zero = 0;
-                                        }
-
                                         $argArray = explode(',', $specCon['arg']);
                                         $result = $FunctionHelper->$specCon['name']($argArray[0], $passedLevelTwoInvoices, $i, $item_unit_quantity_found,$first_time_occurence_of_item_unit_qty_greater_than_zero, $argArray[1]);
                                         $item_unit_info = TableRegistry::get('item_units')->find('all', ['conditions'=>['item_name'=>str_replace("'", '', $argArray[0]), 'unit_display_name'=>str_replace("'", '', $argArray[1]), 'status'=>1]])->first();
@@ -970,6 +968,10 @@ class CommonComponent extends Component
                                             else {
                                                 $result = 0;
                                             }
+                                        }
+
+                                        if(!isset($specCon['plus_found_after_item_unit_quantity'])){
+                                            $first_time_occurence_of_item_unit_qty_greater_than_zero = 0;
                                         }
 
                                     } elseif ($specCon['name'] == 'max_due_invoice_age' || $specCon['name'] == 'is_mango_customer' || $specCon['name'] == 'is_cash_invoice' || $specCon['name'] == 'payment_date' || $specCon['name'] == 'invoice_payment_age' || $specCon['name'] == 'invoice_item_payment_age') {
