@@ -381,4 +381,22 @@ class SystemHelper extends Helper
         endforeach;
         return $dropArray;
     }
+
+    public function get_unit_quantity($unit_type, $unit_size, $quantity, $converted_quantity)
+    {
+        if ($unit_size == 0) {
+            if ($unit_type == 1 || $unit_type == 3) {
+                $value = $quantity / 1000;
+            } else {
+                $value = $quantity;
+            }
+        } else {
+            if ($unit_type == 1 || $unit_type == 3) {
+                $value = $converted_quantity * $quantity / 1000;
+            } else {
+                $value = $converted_quantity * $quantity;
+            }
+        }
+        return $value;
+    }
 }

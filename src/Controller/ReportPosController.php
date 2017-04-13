@@ -15,15 +15,8 @@ use mPDF;
  *
  * @property \App\Model\Table\SalesBudgetsTable $SalesBudgets
  */
-class ReportCustomerLedgersController extends AppController
+class ReportPosController extends AppController
 {
-    public $paginate = [
-        'limit' => 15,
-        'order' => [
-            'SalesBudgets.id' => 'desc'
-        ]
-    ];
-
     /**
      * Index method
      *
@@ -31,12 +24,9 @@ class ReportCustomerLedgersController extends AppController
      */
     public function index()
     {
-        $this->loadModel('SalesBudgets');
+        $user = $this->Auth->user();
         $this->loadModel('AdministrativeLevels');
-        $this->loadModel('AdministrativeUnits');
-        $this->loadModel('SalesBudgetConfigurations');
-
-        $administrativeLevelsData = $this->AdministrativeLevels->find('all', ['conditions' => ['status' => 1]]);
+        $administrativeLevelsData = $this->AdministrativeLevels->find('all', ['conditions' => ['status' => 1, 'level_no >='=>$user['level_no']]]);
         $exploreLevels = [];
         foreach ($administrativeLevelsData as $administrativeLevelsDatum):
             $exploreLevels[$administrativeLevelsDatum['level_no']] = $administrativeLevelsDatum['level_name'];
@@ -52,54 +42,33 @@ class ReportCustomerLedgersController extends AppController
             $data = $this->request->data;
             $start_date = strtotime($data['start_date']);
             $end_date = strtotime($data['end_date']);
-            $explore_level = $data['explore_level'];
             $unit_id = $data['unit_id'];
             $customer_id = $data['customer_id'];
+            $po_status = $data['po_status'];
 
-            $finalDue = $this->Common->getCustomerDue($customer_id, $start_date);
+            $this->loadModel('AdministrativeUnits');
+            $adminUnitInfo = $this->AdministrativeUnits->get($unit_id);
 
-            // invoices between start and end dates
-            $finalArray = [];
-
-            $invoices = TableRegistry::get('invoices')->find()->hydrate(false);
-            $invoices->where(['invoice_date >='=>$start_date]);
-            $invoices->where(['invoice_date <='=>$end_date]);
-            $invoices->where(['customer_id'=>$customer_id]);
-            if($invoices->toArray()){
-                $invoiceArray = $invoices->toArray();
-                foreach($invoiceArray as $isl=>$invAr){
-                    $finalArray[$invAr['invoice_date']]['inv'][$isl]['id'] = $invAr['id'];
-                    $finalArray[$invAr['invoice_date']]['inv'][$isl]['net_total'] = $invAr['net_total'];
-                    $finalArray[$invAr['invoice_date']]['inv'][$isl]['type'] = $invAr['invoice_type'];
-                }
+            $pos = TableRegistry::get('pos')->find()->hydrate(false);
+            $pos->contain(['Customers', 'PoProducts']);
+            $pos->where(['po_date >='=>$start_date]);
+            $pos->where(['po_date <='=>$end_date]);
+            if($customer_id>0){
+                $pos->where(['customer_id'=>$customer_id]);
             }
-
-            // payments between start and end dates
-            $payments = TableRegistry::get('invoice_payments')->find()->hydrate(false);
-            $payments->contain(['Invoices', 'Payments']);
-            $payments->where(['invoice_payments.payment_collection_date >='=>$start_date]);
-            $payments->where(['invoice_payments.payment_collection_date <='=>$end_date]);
-            $payments->where(['invoice_payments.customer_id'=>$customer_id]);
-            if($payments->toArray()){
-                $paymentArray = $payments->toArray();
-                foreach($paymentArray as $psl=>$payAr){
-                    $finalArray[$payAr['payment_collection_date']]['pay'][$psl]['id'] = $payAr['id'];
-                    $finalArray[$payAr['payment_collection_date']]['pay'][$psl]['net_total'] = $payAr['invoice_wise_payment_amount'];
-                    $finalArray[$payAr['payment_collection_date']]['pay'][$psl]['type'] = $payAr['invoice']['invoice_type'];
-                    $finalArray[$payAr['payment_collection_date']]['pay'][$psl]['sl_no'] = $payAr['payment']['collection_serial_no'];
-                }
-            }
+            $pos->where(['customer_unit_global_id'=>$adminUnitInfo['global_id']]);
+            $pos->where(['po_status'=>$po_status]);
 
             if ($param == 'report') {
                 $this->viewBuilder()->layout('report');
-                $this->set(compact('finalArray', 'finalDue', 'data'));
+                $this->set(compact('pos', 'data'));
                 $this->set('_serialize', ['finalArray']);
             } elseif ($param == 'pdf') {
                 $view = new View();
                 $btnHide = 1;
                 $view->layout=false;
-                $view->set(compact('finalArray', 'finalDue', 'data', 'btnHide'));
-                $view->viewPath = 'ReportCustomerLedgers';
+                $view->set(compact('pos', 'data', 'btnHide'));
+                $view->viewPath = 'ReportPos';
                 $html = $view->render('load_report');
                 $this->loadComponent('Common');
                 $this->Common->getPdf($html);
