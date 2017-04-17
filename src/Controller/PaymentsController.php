@@ -28,10 +28,20 @@ class PaymentsController extends AppController
      */
     public function index()
     {
+        $user = $this->Auth->user();
+        $userAdmin = $user['administrative_unit_id'];
+        $this->loadModel('AdministrativeUnits');
+        $userAdminGlobal = $this->AdministrativeUnits->get($userAdmin);
+        $limitStart = pow(2,(Configure::read('max_level_no')- $user['level_no']-1)*5);
+        $limitEnd = pow(2,(Configure::read('max_level_no')- $user['level_no'])*5);
+
         $payments = $this->Payments->find('all', [
             'contain' => ['Customers'],
             'conditions' => ['Payments.status !=' => 99]
         ]);
+        $payments->where('parent_global_id -'. $userAdminGlobal['global_id'] .'>= '.$limitStart);
+        $payments->where('parent_global_id -'. $userAdminGlobal['global_id'] .'< '.$limitEnd);
+
         $this->set('payments', $this->paginate($payments));
         $this->set('_serialize', ['payments']);
     }

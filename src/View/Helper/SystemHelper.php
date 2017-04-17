@@ -204,6 +204,24 @@ class SystemHelper extends Helper
         return $info['level_name'];
     }
 
+    public function get_item_name($id)
+    {
+        $info = TableRegistry::get('items')->find('all', ['conditions' => ['id' => $id]])->first();
+        return $info['name'];
+    }
+
+    public function get_manufacture_unit_name($id)
+    {
+        $info = TableRegistry::get('units')->find('all', ['conditions' => ['id' => $id]])->first();
+        return $info['unit_display_name'];
+    }
+
+    public function get_customer_detail($id)
+    {
+        $customer = TableRegistry::get('customers')->find('all', ['conditions' => ['id' => $id]])->first();
+        return $customer;
+    }
+
     public function get_items_by_resource($resource_id)
     {
         $items = TableRegistry::get('transfer_items')->find('all', ['conditions' => ['transfer_resource_id' => $resource_id]])

@@ -23,7 +23,7 @@ $unit_type = \Cake\Core\Configure::read('pack_size_units');
                 <?= $this->element('company_header'); ?>
                 <div class="row">
                     <h4 class="text-center"><strong>Product Wise Sales Report </strong></h4>
-                    <h4 class="text-center"><strong> From: <strong><?php echo $start_date; ?></strong></h4>
+                    <h4 class="text-center"><strong>From: <strong><?php echo $start_date; ?></strong></h4>
                     <h4 class="text-center"><strong>To: <strong><?php echo $end_date; ?></strong></h4>
                     <h4 class="text-center"><strong><?= $administrative_unit ?> </strong></h4>
                 </div>
@@ -40,7 +40,7 @@ $unit_type = \Cake\Core\Configure::read('pack_size_units');
                                 <td>Cash Sales Price</td>
                                 <td>Cash Sales Value</td>
                                 <td>Credit Bonus Quantity</td>
-                                <td>Cash Product Quantity</td>
+                                <td>Credit Product Quantity</td>
                                 <td>Credit Sales Price</td>
                                 <td>Credit Sales Value</td>
                                 <td>Total Sales Value</td>
@@ -48,7 +48,8 @@ $unit_type = \Cake\Core\Configure::read('pack_size_units');
                             </tr>
                             </thead>
                             <tbody>
-                            <?php foreach ($sales as $sales_data): ?>
+                            <?php
+                            foreach ($sales as $sales_data): ?>
                                 <tr>
                                     <td><?= $sales_data['code']; ?></td>
                                     <td><?= $sales_data['ITEM_NAME']; ?></td>

@@ -135,32 +135,35 @@ class PosController extends AppController
                     if(isset($_POST['forward']))
                     {
                         $poEvent = $this->PoEvents->newEntity();
-                        $customerLevel = $data['customer_level_no'];
-                        $customerLevelDepotCoverage = $this->DepotCoverages->find('all', ['conditions'=>['level_no'=>$customerLevel]])->first();
-                        $depotInCharge = $this->Users->find('all', ['conditions'=>['depot_id'=>$customerLevelDepotCoverage['depot_id']]])->first();
 
-                        if($depotInCharge['id']):
-                            $recipient_id = $depotInCharge['id'];
-                        else:
-                            $customerLevelDepot = $this->Depots->find('all', ['conditions'=>['status !='=>99, 'level_no'=>$customerLevel]])->first();
-                            $customerLevelDepotId = $customerLevelDepot['id'];
-                            if($customerLevelDepotId):
-                                $depotInCharge = $this->Users->find('all', ['conditions'=>['depot_id'=>$customerLevelDepotId]])->first();
-                                $recipient_id = $depotInCharge['id'];
-                            else:
-                                for($i=$customerLevel; $i>=0; $i--):
-                                    $customerLevelDepot = $this->Depots->find('all', ['conditions'=>['status !='=>99, 'level_no'=>$i]])->first();
-                                    $customerLevelDepotId = $customerLevelDepot['id'];
-                                    $depotInCharge = $this->Users->find('all', ['conditions'=>['depot_id'=>$customerLevelDepotId]])->first();
-                                    $recipient_id = $depotInCharge['id'];
-                                    if($recipient_id>0):
-                                        break;
-                                    else:
-                                        continue;
-                                    endif;
-                                endfor;
-                            endif;
-                        endif;
+//                        $customerLevel = $data['customer_level_no'];
+//                        $customerLevelDepotCoverage = $this->DepotCoverages->find('all', ['conditions'=>['level_no'=>$customerLevel]])->first();
+//                        $depotInCharge = $this->Users->find('all', ['conditions'=>['depot_id'=>$customerLevelDepotCoverage['depot_id']]])->first();
+//
+//                        if($depotInCharge['id']):
+//                            $recipient_id = $depotInCharge['id'];
+//                        else:
+//                            $customerLevelDepot = $this->Depots->find('all', ['conditions'=>['status !='=>99, 'level_no'=>$customerLevel]])->first();
+//                            $customerLevelDepotId = $customerLevelDepot['id'];
+//                            if($customerLevelDepotId):
+//                                $depotInCharge = $this->Users->find('all', ['conditions'=>['depot_id'=>$customerLevelDepotId]])->first();
+//                                $recipient_id = $depotInCharge['id'];
+//                            else:
+//                                for($i=$customerLevel; $i>=0; $i--):
+//                                    $customerLevelDepot = $this->Depots->find('all', ['conditions'=>['status !='=>99, 'level_no'=>$i]])->first();
+//                                    $customerLevelDepotId = $customerLevelDepot['id'];
+//                                    $depotInCharge = $this->Users->find('all', ['conditions'=>['depot_id'=>$customerLevelDepotId]])->first();
+//                                    $recipient_id = $depotInCharge['id'];
+//                                    if($recipient_id>0):
+//                                        break;
+//                                    else:
+//                                        continue;
+//                                    endif;
+//                                endfor;
+//                            endif;
+//                        endif;
+
+                        $recipient_id = $user['id']; // ***For now depot in charge will approve PO, will be changed later***
 
                         if($recipient_id && $recipient_id>0):
                             $poEventData['reference_type'] = array_flip(Configure::read('po_event_reference_type'))['po'];

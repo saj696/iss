@@ -40,10 +40,9 @@ use Cake\Core\Configure;
                         echo $this->Form->input('parent_unit', ['options' => [],'label'=>'Customer Parent Unit', 'empty' => __('Select'),'class'=> 'form-control unit','templates' => ['select' => '<div id="container_{{name}}" class="col-sm-9 unitContainer"><select name="{{name}}"{{attrs}} class="form-control">{{content}}</select></div>']]);
                         echo $this->Form->input('customer_id', ['options' => [],'label'=>'Customer', 'empty' => __('Select'),'class'=> 'form-control customer', 'templates' => ['select' => '<div id="container_{{name}}" class="col-sm-9 customerContainer"><select name="{{name}}"{{attrs}} class="form-control">{{content}}</select></div>']]);
                     
-					   echo $this->Form->input('code', ['label'=>'Customer Code','type'=>'text','id'=>'customer_code','readonly'=>true]);
-                       echo $this->Form->input('address', ['label'=>'Customer Address','type'=>'text','id'=>'customer_address','readonly'=>true]);					
-					?>
-						<?php echo $this->Form->input('due_invoice', ['options' => [],'label'=>'Due Invoice', 'empty' => __('Select'),'class'=> 'form-control dueInvoice', 'templates' => ['select' => '<div id="container_{{name}}" class="col-sm-9 dueInvoiceContainer"><select name="{{name}}"{{attrs}} class="form-control">{{content}}</select></div>']]);
+					    echo $this->Form->input('code', ['label'=>'Customer Code','type'=>'text','id'=>'customer_code','readonly'=>true]);
+                        echo $this->Form->input('address', ['label'=>'Customer Address','type'=>'text','id'=>'customer_address','readonly'=>true]);
+					    echo $this->Form->input('due_invoice', ['options' => [],'label'=>'Due Invoice', 'empty' => __('Select'),'class'=> 'form-control dueInvoice', 'templates' => ['select' => '<div id="container_{{name}}" class="col-sm-9 dueInvoiceContainer"><select name="{{name}}"{{attrs}} class="form-control">{{content}}</select></div>']]);
                         ?>
 
                     </div>
@@ -77,11 +76,11 @@ use Cake\Core\Configure;
                             echo $this->Form->input('amount',['type'=>'text','class'=>'form-control amount', 'required' => 'required']);
 							echo $this->Form->input('collection_date', ['type' => 'text' ,'class' => 'form-control datepicker','required'=>'required' ]);
 							echo $this->Form->input('collection_receive_date', ['type' => 'text' ,'class' => 'form-control datepicker','required'=>'required' ]);
-							echo $this->Form->input('reference_number');
+							echo $this->Form->input('reference_number', ['label'=>'Bank Reference Number']);
 							echo $this->Form->input('bank_name');
                             echo $this->Form->input('branch_name');
                             echo $this->Form->input('description');
-                            echo $this->Form->input('collection_serial_no');
+                            echo $this->Form->input('collection_serial_no', ['label'=>'Field Money Receipt Number']);
                             ?>
                             <?= $this->Form->button(__('Submit'),['class'=>'btn blue pull-right submitCheck','style'=>'margin-top:20px']) ?>
                         </div>
@@ -90,7 +89,6 @@ use Cake\Core\Configure;
                 <?= $this->Form->end() ?>
             </div>
         </div>
-        <!-- END BORDERED TABLE PORTLET-->
     </div>
 </div>
 

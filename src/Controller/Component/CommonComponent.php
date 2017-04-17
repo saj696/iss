@@ -1499,4 +1499,100 @@ class CommonComponent extends Component
         return $arr;
     }
 
+    public function get_child_global_id_n_name($own_level, $own_global_id, $group_by = null, $search_level = null)
+    {
+        if (isset($group_by) && $group_by == 5) {
+
+            $limitStart = pow(2, (Configure::read('max_level_no') - $own_level - 1) * 5);
+            $limitEnd = pow(2, (Configure::read('max_level_no') - $own_level) * 5);
+
+            $customers = TableRegistry::get('customers')->query()->hydrate(false);
+            $customers->where(['unit_global_id -' . $own_global_id . '>= ' . $limitStart]);
+            $customers->andWhere(['unit_global_id -' . $own_global_id . '< ' . $limitEnd]);
+            $customers->andWhere(['status' => 1]);
+            $customers->orWhere(['unit_global_id' => $own_global_id]);
+
+            $customers->select(['global_id' => 'id', 'name', 'code', 'is_blacklisted']);
+
+            if ($customers->toArray()) {
+                $mainArray = $customers->toArray();
+                return $mainArray;
+            } else {
+                return [];
+            }
+        }
+
+        $limitStart = pow(2, (Configure::read('max_level_no') - $own_level - 1) * 5);
+        $limitEnd = pow(2, (Configure::read('max_level_no') - $own_level) * 5);
+
+        $administrativeUnits = TableRegistry::get('administrative_units')->query()->hydrate(false);
+        $administrativeUnits->where(['global_id -' . $own_global_id . '>= ' . $limitStart]);
+        $administrativeUnits->andWhere(['global_id -' . $own_global_id . '< ' . $limitEnd]);
+        $administrativeUnits->orWhere(['global_id' => $own_global_id]);
+        if ($search_level) {
+            $administrativeUnits->andWhere(['level_no' => $search_level]);
+        }
+        $administrativeUnits->select(['global_id', 'name' => 'unit_name']);
+
+        if ($administrativeUnits->toArray()) {
+            $mainArray = $administrativeUnits->toArray();
+            return $mainArray;
+        } else {
+            return [];
+        }
+    }
+
+    public function payment_account_code_n_name()
+    {
+        $paymentAccounts = [];
+        $parentData = TableRegistry::get('AccountHeads')->find('all',
+            ['fields' => ['name', 'code'],
+                'conditions' => ['account_selector' => 2]
+            ])->hydrate(false)->toArray();
+        foreach ($parentData as $paymentData):
+            $paymentAccounts[$paymentData['code']] = $paymentData['name'];
+        endforeach;
+        return $paymentAccounts;
+    }
+
+    public function getWarehouseFromDepot($depot_id)
+    {
+        $depots = TableRegistry::get('depots')->find('all')->where(['id' => $depot_id])->select('warehouses')->first();
+        $warehouse = json_decode($depots['warehouses'], true); //stored in an array but one warehouse will be there :P
+        return $warehouse[0];
+    }
+
+    public function item_quantity_wise_stock_update($item_id, $unit_id, $type, $quantity, $previous_quantity = null, $depot_id_of_invoice = null)
+    {
+        $stocks_table = TableRegistry::get('stocks');
+        $warehouse = $this->getWarehouseFromDepot($depot_id_of_invoice);
+
+        if ($type == 'save') {
+            $stocks = $stocks_table->find('all')
+                ->where(['item_id' => $item_id, 'manufacture_unit_id' => $unit_id, 'status' => 1, 'warehouse_id' => $warehouse])
+                ->first();
+            $updateStock['quantity'] = $stocks['quantity'] - $quantity;
+            if ($updateStock['quantity'] < 0) {
+                return false;
+            }
+            $saveStock = $stocks_table->patchEntity($stocks, $updateStock);
+            $stocks_table->save($saveStock);
+        } else if ($type == 'approve') {
+            $stocks = $stocks_table->find()
+                ->where(['item_id' => $item_id, 'manufacture_unit_id' => $unit_id, 'status' => 1, 'warehouse_id' => $warehouse]);
+
+            if ($previous_quantity < $quantity) {
+                $updateStock['quantity'] = $stocks['quantity'] - ($quantity - $previous_quantity);
+            } elseif ($previous_quantity > $quantity) {
+                $updateStock['quantity'] = $stocks['quantity'] + ($previous_quantity - $quantity);
+            } else {
+                $updateStock['quantity'] = $stocks['quantity'];//no change in stock table :P
+            }
+
+            $saveStock = $stocks_table->patchEntity($stocks, $updateStock);
+
+            $stocks_table->save($saveStock);
+        }
+    }
+
 }
