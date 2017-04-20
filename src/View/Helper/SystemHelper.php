@@ -341,18 +341,23 @@ class SystemHelper extends Helper
     public function generate_invoice_no($prefix_level, $invoice_date, $location_global_id){
         $prefix_level_global_id = self::asked_level_global_id($prefix_level, $location_global_id);
         $prefix_level_info = TableRegistry::get('administrative_units')->find('all', ['conditions' => ['global_id' => $prefix_level_global_id]])->first();
+
         $prefix = $prefix_level_info['prefix'];
         $year = date('y', $invoice_date);
         $month = date('m', $invoice_date);
 
-        $serials = TableRegistry::get('serials')->find('all');
-        $serials->where('month', date('m', $invoice_date));
-        $serials->where('year', date('Y', $invoice_date));
-        $serials->where('trigger_type', array_flip(Configure::read('serial_trigger_types'))['others']);
-        $serials->where('trigger_id', $prefix_level_info['id']);
-        $serials->where('serial_for', array_flip(Configure::read('serial_types'))['invoice']);
-        $serials->order('id', 'desc');
-        $serials->limit(1)->first();
+
+        $serials = TableRegistry::get('serials')->find('all',[
+            'conditions'=>[
+                'month'=>date('m', $invoice_date),
+                'year'=>date('Y', $invoice_date),
+                'trigger_type'=>array_flip(Configure::read('serial_trigger_types'))['others'],
+                'trigger_id'=>$prefix_level_info['id'],
+                'serial_for'=>array_flip(Configure::read('serial_types'))['invoice'],
+            ],
+            'order'=>['id'=>'desc'],
+            'limit'=>1
+        ]);
 
         if($serials->toArray()){
             $serialData = $serials->toArray();

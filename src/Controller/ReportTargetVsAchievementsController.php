@@ -18,15 +18,8 @@ use mPDF;
  *
  * @property \App\Model\Table\SalesBudgetsTable $SalesBudgets
  */
-class ReportSalesCollectionsController extends AppController
+class ReportTargetVsAchievementsController extends AppController
 {
-    public $paginate = [
-        'limit' => 15,
-        'order' => [
-            'SalesBudgets.id' => 'desc'
-        ]
-    ];
-
     /**
      * Index method
      *
@@ -57,55 +50,75 @@ class ReportSalesCollectionsController extends AppController
         if ($this->request->is(['post', 'get'])) {
             $data = $this->request->data;
 
-            $start_time = strtotime($data['start_date']);
-            $end_time = strtotime($data['end_date']);
+            $report_type = $data['report_type'];
             $unit_level = $data['explore_level'];
             $unit_global_id = $data['explore_unit'];
             $group_by_level = $data['display_unit'];
 
             $this->loadComponent('Common');
-            App::import('Helper', 'SystemHelper');
+            App::import('Helper', 'FunctionHelper');
             $FunctionHelper = new FunctionHelper(new View());
 
-            $credit_sales = $FunctionHelper->credit_sales($unit_global_id, $start_time, $end_time, $group_by_level);
-            $cash_sales = $FunctionHelper->cash_sales($unit_global_id, $start_time, $end_time, $group_by_level);
-            $cash_collection = $FunctionHelper->cash_collection($unit_global_id, $start_time, $end_time, 0, $group_by_level);
-            $credit_collection = $FunctionHelper->credit_collection($unit_global_id, $start_time, $end_time, 0, $group_by_level);
-            $credit_notes = $this->Common->get_unit_credit_note_amount($unit_level, $unit_global_id, $start_time, $end_time, $group_by_level);
-            $opening_due = $this->Common->get_unit_opening_due($unit_level, $unit_global_id, $group_by_level, $start_time);
-            $adjustments = $this->Common->get_unit_adjustment_amount($unit_level, $unit_global_id, $start_time, $end_time, $group_by_level);
-            $credit_limit_array = $this->Common->administrative_unit_wise_credit_limit($unit_global_id, $group_by_level);
+            $start_date_of_this_month = strtotime('01-'.date('m').'-'.date('Y'));
+            $end_date_of_this_month = strtotime(Configure::read('month_end')[str_replace('0', "", date('m'))].'-'.date('m').'-'.date('Y'));
+            $this_month = date('m');
 
-            $credit_limit = [];
-            foreach($credit_limit_array as $limit){
-                $credit_limit[$limit['GLOBAL_ID']] = $limit['CREDIT_LIMIT'];
+            if($this_month>=7){
+                $start_date_cumulative = strtotime('01-07-'.date('Y'));
+                $end_date_cumulative = time();
+            }else{
+                $start_date_cumulative = strtotime('01-07-'.(date('Y')-1));
+                $end_date_cumulative = time();
             }
 
-            $credit_sales_array_keys = array_keys($credit_sales);
-            $cash_sales_array_keys = array_keys($cash_sales);
-            $cash_collection_array_keys = array_keys($cash_collection);
-            $credit_collection_array_keys = array_keys($credit_collection);
-            $credit_notes_array_keys = array_keys($credit_notes);
-            $opening_due_array_keys = array_keys($opening_due);
-            $adjustments_array_keys = array_keys($adjustments);
-            $credit_limit_array_keys = array_keys($credit_limit);
+            if($report_type == 1){
+                $this_month_target = $FunctionHelper->sales_budget($unit_global_id, $start_date_of_this_month, $end_date_of_this_month, $group_by_level);
+                $this_month_achievement = $FunctionHelper->total_sales($unit_global_id, $start_date_of_this_month, $end_date_of_this_month, $group_by_level);
 
-            $merged_keys = array_unique(array_merge($credit_sales_array_keys, $cash_sales_array_keys, $cash_collection_array_keys, $credit_collection_array_keys, $credit_notes_array_keys, $opening_due_array_keys, $adjustments_array_keys, $credit_limit_array_keys));
+                $cumulative_target = $FunctionHelper->sales_budget($unit_global_id, $start_date_cumulative, $end_date_cumulative, $group_by_level);
+                $cumulative_achievement = $FunctionHelper->total_sales($unit_global_id, $start_date_cumulative, $end_date_cumulative, $group_by_level);
+            }else{
+                $this_month_target = $FunctionHelper->collection_target_90_days_old($unit_level, $unit_global_id, $group_by_level, $start_date_of_this_month, $end_date_of_this_month);
+                $this_month_achievement = $FunctionHelper->total_collection($unit_global_id, $start_date_of_this_month, $end_date_of_this_month, 0, $group_by_level);
+
+                $cumulative_target = $FunctionHelper->collection_target_90_days_old($unit_level, $unit_global_id, $group_by_level, $start_date_cumulative, $end_date_cumulative);
+                $cumulative_achievement = $FunctionHelper->total_collection($unit_global_id, $start_date_cumulative, $end_date_cumulative, 0, $group_by_level);
+            }
+
+            if($report_type == 1){
+                $cumulative_target_revised = $cumulative_target;
+                $this_month_target_revised = $this_month_target;
+            }else{
+                $cumulative_target_revised = [];
+                foreach($cumulative_target as $ct){
+                    $cumulative_target_revised[$ct['global_id']] = $ct['total_amount'];
+                }
+
+                $this_month_target_revised = [];
+                foreach($this_month_target as $ct){
+                    $this_month_target_revised[$ct['global_id']] = $ct['total_amount'];
+                }
+            }
+
+            $this_month_target_revised_array_keys = array_keys($this_month_target_revised);
+            $this_month_achievement_array_keys = array_keys($this_month_achievement);
+            $cumulative_target_revised_array_keys = array_keys($cumulative_target_revised);
+            $cumulative_achievement_array_keys = array_keys($cumulative_achievement);
+
+            $merged_keys = array_unique(array_merge(
+                $this_month_target_revised_array_keys,
+                $this_month_achievement_array_keys,
+                $cumulative_target_revised_array_keys,
+                $cumulative_achievement_array_keys
+            ));
 
             $finalArray = [];
 
             foreach($merged_keys as $key){
-                $finalArray[$key]['credit_limit'] = isset($credit_limit[$key])?$credit_limit[$key]:0;
-                $finalArray[$key]['credit_sales'] = isset($credit_sales[$key])?$credit_sales[$key]:0;
-                $finalArray[$key]['opening_due'] = round(isset($opening_due[$key])?$opening_due[$key]:0, 2);
-                $finalArray[$key]['credit_note'] = isset($credit_notes[$key])?$credit_notes[$key]:0;
-                $finalArray[$key]['cash_sales'] = isset($cash_sales[$key])?$cash_sales[$key]:0;
-                $finalArray[$key]['total_sales'] = $finalArray[$key]['cash_sales'] + $finalArray[$key]['credit_sales'] - $finalArray[$key]['credit_note'];
-                $finalArray[$key]['credit_collection'] = isset($credit_collection[$key])?$credit_collection[$key]:0;
-                $finalArray[$key]['cash_collection'] = isset($cash_collection[$key])?$cash_collection[$key]:0;
-                $finalArray[$key]['adjustment'] = isset($adjustments[$key])?$adjustments[$key]:0;
-                $finalArray[$key]['recovery'] = $finalArray[$key]['cash_collection']+$finalArray[$key]['credit_collection'];
-                $finalArray[$key]['closing_due'] = $finalArray[$key]['opening_due']+$finalArray[$key]['total_sales']-$finalArray[$key]['recovery'];
+                $finalArray[$key]['this_month_target'] = isset($this_month_target_revised[$key])?$this_month_target_revised[$key]:0;
+                $finalArray[$key]['this_month_achievement'] = isset($this_month_achievement[$key])?$this_month_achievement[$key]:0;
+                $finalArray[$key]['cumulative_target'] = isset($cumulative_target_revised[$key])?$cumulative_target_revised[$key]:0;
+                $finalArray[$key]['cumulative_achievement'] = isset($cumulative_achievement[$key])?$cumulative_achievement[$key]:0;
             }
 
             if($group_by_level == Configure::read('max_level_no')+1){
@@ -124,14 +137,14 @@ class ReportSalesCollectionsController extends AppController
 
             if ($param == 'report') {
                 $this->viewBuilder()->layout('report');
-                $this->set(compact('finalArray', 'nameArray', 'data'));
+                $this->set(compact('finalArray', 'nameArray', 'data', 'report_type'));
                 $this->set('_serialize', ['finalArray']);
             } elseif ($param == 'pdf') {
                 $view = new View();
                 $btnHide = 1;
                 $view->layout=false;
-                $view->set(compact('finalArray', 'nameArray', 'data', 'btnHide'));
-                $view->viewPath = 'ReportSalesCollections';
+                $view->set(compact('finalArray', 'nameArray', 'data', 'btnHide', 'report_type'));
+                $view->viewPath = 'ReportDailySales';
                 $html = $view->render('load_report');
                 $this->loadComponent('Common');
                 $this->Common->getPdf($html);

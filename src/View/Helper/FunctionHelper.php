@@ -2125,4 +2125,46 @@ class FunctionHelper extends Helper
 
         return $groupByDaySpan;
     }
+
+    public function collection_target_90_days_old($space_level, $space_global_id, $group_by_level, $start_date, $end_date){
+        $limitStart = pow(2, (Configure::read('max_level_no') - $space_level - 1) * 5);
+        $limitEnd = pow(2, (Configure::read('max_level_no') - $space_level) * 5);
+        $conn = ConnectionManager::get('default');
+
+        if($space_level < Configure::read('max_level_no') && $group_by_level <= Configure::read('max_level_no')){
+            $expression = (pow(2, (1 + 5 * $group_by_level)) - 1) * pow(2, (5 * (Configure::read('max_level_no') - $group_by_level)));
+
+            $query = $conn->execute('
+            SELECT customer_unit_global_id  & ' . $expression . ' as global_id, SUM(due) as total_amount from invoices
+            WHERE invoice_date+90*24*3600 >= ' . $start_date . ' AND invoice_date+90*24*3600 <= ' . $end_date . '
+            AND customer_unit_global_id-' . $space_global_id . ' >= ' . $limitStart . ' AND customer_unit_global_id-' . $space_global_id . ' < ' . $limitEnd . '
+            GROUP BY global_id');
+
+        }elseif($space_level < Configure::read('max_level_no') && $group_by_level <= Configure::read('max_level_no')+1){
+            $query = $conn->execute('
+            SELECT customer_unit_global_id as global_id, SUM(due) as total_amount from invoices
+            WHERE invoice_date+90*24*3600 >= ' . $start_date . ' AND invoice_date+90*24*3600 <= ' . $end_date . '
+            AND customer_unit_global_id-' . $space_global_id . ' >= ' . $limitStart . ' AND customer_unit_global_id-' . $space_global_id . ' < ' . $limitEnd . '
+            GROUP BY customer_unit_global_id');
+
+        }elseif($space_level == Configure::read('max_level_no') && $group_by_level == $space_level){
+            $expression = (pow(2, (1 + 5 * $group_by_level)) - 1) * pow(2, (5 * (Configure::read('max_level_no') - $group_by_level)));
+
+            $query = $conn->execute('
+            SELECT customer_unit_global_id  & ' . $expression . ' as global_id, SUM(due) as total_amount from invoices
+            WHERE invoice_date+90*24*3600 >= ' . $start_date . ' AND invoice_date+90*24*3600 <= ' . $end_date . '
+            AND customer_unit_global_id = ' . $space_global_id . '
+            GROUP BY global_id');
+
+        }elseif($space_level == Configure::read('max_level_no') && $group_by_level > $space_level){
+            $query = $conn->execute('
+            SELECT customer_unit_global_id as global_id, SUM(due) as total_amount from invoices
+            WHERE invoice_date+90*24*3600 <= ' . $start_date . ' AND invoice_date+90*24*3600 <= ' . $end_date . '
+            AND customer_unit_global_id = ' . $space_global_id . '
+            GROUP BY customer_unit_global_id');
+        }
+
+        $results = $query->fetchAll('assoc');
+        return $results;
+    }
 }
